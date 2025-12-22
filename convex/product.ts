@@ -148,3 +148,20 @@ export const getProduct = query({
     return { ...product, imageUrl };
   },
 });
+
+export const getCategories = query({
+  args: {},
+  handler: async (ctx) => {
+    const products = await ctx.db.query("products").collect();
+
+    // Extract unique categories
+    const categories = Array.from(
+      new Set(products.map((p) => p.category).filter(Boolean))
+    );
+
+    // Sort for clean UI
+    categories.sort((a, b) => a.localeCompare(b));
+
+    return categories;
+  },
+});
