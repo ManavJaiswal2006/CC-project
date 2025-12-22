@@ -15,19 +15,23 @@ type Size = {
 };
 
 export default function ProductPage() {
-  /* ================= PARAM ================= */
-  const { id } = useParams<{ id: string }>();
+  /* ================= PARAM (SAFE) ================= */
+  const params = useParams();
+  const id =
+    typeof params?.id === "string" ? params.id : null;
 
-  /* ================= DATA ================= */
-  const product = useQuery(api.product.getProduct, {
-    id: id as any,
-  });
+  /* ================= DATA (GUARDED) ================= */
+  const product = useQuery(
+    api.product.getProduct,
+    id ? { id: id as any } : "skip"
+  );
 
   /* ================= CART ================= */
   const { addToCart } = useCart();
 
   /* ================= STATE ================= */
-  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+  const [selectedSize, setSelectedSize] =
+    useState<Size | null>(null);
   const initializedRef = useRef(false);
 
   /* ================= INIT SIZE ================= */
@@ -41,11 +45,11 @@ export default function ProductPage() {
     initializedRef.current = true;
   }, [product]);
 
-  /* ================= NORMALIZATION (SAFE) ================= */
+  /* ================= NORMALIZATION ================= */
   const sizes = product?.sizes ?? [];
   const hasSizes = sizes.length > 0;
 
-  /* ================= PRICE (HOOKS MUST BE HERE) ================= */
+  /* ================= PRICE ================= */
   const basePrice = useMemo(() => {
     if (!product) return null;
     if (hasSizes) return selectedSize?.price ?? null;
@@ -87,7 +91,8 @@ export default function ProductPage() {
 
   /* ================= ADD TO CART ================= */
   const handleAddToCart = () => {
-    if (!canAddToCart || finalPrice == null || basePrice == null) return;
+    if (!canAddToCart || finalPrice == null || basePrice == null)
+      return;
 
     addToCart(
       {
@@ -96,8 +101,6 @@ export default function ProductPage() {
         image: product.imageUrl ?? "",
         category: product.category,
         size: selectedSize?.label ?? null,
-
-        // ⚠️ UI ONLY — server must revalidate
         basePrice,
         price: finalPrice,
         discount: product.discount,

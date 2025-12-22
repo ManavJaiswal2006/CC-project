@@ -10,7 +10,7 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 
 export default function CartPage() {
@@ -44,16 +44,6 @@ export default function CartPage() {
       </div>
     );
   }
-
-  /* ================= TOTALS (UI ONLY) ================= */
-  const gst = useMemo(
-    () => Math.round(cartTotal * 0.18),
-    [cartTotal]
-  );
-  const grandTotal = useMemo(
-    () => cartTotal + gst,
-    [cartTotal, gst]
-  );
 
   /* ================= UI ================= */
   return (
@@ -155,7 +145,6 @@ export default function CartPage() {
 
                   {/* PRICE + QTY */}
                   <div className="flex justify-between items-center mt-6">
-
                     <div>
                       {item.discount > 0 && (
                         <span className="text-xs text-gray-400 line-through mr-2">
@@ -167,7 +156,6 @@ export default function CartPage() {
                       </span>
                     </div>
 
-                    {/* QUANTITY */}
                     <div className="flex items-center border">
                       <button
                         disabled={item.quantity <= 1}
@@ -200,7 +188,6 @@ export default function CartPage() {
                         <Plus size={12} />
                       </button>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -225,11 +212,6 @@ export default function CartPage() {
                   <span>Shipping</span>
                   <span className="text-green-600">Free</span>
                 </div>
-
-                <div className="flex justify-between">
-                  <span>GST (18%)</span>
-                  <span>₹{gst}</span>
-                </div>
               </div>
 
               <div className="border-t pt-8 mb-10">
@@ -238,14 +220,13 @@ export default function CartPage() {
                     Total
                   </span>
                   <span className="text-2xl font-bold">
-                    ₹{grandTotal}
+                    ₹{cartTotal}
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={() => {
-                  // TODO: route to checkout
                   console.warn("Proceed to checkout");
                 }}
                 className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 transition-all"
