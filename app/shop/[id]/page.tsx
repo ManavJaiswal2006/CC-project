@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ShoppingBag, Check } from "lucide-react";
+import { useCart } from "@/app/context/CartContext";
 
 export default function ProductPage() {
   /* ================= PARAM ================= */
@@ -16,14 +17,17 @@ export default function ProductPage() {
     id: id as any,
   });
 
-  /* ================= STATE (MUST BE TOP LEVEL) ================= */
+  /* ================= CART ================= */
+  const { addToCart } = useCart();
+
+  /* ================= STATE (HOOKS AT TOP LEVEL) ================= */
   const [selectedSize, setSelectedSize] = useState<{
     label: string;
     value: string;
     price: number;
   } | null>(null);
 
-  /* ================= EFFECT ================= */
+  /* ================= INIT SIZE ================= */
   useEffect(() => {
     if (product?.sizes && product.sizes.length > 0) {
       setSelectedSize(product.sizes[0]);
@@ -32,7 +36,7 @@ export default function ProductPage() {
     }
   }, [product]);
 
-  /* ================= LOADING / ERROR ================= */
+  /* ================= LOADING ================= */
   if (product === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
@@ -63,11 +67,31 @@ export default function ProductPage() {
       ? Math.round(basePrice - (basePrice * product.discount) / 100)
       : basePrice;
 
+  /* ================= ADD TO CART ================= */
+  const handleAddToCart = () => {
+    addToCart(
+      {
+        id: product._id,
+        name: product.name,
+        image: product.imageUrl ?? "",
+        category: product.category,
+
+        size: selectedSize?.label ?? null,
+
+        basePrice,
+        price: finalPrice,
+        discount: product.discount,
+      },
+      1
+    );
+  };
+
   /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-white text-gray-900 px-6 py-20">
       <div className="max-w-6xl mx-auto">
 
+        {/* ================= TOP ================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
           {/* IMAGE */}
@@ -106,7 +130,7 @@ export default function ProductPage() {
             {/* PRICE */}
             <div>
               <p className="text-sm text-gray-400 mb-1">
-                {hasSizes ? "Price (for selected size)" : "Price"}
+                {hasSizes ? "Price (selected size)" : "Price"}
               </p>
 
               <div className="flex items-end gap-4">
@@ -125,6 +149,10 @@ export default function ProductPage() {
                   You save {product.discount}%
                 </p>
               )}
+
+              <p className="text-xs text-gray-400 mt-1">
+                Inclusive of all taxes
+              </p>
             </div>
 
             {/* SIZE SELECTOR */}
@@ -136,7 +164,8 @@ export default function ProductPage() {
 
                 <div className="flex flex-wrap gap-3">
                   {sizes.map((s) => {
-                    const active = selectedSize?.value === s.value;
+                    const active =
+                      selectedSize?.value === s.value;
 
                     return (
                       <button
@@ -160,6 +189,7 @@ export default function ProductPage() {
             <div className="pt-6 border-t">
               <button
                 disabled={product.soldOut}
+                onClick={handleAddToCart}
                 className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 transition-all disabled:bg-gray-300"
               >
                 <ShoppingBag size={16} />
@@ -183,7 +213,7 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* DETAILED DESCRIPTION */}
+        {/* ================= DETAILS SECTION ================= */}
         {product.details && (
           <div className="mt-20 border-t pt-12 max-w-4xl">
             <h2 className="text-xl font-bold uppercase tracking-wide mb-6">
