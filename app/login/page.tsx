@@ -19,7 +19,7 @@ function LoginContent() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/product");
+      router.push("/shop");
     } catch (err: any) {
       setError("Invalid credentials. Please try again.");
     }

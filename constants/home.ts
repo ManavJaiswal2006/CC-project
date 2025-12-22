@@ -1,7 +1,7 @@
 export const navlinks = [
   { name: "HOME", href: "/" },
   { name: "ABOUT", href: "/about" },
-  { name: "PRODUCTS", href: "/product" },
+  { name: "PRODUCTS", href: "/shop" },
   { name: "CONTACT", href: "/customer-care" },
 
 ];
@@ -12,7 +12,7 @@ export const heroData = {
   description:
     "Experience the epitome of culinary elegance. Our premium cutlery and kitchen tools are crafted for those who demand excellence in every detail.",
   buttonText: "Explore Collection",
-  buttonLink: "/product",
+  buttonLink: "/shop",
   mainImage: "/home/img-1.png", 
   watermarkImage: "/home/img-1.png",
 };
@@ -23,7 +23,7 @@ export const heroBento = [
     title: "Precision Essentials",
     subtitle: "Masterful Baking",
     imageSrc: "/home/img-2.png", // Whisk
-    href: "/product",
+    href: "/shop",
     className: "md:col-span-2 md:row-span-2 aspect-square md:aspect-auto", // Large square item
     darkText: true,
   },
@@ -32,7 +32,7 @@ export const heroBento = [
     title: "Vibrant Living",
     subtitle: "Fantacy Collection",
     imageSrc: "/home/img-3.png", // Red set
-    href: "/product",
+    href: "/shop",
     className: "md:col-span-1 md:row-span-1 aspect-square",
     darkText: true,
   },
@@ -41,7 +41,7 @@ export const heroBento = [
     title: "Timeless Silver",
     subtitle: "Prime Series",
     imageSrc: "/home/img-4.png", // Silver set on black plate
-    href: "/product",
+    href: "/shop",
     className: "md:col-span-1 md:row-span-1 aspect-square",
   },
   {
@@ -49,7 +49,7 @@ export const heroBento = [
     title: "Culinary Utility",
     subtitle: "Professional Tools",
     imageSrc: "/home/img-5.png", // Tool stand
-    href: "/product",
+    href: "/shop",
     className: "md:col-span-1 md:row-span-2 aspect-square md:aspect-auto object-top", // Tall item
   },
   {
@@ -57,7 +57,7 @@ export const heroBento = [
     title: "Modern Patterns",
     subtitle: "Elite Aroma",
     imageSrc: "/home/img-6.png", // Checkered pattern
-    href: "/product",
+    href: "/shop",
     className: "md:col-span-2 md:row-span-1 aspect-square md:aspect-[2/1]", // Wide item
     darkText: true,
   },

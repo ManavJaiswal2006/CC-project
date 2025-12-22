@@ -23,7 +23,7 @@ function SignUpContent() {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      router.push("/product");
+      router.push("/shop");
     } catch (err: any) {
       setError(
         err.message.includes("email-already-in-use")

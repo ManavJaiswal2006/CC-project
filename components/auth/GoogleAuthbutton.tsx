@@ -11,7 +11,7 @@ export default function GoogleAuthButton() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const returnTo = searchParams.get("returnTo") || "/product";
+  const returnTo = searchParams.get("returnTo") || "/shop";
 
   const handleGoogleSignIn = async () => {
     setLoading(true);

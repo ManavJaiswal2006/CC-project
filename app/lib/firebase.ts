@@ -10,6 +10,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
+// Safety Check: Ensure config is loaded
+if (!firebaseConfig.projectId) {
+  console.error(
+    "Error: Firebase Project ID is missing. Check your .env.local file."
+  );
+}
+
+// Initialize Firebase (Singleton Pattern)
+// prevents re-initialization errors in Next.js hot-reloading
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);

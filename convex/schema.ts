@@ -2,9 +2,9 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // 1. Users Table (Stores Profile & Addresses)
+  // 1. Users Table (No changes)
   users: defineTable({
-    userId: v.string(), // Firebase UID
+    userId: v.string(),
     name: v.optional(v.string()),
     email: v.string(),
     phone: v.optional(v.string()),
@@ -19,13 +19,27 @@ export default defineSchema({
     ),
   }).index("by_userId", ["userId"]),
 
-  // 2. Orders Table
+  // 2. Orders Table (No changes)
   orders: defineTable({
     userId: v.string(),
-    orderId: v.string(), // e.g., "ORD-1234"
-    items: v.any(), // Storing cart array
+    orderId: v.string(),
+    items: v.any(),
     totalAmount: v.number(),
-    status: v.string(), // "Processing", "Shipped", "Delivered"
+    status: v.string(),
     trackingNumber: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
+
+  // 3. Products Table (UPDATED)
+  products: defineTable({
+    name: v.string(),
+    description: v.string(),
+    price: v.number(),
+    discount: v.number(),
+    
+    // CHANGED: Stores the ID of the uploaded image file
+    storageId: v.optional(v.id("_storage")), 
+    
+    // ADDED: Tracks if the item is out of stock
+    soldOut: v.boolean(), 
+  }),
 });
