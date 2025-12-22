@@ -12,21 +12,24 @@ type Size = {
 };
 
 export default function AdminPage() {
+  /* ================= CONVEX ================= */
   const products = useQuery(api.product.getAllProducts);
   const createProduct = useMutation(api.product.createProduct);
   const updateProduct = useMutation(api.product.updateProduct);
   const deleteProduct = useMutation(api.product.deleteProduct);
   const generateUploadUrl = useMutation(api.product.generateUploadUrl);
 
-  const imageRef = useRef<HTMLInputElement>(null);
-
+  /* ================= STATE ================= */
   const [editingId, setEditingId] = useState<Id<"products"> | null>(null);
   const [mode, setMode] = useState<"single" | "sizes">("single");
 
+  const imageRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState({
     name: "",
-    description: "",
     category: "",
+    description: "", // short
+    details: "",     // ✅ long / detailed
     discount: 0,
     soldOut: false,
     price: 0,
@@ -34,6 +37,7 @@ export default function AdminPage() {
     image: null as File | null,
   });
 
+  /* ================= LOADING ================= */
   if (!products) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -42,15 +46,19 @@ export default function AdminPage() {
     );
   }
 
+  /* ================= HELPERS ================= */
   const uploadImage = async () => {
     if (!form.image) return undefined;
-    const url = await generateUploadUrl();
-    const res = await fetch(url, {
+
+    const uploadUrl = await generateUploadUrl();
+    const res = await fetch(uploadUrl, {
       method: "POST",
       headers: { "Content-Type": form.image.type },
       body: form.image,
     });
-    return (await res.json()).storageId;
+
+    const { storageId } = await res.json();
+    return storageId;
   };
 
   const resetForm = () => {
@@ -58,8 +66,9 @@ export default function AdminPage() {
     setMode("single");
     setForm({
       name: "",
-      description: "",
       category: "",
+      description: "",
+      details: "",
       discount: 0,
       soldOut: false,
       price: 0,
@@ -73,11 +82,13 @@ export default function AdminPage() {
 
     const payload = {
       name: form.name,
-      description: form.description,
       category: form.category,
+      description: form.description,
+      details: form.details || undefined,
       discount: form.discount,
       soldOut: form.soldOut,
       storageId,
+
       price: mode === "single" ? form.price : undefined,
       sizes: mode === "sizes" ? form.sizes : undefined,
     };
@@ -91,6 +102,7 @@ export default function AdminPage() {
     resetForm();
   };
 
+  /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-gray-50 px-8 py-16">
       <div className="max-w-6xl mx-auto">
@@ -101,10 +113,12 @@ export default function AdminPage() {
 
         {/* ================= FORM ================= */}
         <div className="bg-white border p-8 mb-20 space-y-8">
+
           <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">
             {editingId ? "Edit Product" : "Add Product"}
           </h2>
 
+          {/* BASIC INFO */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="label">Product Name</label>
@@ -129,11 +143,12 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* SHORT DESCRIPTION */}
           <div>
-            <label className="label">Description</label>
+            <label className="label">Short Description</label>
             <textarea
               className="input"
-              rows={4}
+              rows={3}
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
@@ -141,6 +156,21 @@ export default function AdminPage() {
             />
           </div>
 
+          {/* DETAILED DESCRIPTION */}
+          <div>
+            <label className="label">Detailed Description</label>
+            <textarea
+              className="input"
+              rows={6}
+              placeholder="Materials, usage, care instructions, warranty, etc."
+              value={form.details}
+              onChange={(e) =>
+                setForm({ ...form, details: e.target.value })
+              }
+            />
+          </div>
+
+          {/* DISCOUNT */}
           <div>
             <label className="label">Discount (%)</label>
             <input
@@ -156,7 +186,7 @@ export default function AdminPage() {
             />
           </div>
 
-          {/* MODE */}
+          {/* PRICING MODE */}
           <div>
             <label className="label">Pricing Type</label>
             <div className="flex gap-4">
@@ -183,6 +213,7 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* SINGLE PRICE */}
           {mode === "single" && (
             <div>
               <label className="label">Price (₹)</label>
@@ -200,6 +231,7 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* SIZE BASED */}
           {mode === "sizes" && (
             <div className="space-y-4">
               <label className="label">Sizes</label>
@@ -260,6 +292,7 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* IMAGE */}
           <div>
             <label className="label">Product Image</label>
             <input
@@ -274,6 +307,7 @@ export default function AdminPage() {
             />
           </div>
 
+          {/* SAVE */}
           <button
             onClick={saveProduct}
             className="w-full bg-black text-white py-4 uppercase font-bold tracking-widest"
@@ -281,8 +315,58 @@ export default function AdminPage() {
             Save Product
           </button>
         </div>
+
+        {/* ================= PRODUCT LIST ================= */}
+        <div className="space-y-4">
+          {products.map((p) => (
+            <div
+              key={p._id}
+              className="bg-white border p-4 flex justify-between items-center"
+            >
+              <div>
+                <p className="font-bold">{p.name}</p>
+                <p className="text-xs text-gray-500">
+                  {p.sizes?.length
+                    ? `${p.sizes.length} sizes`
+                    : `₹${p.price}`} • {p.discount}% off
+                </p>
+              </div>
+
+              <div className="flex gap-4 text-sm">
+                <button
+                  onClick={() => {
+                    setEditingId(p._id);
+                    setMode(p.sizes?.length ? "sizes" : "single");
+                    setForm({
+                      name: p.name,
+                      category: p.category,
+                      description: p.description,
+                      details: p.details ?? "",
+                      discount: p.discount,
+                      soldOut: p.soldOut,
+                      price: p.price ?? 0,
+                      sizes: p.sizes ?? [],
+                      image: null,
+                    });
+                  }}
+                >
+                  Edit
+                </button>
+
+                <button
+                  className="text-red-600"
+                  onClick={() => deleteProduct({ id: p._id })}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
 
+      {/* STYLES */}
       <style jsx>{`
         .label {
           font-size: 11px;

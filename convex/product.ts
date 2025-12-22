@@ -23,6 +23,7 @@ export const createProduct = mutation({
   args: {
     name: v.string(),
     description: v.string(),
+    details: v.optional(v.string()),
     category: v.string(),
     soldOut: v.boolean(),
     discount: v.number(),

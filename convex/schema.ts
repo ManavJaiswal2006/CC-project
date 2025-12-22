@@ -34,6 +34,7 @@ export default defineSchema({
   products: defineTable({
     name: v.string(),
     description: v.string(),
+    details: v.optional(v.string()),
     category: v.string(),
 
     soldOut: v.boolean(),
