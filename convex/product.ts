@@ -86,3 +86,22 @@ export const getAllProducts = query({
     );
   },
 });
+// convex/product.ts
+
+// ... existing imports ...
+
+// 6. GET SINGLE PRODUCT (Public)
+export const getProduct = query({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.id);
+    if (!product) return null;
+
+    // Get image URL
+    const imageUrl = product.storageId 
+      ? await ctx.storage.getUrl(product.storageId) 
+      : null;
+
+    return { ...product, imageUrl };
+  },
+});

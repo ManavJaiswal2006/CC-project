@@ -1,15 +1,26 @@
 "use client";
 
-import { Product } from "@/constants/product";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-interface CartItem extends Product {
+// 1. Define the shape of the product specifically for the Cart
+// We decouple this from the DB schema to make it flexible
+export interface CartProduct {
+  id: string;      // This will store the Convex _id
+  name: string;
+  price: number;
+  image: string;
+  category?: string;
+  code?: string;
+}
+
+// 2. The Item in the array includes the quantity
+export interface CartItem extends CartProduct {
   quantity: number;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity: number) => void;
+  addToCart: (product: CartProduct, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -24,26 +35,41 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Load cart from LocalStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("bourgon_cart");
-    if (savedCart) setCart(JSON.parse(savedCart));
+    // Check if window exists to avoid server-side errors
+    if (typeof window !== "undefined") {
+      const savedCart = localStorage.getItem("bourgon_cart");
+      if (savedCart) {
+        try {
+          setCart(JSON.parse(savedCart));
+        } catch (e) {
+          console.error("Failed to parse cart", e);
+        }
+      }
+    }
   }, []);
 
   // Save cart to LocalStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("bourgon_cart", JSON.stringify(cart));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("bourgon_cart", JSON.stringify(cart));
+    }
   }, [cart]);
 
-  const addToCart = (product: Product, quantity: number) => {
+  // --- ACTIONS ---
+
+  const addToCart = (product: CartProduct, quantity: number) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
+      
       if (existing) {
-        // If item exists, just increase quantity
+        // If item exists, increase quantity
         return prev.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
+      
       // If new, add to array
       return [...prev, { ...product, quantity }];
     });
@@ -64,7 +90,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => setCart([]);
 
-  // Calculated totals
+  // --- TOTALS ---
+  
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 

@@ -1,147 +1,216 @@
 "use client";
 
 import React, { useState } from "react";
-import { Star, MessageSquare, ShoppingCart, Minus, Plus } from "lucide-react";
-import { products } from "@/constants/shop"; // Mock data
-import { useCart } from "@/app/context/CartContext"; // <--- 1. Import Cart Hook
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useCart } from "@/app/context/CartContext"; 
+import { Star, MessageSquare, ShoppingCart, Minus, Plus, Share2 } from "lucide-react";
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  // Find product (In real app, fetch from database)
-  const product = products.find((p) => p.id === params.id) || products[0];
+  // 1. FETCH REAL DATA
+  // We cast the string param to a Convex ID
+  const product = useQuery(api.product.getProduct, { id: params.id as Id<"products"> });
 
-  const { addToCart } = useCart(); // <--- 2. Get addToCart function
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   
+  // Local state for reviews (Mocked for now until you add a Reviews table)
   const [commentText, setCommentText] = useState("");
   const [reviews, setReviews] = useState([
-    { user: "Amit V.", rating: 5, text: "Excellent steel quality, very heavy." },
-    { user: "Sarah K.", rating: 4, text: "Good product but delivery was slow." }
+    { user: "SYSTEM_USER_01", rating: 5, text: "Material integrity verified. Excellent quality." },
+    { user: "ANON_99", rating: 4, text: "Delivery latency was acceptable." }
   ]);
 
   // --- HANDLERS ---
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
-    alert(`Added ${quantity} x ${product.name} to your cart!`);
-    // Optional: Reset quantity or redirect to cart
+    if (!product) return;
+    
+    // Map Convex object to Cart object
+    addToCart({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.imageUrl || "", 
+    }, quantity);
+
+    alert(`[SYSTEM]: Added ${quantity} unit(s) to cart.`);
   };
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
     if(!commentText) return;
-    setReviews([...reviews, { user: "You", rating: 5, text: commentText }]);
+    setReviews([...reviews, { user: "YOU", rating: 5, text: commentText }]);
     setCommentText("");
   };
 
+  // --- LOADING / ERROR STATES ---
+
+  if (product === undefined) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-green-500 font-mono">
+        <div className="animate-pulse">LOADING_ASSET_DATA...</div>
+      </div>
+    );
+  }
+
+  if (product === null) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-red-500 font-mono">
+        ERROR: ASSET_NOT_FOUND
+      </div>
+    );
+  }
+
+  // --- MAIN RENDER ---
+
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans pb-20">
-      <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="min-h-screen bg-neutral-950 text-neutral-200 font-sans pb-20 pt-24 selection:bg-green-500/30 selection:text-green-200">
+      {/* GRID BACKGROUND */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #262626 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6">
         
         {/* TOP SECTION: IMAGE AND INFO */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-          {/* Left: Image */}
-          <div className="bg-gray-100 rounded-2xl h-96 flex items-center justify-center p-10">
-             <h1 className="text-6xl text-gray-300 font-bold">{product.name}</h1>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 border-b border-neutral-800 pb-16">
+          
+          {/* Left: Image Box */}
+          <div className="bg-black border border-neutral-800 h-[500px] flex items-center justify-center relative group">
+            {/* Corners */}
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white"></div>
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white"></div>
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white"></div>
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white"></div>
 
-          {/* Right: Info */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-               <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">{product.category}</span>
-               <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-500'}`}>
-                 {product.inStock ? "In Stock" : "Out of Stock"}
-               </span>
-            </div>
-
-            <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
-            <p className="text-gray-500 mb-6">Item Code: {product.code}</p>
-
-            {/* Price Block */}
-            <div className="border-t border-b py-6 mb-6">
-               <p className="text-gray-500 text-sm mb-1">MRP (Inclusive of all taxes)</p>
-               <div className="flex items-end gap-3">
-                 <span className="text-4xl font-bold text-gray-900">₹{product.price}</span>
-                 <span className="text-xl text-gray-400 line-through mb-1">₹{product.mrp}</span>
-                 <span className="text-sm font-bold text-green-600 mb-2">
-                   {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF
-                 </span>
-               </div>
-            </div>
-
-            <p className="text-gray-600 leading-relaxed mb-8">{product.description}</p>
-
-            {/* Sizes available based on image data */}
-            {product.sizes && (
-              <div className="mb-8">
-                <p className="font-bold mb-3">Select Size (No.)</p>
-                <div className="flex gap-2">
-                  {product.sizes.map(size => (
-                    <button key={size} className="w-10 h-10 border rounded hover:bg-black hover:text-white transition">{size}</button>
-                  ))}
-                </div>
-              </div>
+            {product.imageUrl ? (
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-500" />
+            ) : (
+              <div className="text-neutral-700 font-mono text-sm">NO_IMG_DATA</div>
             )}
 
-            {/* Actions */}
-            <div className="flex gap-4">
-              <div className="flex items-center border rounded-lg">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-gray-100"><Minus size={16}/></button>
-                <span className="w-8 text-center font-bold">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-gray-100"><Plus size={16}/></button>
+            {product.discount > 0 && (
+              <div className="absolute top-4 right-4 bg-green-900/20 border border-green-500/50 text-green-400 px-3 py-1 text-xs font-mono font-bold uppercase">
+                -{product.discount}% OFF
+              </div>
+            )}
+          </div>
+
+          {/* Right: Info Panel */}
+          <div className="flex flex-col h-full">
+            <div className="mb-auto">
+              <div className="flex items-center gap-3 mb-4">
+                 {product.soldOut ? (
+                    <span className="bg-red-900/20 border border-red-900 text-red-500 px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
+                      Stock: Depleted
+                    </span>
+                 ) : (
+                    <span className="bg-green-900/20 border border-green-900 text-green-500 px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
+                      Stock: Available
+                    </span>
+                 )}
+                 <span className="text-neutral-600 font-mono text-xs">ID: {product._id.slice(-8).toUpperCase()}</span>
               </div>
 
-              {/* 👇 UPDATED ADD TO CART BUTTON */}
-              <button 
-                onClick={handleAddToCart}
-                disabled={!product.inStock} 
-                className="flex-1 bg-red-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                <ShoppingCart size={20} /> {product.inStock ? "Add to Cart" : "Notify Me"}
-              </button>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white uppercase tracking-tight">{product.name}</h1>
+              
+              {/* Price Block */}
+              <div className="py-6 border-t border-b border-neutral-800 mb-6">
+                <p className="text-neutral-500 text-xs font-mono uppercase mb-1">Unit Price</p>
+                <div className="flex items-end gap-4">
+                  <span className="text-4xl font-mono text-white">${product.price}</span>
+                  {product.discount > 0 && (
+                     <span className="text-xl text-neutral-600 line-through font-mono decoration-red-900">
+                       ${Math.round(product.price * (1 + product.discount / 100))}
+                     </span>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-neutral-400 leading-relaxed mb-8 font-mono text-sm border-l-2 border-neutral-800 pl-4">
+                {product.description}
+              </p>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-4">
+                  {/* Quantity Selector */}
+                  <div className="flex items-center border border-neutral-700 bg-neutral-900">
+                    <button 
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                      className="p-4 hover:bg-neutral-800 hover:text-white text-neutral-400 transition-colors"
+                    >
+                      <Minus size={16}/>
+                    </button>
+                    <span className="w-12 text-center font-mono text-white font-bold">{quantity}</span>
+                    <button 
+                      onClick={() => setQuantity(quantity + 1)} 
+                      className="p-4 hover:bg-neutral-800 hover:text-white text-neutral-400 transition-colors"
+                    >
+                      <Plus size={16}/>
+                    </button>
+                  </div>
+
+                  {/* Add to Cart */}
+                  <button 
+                    onClick={handleAddToCart}
+                    disabled={product.soldOut} 
+                    className="flex-1 bg-white text-black font-bold uppercase tracking-wider hover:bg-green-500 hover:text-black transition-all disabled:bg-neutral-800 disabled:text-neutral-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {product.soldOut ? "Unavailable" : "Add to Cart"}
+                  </button>
+                </div>
+                
+                <button className="w-full border border-neutral-800 py-3 text-xs font-mono uppercase text-neutral-500 hover:text-white hover:border-white transition-colors flex items-center justify-center gap-2">
+                  <Share2 size={14} /> Share Asset Link
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* BOTTOM SECTION: REVIEWS & COMMENTS */}
+        {/* BOTTOM SECTION: REVIEWS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-           
-           {/* Review Stats */}
-           <div className="md:col-span-1">
-             <h3 className="text-2xl font-bold mb-4">Ratings & Reviews</h3>
+            
+           {/* Stats */}
+           <div className="md:col-span-1 bg-black border border-neutral-800 p-6">
+             <h3 className="text-xl font-bold text-white mb-2 uppercase">User Logs</h3>
              <div className="flex items-center gap-4 mb-2">
-               <span className="text-5xl font-bold">{product.rating}</span>
-               <div className="text-yellow-400 flex"><Star fill="currentColor"/><Star fill="currentColor"/><Star fill="currentColor"/><Star fill="currentColor"/><Star className="text-gray-300"/></div>
+               <span className="text-5xl font-mono text-white">4.8</span>
+               <div className="text-green-500 flex"><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star className="text-neutral-700" size={16}/></div>
              </div>
-             <p className="text-gray-500 text-sm">Based on {reviews.length} reviews</p>
+             <p className="text-neutral-500 text-xs font-mono">Based on {reviews.length} entries</p>
            </div>
 
-           {/* Comment Form & List */}
+           {/* Comments */}
            <div className="md:col-span-2 space-y-8">
              
-             {/* Add Comment */}
-             <form onSubmit={handleAddReview} className="bg-gray-50 p-6 rounded-xl border">
-               <h4 className="font-bold mb-4 flex items-center gap-2"><MessageSquare size={18}/> Write a Review</h4>
+             {/* Add Review */}
+             <form onSubmit={handleAddReview} className="bg-neutral-900/50 p-6 border border-neutral-800">
+               <h4 className="font-bold mb-4 flex items-center gap-2 text-white uppercase text-sm"><MessageSquare size={16}/> Submit Log</h4>
                <textarea 
                  value={commentText}
                  onChange={(e) => setCommentText(e.target.value)}
-                 className="w-full border p-3 rounded-lg mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                 className="w-full bg-black border border-neutral-800 p-4 text-white focus:border-green-500 outline-none mb-4 font-mono text-sm"
                  rows={3}
-                 placeholder="How was the product quality?"
+                 placeholder="> Enter observation data..."
                />
-               <button type="submit" className="bg-black text-white px-6 py-2 rounded-lg text-sm font-bold">Post Review</button>
+               <button type="submit" className="bg-neutral-800 text-white px-6 py-2 text-xs font-mono uppercase hover:bg-white hover:text-black transition-colors">
+                 Upload Entry
+               </button>
              </form>
 
              {/* Review List */}
-             <div className="space-y-6">
+             <div className="space-y-4">
                {reviews.map((review, i) => (
-                 <div key={i} className="border-b pb-6">
+                 <div key={i} className="border-b border-neutral-800 pb-6 last:border-0">
                    <div className="flex items-center justify-between mb-2">
-                     <p className="font-bold">{review.user}</p>
-                     <div className="flex text-yellow-400 text-xs">
-                        {[...Array(review.rating)].map((_, j) => <Star key={j} size={12} fill="currentColor"/>)}
+                     <p className="font-bold text-white font-mono text-sm">{review.user}</p>
+                     <div className="flex text-green-500">
+                        {[...Array(review.rating)].map((_, j) => <Star key={j} size={10} fill="currentColor"/>)}
                      </div>
                    </div>
-                   <p className="text-gray-600 text-sm">{review.text}</p>
+                   <p className="text-neutral-400 text-sm font-mono">{review.text}</p>
                  </div>
                ))}
              </div>
