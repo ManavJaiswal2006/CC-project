@@ -1,105 +1,148 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-// 🔒 SECURITY CHECK FUNCTION
+/* ================= ADMIN CHECK ================= */
 async function checkAdmin(ctx: any) {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    throw new Error("Unauthenticated: Please log in.");
-  }
+  if (!identity) throw new Error("Unauthenticated");
 
-  // 👇 1. CHANGED TO YOUR ACTUAL EMAIL & MADE IT AN ARRAY
-  const ADMIN_EMAILS = ["2858.manav@gmail.com"]; 
-  
+  const ADMIN_EMAILS = ["2858.manav@gmail.com"];
   if (!ADMIN_EMAILS.includes(identity.email)) {
-    throw new Error("Unauthorized: You do not have admin privileges.");
+    throw new Error("Unauthorized");
   }
 }
 
-// 1. GENERATE UPLOAD URL
+/* ================= IMAGE UPLOAD ================= */
 export const generateUploadUrl = mutation(async (ctx) => {
   await checkAdmin(ctx);
   return await ctx.storage.generateUploadUrl();
 });
 
-// 2. CREATE PRODUCT
+/* ================= CREATE PRODUCT ================= */
 export const createProduct = mutation({
   args: {
     name: v.string(),
     description: v.string(),
-    price: v.number(),
-    discount: v.number(),
-    storageId: v.optional(v.id("_storage")),
+    category: v.string(),
     soldOut: v.boolean(),
+    discount: v.number(),
+
+    storageId: v.optional(v.id("_storage")),
+
+    // single-price product
+    price: v.optional(v.number()),
+
+    // size-based product
+    sizes: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     await checkAdmin(ctx);
-    return await ctx.db.insert("products", args);
+
+    // prevent duplicate product names
+    const existing = await ctx.db
+      .query("products")
+      .filter((q) => q.eq(q.field("name"), args.name))
+      .first();
+
+    if (existing) {
+      throw new Error("Product already exists");
+    }
+
+    // safety: normalize empty sizes
+    const product = {
+      ...args,
+      sizes:
+        Array.isArray(args.sizes) && args.sizes.length > 0
+          ? args.sizes
+          : undefined,
+    };
+
+    return await ctx.db.insert("products", product);
   },
 });
 
-// 3. UPDATE PRODUCT
+/* ================= UPDATE PRODUCT ================= */
 export const updateProduct = mutation({
   args: {
     id: v.id("products"),
-    name: v.optional(v.string()), // 👈 2. ADDED NAME SO YOU CAN RENAME ITEMS
-    description: v.optional(v.string()),
-    price: v.optional(v.number()),
-    discount: v.optional(v.number()),
-    soldOut: v.optional(v.boolean()),
+
+    name: v.string(),
+    description: v.string(),
+    category: v.string(),
+    soldOut: v.boolean(),
+    discount: v.number(),
+
     storageId: v.optional(v.id("_storage")),
+    price: v.optional(v.number()),
+
+    sizes: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
+        })
+      )
+    ),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, { id, ...updates }) => {
     await checkAdmin(ctx);
-    const { id, ...updates } = args;
-    await ctx.db.patch(id, updates);
+
+    const normalized = {
+      ...updates,
+      sizes:
+        Array.isArray(updates.sizes) && updates.sizes.length > 0
+          ? updates.sizes
+          : undefined,
+    };
+
+    await ctx.db.patch(id, normalized);
   },
 });
 
-// 4. DELETE PRODUCT
+/* ================= DELETE PRODUCT ================= */
 export const deleteProduct = mutation({
   args: { id: v.id("products") },
   handler: async (ctx, args) => {
     await checkAdmin(ctx);
-    // OPTIONAL: Delete the image from storage to save space
-    const product = await ctx.db.get(args.id);
-    if (product?.storageId) {
-       await ctx.storage.delete(product.storageId);
-    }
     await ctx.db.delete(args.id);
   },
 });
 
-// 5. GET ALL (Public)
+/* ================= GET ALL PRODUCTS ================= */
 export const getAllProducts = query({
   args: {},
   handler: async (ctx) => {
     const products = await ctx.db.query("products").collect();
-    
-    // Get image URLs
+
     return await Promise.all(
       products.map(async (p) => ({
         ...p,
-        // Generates a signed URL that expires in 1 hour (standard security)
-        imageUrl: p.storageId ? await ctx.storage.getUrl(p.storageId) : null,
+        imageUrl: p.storageId
+          ? await ctx.storage.getUrl(p.storageId)
+          : null,
       }))
     );
   },
 });
-// convex/product.ts
 
-// ... existing imports ...
-
-// 6. GET SINGLE PRODUCT (Public)
+/* ================= GET SINGLE PRODUCT ================= */
 export const getProduct = query({
   args: { id: v.id("products") },
   handler: async (ctx, args) => {
     const product = await ctx.db.get(args.id);
     if (!product) return null;
 
-    // Get image URL
-    const imageUrl = product.storageId 
-      ? await ctx.storage.getUrl(product.storageId) 
+    const imageUrl = product.storageId
+      ? await ctx.storage.getUrl(product.storageId)
       : null;
 
     return { ...product, imageUrl };

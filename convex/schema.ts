@@ -2,12 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // 1. Users Table (No changes)
+  /* ================= USERS ================= */
   users: defineTable({
     userId: v.string(),
     name: v.optional(v.string()),
     email: v.string(),
     phone: v.optional(v.string()),
+    category: v.string(),
     addresses: v.array(
       v.object({
         id: v.string(),
@@ -19,27 +20,45 @@ export default defineSchema({
     ),
   }).index("by_userId", ["userId"]),
 
-  // 2. Orders Table (No changes)
+  /* ================= ORDERS ================= */
   orders: defineTable({
     userId: v.string(),
     orderId: v.string(),
-    items: v.any(),
+    items: v.any(), // cart snapshot (size-aware)
     totalAmount: v.number(),
     status: v.string(),
     trackingNumber: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
 
-  // 3. Products Table (UPDATED)
+  /* ================= PRODUCTS ================= */
   products: defineTable({
     name: v.string(),
     description: v.string(),
-    price: v.number(),
+    category: v.string(),
+
+    soldOut: v.boolean(),
     discount: v.number(),
-    
-    // CHANGED: Stores the ID of the uploaded image file
-    storageId: v.optional(v.id("_storage")), 
-    
-    // ADDED: Tracks if the item is out of stock
-    soldOut: v.boolean(), 
+
+    storageId: v.optional(v.id("_storage")),
+
+    /* -------- SINGLE PRICE PRODUCT -------- */
+    price: v.optional(v.number()),
+
+    /* -------- SIZE-BASED PRODUCT -------- */
+    sizes: v.optional(
+      v.array(
+        v.object({
+          label: v.string(), // "22 CM"
+          value: v.string(), // "22"
+          price: v.number(), // 3385
+        })
+      )
+    ),
+  }),
+
+  /* ================= PROMOS ================= */
+  promos: defineTable({
+    code: v.string(),
+    discount: v.number(),
   }),
 });

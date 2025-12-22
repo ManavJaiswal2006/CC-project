@@ -1,223 +1,140 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useCart } from "@/app/context/CartContext"; 
-import { Star, MessageSquare, ShoppingCart, Minus, Plus, Share2 } from "lucide-react";
+import { ShoppingBag, Check } from "lucide-react";
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  // 1. FETCH REAL DATA
-  // We cast the string param to a Convex ID
-  const product = useQuery(api.product.getProduct, { id: params.id as Id<"products"> });
+export default function ProductPage() {
+  /* ================= GET PARAM ================= */
+  const params = useParams();
+  const id = params.id as string;
 
-  const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState(1);
-  
-  // Local state for reviews (Mocked for now until you add a Reviews table)
-  const [commentText, setCommentText] = useState("");
-  const [reviews, setReviews] = useState([
-    { user: "SYSTEM_USER_01", rating: 5, text: "Material integrity verified. Excellent quality." },
-    { user: "ANON_99", rating: 4, text: "Delivery latency was acceptable." }
-  ]);
+  /* ================= FETCH PRODUCT ================= */
+  const product = useQuery(api.product.getProduct, {
+    id: id as any,
+  });
 
-  // --- HANDLERS ---
-
-  const handleAddToCart = () => {
-    if (!product) return;
-    
-    // Map Convex object to Cart object
-    addToCart({
-      id: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.imageUrl || "", 
-    }, quantity);
-
-    alert(`[SYSTEM]: Added ${quantity} unit(s) to cart.`);
-  };
-
-  const handleAddReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if(!commentText) return;
-    setReviews([...reviews, { user: "YOU", rating: 5, text: commentText }]);
-    setCommentText("");
-  };
-
-  // --- LOADING / ERROR STATES ---
-
+  /* ================= LOADING ================= */
   if (product === undefined) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-green-500 font-mono">
-        <div className="animate-pulse">LOADING_ASSET_DATA...</div>
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading product…
       </div>
     );
   }
 
-  if (product === null) {
+  if (!product) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-red-500 font-mono">
-        ERROR: ASSET_NOT_FOUND
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Product not found
       </div>
     );
   }
 
-  // --- MAIN RENDER ---
+  /* ================= NORMALIZE DATA ================= */
+  const sizes = product.sizes ?? [];
+  const hasSizes = sizes.length > 0;
 
+  const [selectedSize, setSelectedSize] = useState<
+    (typeof sizes)[number] | null
+  >(hasSizes ? sizes[0] : null);
+
+  const displayPrice = hasSizes
+    ? selectedSize?.price ?? 0
+    : product.price ?? 0;
+
+  /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-200 font-sans pb-20 pt-24 selection:bg-green-500/30 selection:text-green-200">
-      {/* GRID BACKGROUND */}
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #262626 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+    <div className="min-h-screen bg-white text-gray-900 px-6 py-16">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6">
-        
-        {/* TOP SECTION: IMAGE AND INFO */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 border-b border-neutral-800 pb-16">
-          
-          {/* Left: Image Box */}
-          <div className="bg-black border border-neutral-800 h-[500px] flex items-center justify-center relative group">
-            {/* Corners */}
-            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white"></div>
-            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white"></div>
-            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white"></div>
-            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white"></div>
+        {/* IMAGE */}
+        <div className="bg-gray-50 flex items-center justify-center p-10">
+          {product.imageUrl ? (
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <div className="text-6xl text-gray-300 font-bold">
+              {product.name.charAt(0)}
+            </div>
+          )}
+        </div>
 
-            {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-500" />
-            ) : (
-              <div className="text-neutral-700 font-mono text-sm">NO_IMG_DATA</div>
-            )}
+        {/* DETAILS */}
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold uppercase tracking-tight">
+            {product.name}
+          </h1>
 
-            {product.discount > 0 && (
-              <div className="absolute top-4 right-4 bg-green-900/20 border border-green-500/50 text-green-400 px-3 py-1 text-xs font-mono font-bold uppercase">
-                -{product.discount}% OFF
-              </div>
-            )}
+          <p className="text-gray-500 leading-relaxed">
+            {product.description}
+          </p>
+
+          {/* PRICE */}
+          <div>
+            <p className="text-sm text-gray-400 mb-1">
+              {hasSizes ? "Price (for selected size)" : "Price"}
+            </p>
+            <p className="text-3xl font-bold">₹{displayPrice}</p>
+            <p className="text-xs text-gray-400">Inclusive of all taxes</p>
           </div>
 
-          {/* Right: Info Panel */}
-          <div className="flex flex-col h-full">
-            <div className="mb-auto">
-              <div className="flex items-center gap-3 mb-4">
-                 {product.soldOut ? (
-                    <span className="bg-red-900/20 border border-red-900 text-red-500 px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
-                      Stock: Depleted
-                    </span>
-                 ) : (
-                    <span className="bg-green-900/20 border border-green-900 text-green-500 px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
-                      Stock: Available
-                    </span>
-                 )}
-                 <span className="text-neutral-600 font-mono text-xs">ID: {product._id.slice(-8).toUpperCase()}</span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white uppercase tracking-tight">{product.name}</h1>
-              
-              {/* Price Block */}
-              <div className="py-6 border-t border-b border-neutral-800 mb-6">
-                <p className="text-neutral-500 text-xs font-mono uppercase mb-1">Unit Price</p>
-                <div className="flex items-end gap-4">
-                  <span className="text-4xl font-mono text-white">${product.price}</span>
-                  {product.discount > 0 && (
-                     <span className="text-xl text-neutral-600 line-through font-mono decoration-red-900">
-                       ${Math.round(product.price * (1 + product.discount / 100))}
-                     </span>
-                  )}
-                </div>
-              </div>
-
-              <p className="text-neutral-400 leading-relaxed mb-8 font-mono text-sm border-l-2 border-neutral-800 pl-4">
-                {product.description}
+          {/* SIZE SELECTOR */}
+          {hasSizes && (
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-3">
+                Size
               </p>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-4">
-                <div className="flex gap-4">
-                  {/* Quantity Selector */}
-                  <div className="flex items-center border border-neutral-700 bg-neutral-900">
-                    <button 
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))} 
-                      className="p-4 hover:bg-neutral-800 hover:text-white text-neutral-400 transition-colors"
+              <div className="flex flex-wrap gap-3">
+                {sizes.map((s) => {
+                  const active = selectedSize?.value === s.value;
+                  return (
+                    <button
+                      key={s.value}
+                      onClick={() => setSelectedSize(s)}
+                      className={`px-5 py-3 border text-sm font-bold transition ${
+                        active
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 hover:border-black"
+                      }`}
                     >
-                      <Minus size={16}/>
+                      {s.label}
                     </button>
-                    <span className="w-12 text-center font-mono text-white font-bold">{quantity}</span>
-                    <button 
-                      onClick={() => setQuantity(quantity + 1)} 
-                      className="p-4 hover:bg-neutral-800 hover:text-white text-neutral-400 transition-colors"
-                    >
-                      <Plus size={16}/>
-                    </button>
-                  </div>
-
-                  {/* Add to Cart */}
-                  <button 
-                    onClick={handleAddToCart}
-                    disabled={product.soldOut} 
-                    className="flex-1 bg-white text-black font-bold uppercase tracking-wider hover:bg-green-500 hover:text-black transition-all disabled:bg-neutral-800 disabled:text-neutral-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {product.soldOut ? "Unavailable" : "Add to Cart"}
-                  </button>
-                </div>
-                
-                <button className="w-full border border-neutral-800 py-3 text-xs font-mono uppercase text-neutral-500 hover:text-white hover:border-white transition-colors flex items-center justify-center gap-2">
-                  <Share2 size={14} /> Share Asset Link
-                </button>
+                  );
+                })}
               </div>
+            </div>
+          )}
+
+          {/* ADD TO CART */}
+          <div className="pt-6 border-t">
+            <button
+              disabled={product.soldOut}
+              className="w-full bg-black text-white py-5 font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-red-600 transition disabled:bg-gray-300"
+            >
+              <ShoppingBag size={18} />
+              {product.soldOut ? "Out of Stock" : "Add to Cart"}
+            </button>
+          </div>
+
+          {/* TRUST */}
+          <div className="pt-6 space-y-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <Check size={14} /> Premium Stainless Steel
+            </div>
+            <div className="flex items-center gap-2">
+              <Check size={14} /> Secure Payments
+            </div>
+            <div className="flex items-center gap-2">
+              <Check size={14} /> Easy Returns
             </div>
           </div>
         </div>
-
-        {/* BOTTOM SECTION: REVIEWS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            
-           {/* Stats */}
-           <div className="md:col-span-1 bg-black border border-neutral-800 p-6">
-             <h3 className="text-xl font-bold text-white mb-2 uppercase">User Logs</h3>
-             <div className="flex items-center gap-4 mb-2">
-               <span className="text-5xl font-mono text-white">4.8</span>
-               <div className="text-green-500 flex"><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star className="text-neutral-700" size={16}/></div>
-             </div>
-             <p className="text-neutral-500 text-xs font-mono">Based on {reviews.length} entries</p>
-           </div>
-
-           {/* Comments */}
-           <div className="md:col-span-2 space-y-8">
-             
-             {/* Add Review */}
-             <form onSubmit={handleAddReview} className="bg-neutral-900/50 p-6 border border-neutral-800">
-               <h4 className="font-bold mb-4 flex items-center gap-2 text-white uppercase text-sm"><MessageSquare size={16}/> Submit Log</h4>
-               <textarea 
-                 value={commentText}
-                 onChange={(e) => setCommentText(e.target.value)}
-                 className="w-full bg-black border border-neutral-800 p-4 text-white focus:border-green-500 outline-none mb-4 font-mono text-sm"
-                 rows={3}
-                 placeholder="> Enter observation data..."
-               />
-               <button type="submit" className="bg-neutral-800 text-white px-6 py-2 text-xs font-mono uppercase hover:bg-white hover:text-black transition-colors">
-                 Upload Entry
-               </button>
-             </form>
-
-             {/* Review List */}
-             <div className="space-y-4">
-               {reviews.map((review, i) => (
-                 <div key={i} className="border-b border-neutral-800 pb-6 last:border-0">
-                   <div className="flex items-center justify-between mb-2">
-                     <p className="font-bold text-white font-mono text-sm">{review.user}</p>
-                     <div className="flex text-green-500">
-                        {[...Array(review.rating)].map((_, j) => <Star key={j} size={10} fill="currentColor"/>)}
-                     </div>
-                   </div>
-                   <p className="text-neutral-400 text-sm font-mono">{review.text}</p>
-                 </div>
-               ))}
-             </div>
-
-           </div>
-        </div>
-
       </div>
     </div>
   );

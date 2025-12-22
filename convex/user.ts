@@ -52,6 +52,7 @@ export const updateUser = mutation({
         name: args.name,
         phone: args.phone,
         addresses: args.addresses,
+        category: "customer",
       });
     }
   },
