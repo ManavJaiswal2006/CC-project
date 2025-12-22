@@ -9,7 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { Search, ShoppingCart, User, Menu, X, LogIn } from "lucide-react";
 import { navlinks } from "@/constants/home";
 import { logoImg } from "@/constants";
-import SearchModal from "./search";
+// import SearchModal from "./search";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useCart } from "@/app/context/CartContext";
@@ -191,19 +191,19 @@ const Navbar = () => {
 
           {/* Right Icons */}
           <div className="flex items-center space-x-4 sm:space-x-6 text-gray-700 z-20 ml-auto">
-            <SearchModal />
+            {/* <SearchModal /> */}
             <AuthButton user={user} loading={loading} />
             <CartIcon count={cartCount} />
           </div>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex justify-center pb-4 pt-2">
+        <nav className="hidden md:flex justify-center pt-2">
           <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-semibold tracking-wider text-gray-700 uppercase">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
-                <li key={link.name} className="group relative">
+                <li key={link.name} className="group relative text-sm">
                   <Link
                     href={link.href}
                     className={`py-2 transition-colors hover:text-gray-900 block ${

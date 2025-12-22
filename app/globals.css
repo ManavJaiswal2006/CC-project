@@ -13,3 +13,13 @@
     display: none;
   }
 }
+
+input {
+  caret-color: #000000;
+  color: #000000;
+}
+
+textarea {
+  caret-color: #000000;
+  color: #000000;
+}

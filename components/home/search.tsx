@@ -28,12 +28,11 @@ export default function SearchModal() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const router = useRouter();
 
-  /* ---------- Load history safely ---------- */
+  /* ---------- Load history ---------- */
   useEffect(() => {
     try {
       const saved = localStorage.getItem(HISTORY_KEY);
       if (!saved) return;
-
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) setHistory(parsed);
     } catch {
@@ -49,11 +48,11 @@ export default function SearchModal() {
     return () => clearTimeout(t);
   }, [query]);
 
-  /* ---------- Convex Product Search ---------- */
-  const products =
-    debounced.length >= 2
-      ? useQuery(api.product.search, { q: debounced })
-      : [];
+  /* ---------- Convex Product Search (FIXED) ---------- */
+  const products = useQuery(
+    api.product.search,
+    debounced.length >= 2 ? { q: debounced } : "skip"
+  );
 
   /* ---------- Static Page Search ---------- */
   const pages = useMemo(() => {
@@ -64,7 +63,10 @@ export default function SearchModal() {
     );
   }, [debounced]);
 
-  const results = [...(products ?? []), ...pages].slice(0, 8);
+  const results = useMemo(
+    () => [...(products ?? []), ...pages].slice(0, 8),
+    [products, pages]
+  );
 
   /* ---------- Navigation ---------- */
   const handleNavigate = (item: HistoryItem) => {
@@ -96,7 +98,8 @@ export default function SearchModal() {
 
       <ModalBody className="bg-white border max-w-2xl">
         <ModalContent className="!p-0">
-          {/* Input */}
+
+          {/* INPUT */}
           <div className="p-8 border-b flex items-center gap-6">
             <Search size={24} className="text-zinc-400" />
             <input
@@ -104,7 +107,7 @@ export default function SearchModal() {
               maxLength={MAX_QUERY}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products or pages..."
-              className="w-full text-4xl font-black uppercase bg-transparent outline-none"
+              className="w-full text-4xl font-black uppercase bg-transparent outline-none text-black placeholder-zinc-300"
               autoFocus
             />
             {query && (
@@ -114,35 +117,33 @@ export default function SearchModal() {
             )}
           </div>
 
-          {/* Results */}
+          {/* RESULTS */}
           <div className="p-8 min-h-[350px] overflow-y-auto">
             {debounced.length >= 2 ? (
               <>
                 {results.map((item: any) =>
                   "name" in item ? (
-                    /* Product */
                     <button
-                      key={item.id}
+                      key={item._id}
                       onClick={() =>
                         handleNavigate({
                           title: item.name,
-                          href: `/shop/${item.id}`,
+                          href: `/shop/${item._id}`,
                         })
                       }
                       className="w-full p-4 border mb-2 flex justify-between items-center hover:border-red-600"
                     >
                       <div>
-                        <h3 className="font-black uppercase">
+                        <h3 className="font-black uppercase text-black">
                           {item.name}
                         </h3>
-                        <p className="text-xs text-zinc-400 uppercase">
+                        <p className="text-xs text-zinc-500 uppercase">
                           Product · {item.category}
                         </p>
                       </div>
                       <Package size={16} />
                     </button>
                   ) : (
-                    /* Page */
                     <button
                       key={item.id}
                       onClick={() =>
@@ -153,7 +154,9 @@ export default function SearchModal() {
                       }
                       className="w-full p-4 border mb-2 flex justify-between items-center"
                     >
-                      <h3 className="font-black uppercase">{item.title}</h3>
+                      <h3 className="font-black uppercase text-black">
+                        {item.title}
+                      </h3>
                       <ArrowRight size={16} />
                     </button>
                   )
@@ -168,7 +171,7 @@ export default function SearchModal() {
             ) : (
               <>
                 <div className="flex justify-between mb-4">
-                  <p className="text-xs flex items-center gap-2">
+                  <p className="text-xs flex items-center gap-2 text-zinc-600">
                     <History size={12} /> Recent Searches
                   </p>
                   {history.length > 0 && (
@@ -185,7 +188,7 @@ export default function SearchModal() {
                   <button
                     key={i}
                     onClick={() => handleNavigate(h)}
-                    className="block w-full text-left py-2 hover:text-red-600"
+                    className="block w-full text-left py-2 text-black hover:text-red-600"
                   >
                     {h.title}
                   </button>

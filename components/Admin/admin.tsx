@@ -107,7 +107,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50 px-8 py-16">
       <div className="max-w-6xl mx-auto">
 
-        <h1 className="text-3xl font-bold uppercase mb-12">
+        <h1 className="text-3xl text-black font-bold uppercase mb-12">
           Admin Panel
         </h1>
 
@@ -192,20 +192,20 @@ export default function AdminPage() {
             <div className="flex gap-4">
               <button
                 onClick={() => setMode("single")}
-                className={`px-4 py-2 border ${
+                className={`px-4 py-2 cursor-pointer border ${
                   mode === "single"
                     ? "bg-black text-white"
-                    : ""
+                    : "border-black text-black"
                 }`}
               >
                 Single Price
               </button>
               <button
                 onClick={() => setMode("sizes")}
-                className={`px-4 py-2 border ${
+                className={`px-4 py-2 cursor-pointer border ${
                   mode === "sizes"
                     ? "bg-black text-white"
-                    : ""
+                    : "border-black text-black"
                 }`}
               >
                 Size Based
@@ -285,7 +285,7 @@ export default function AdminPage() {
                     ],
                   })
                 }
-                className="text-sm underline"
+                className="text-sm underline text-black"
               >
                 + Add Size
               </button>
@@ -297,6 +297,7 @@ export default function AdminPage() {
             <label className="label">Product Image</label>
             <input
               type="file"
+              className="border-black border px-3 py-1"
               ref={imageRef}
               onChange={(e) =>
                 setForm({
@@ -317,7 +318,7 @@ export default function AdminPage() {
         </div>
 
         {/* ================= PRODUCT LIST ================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 text-black">
           {products.map((p) => (
             <div
               key={p._id}
