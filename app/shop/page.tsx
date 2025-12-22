@@ -16,7 +16,7 @@ export default function ShopPage() {
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
 
-  /* ================= TRANSFORM PRODUCTS ================= */
+  /* ================= TRANSFORM ================= */
   const products = useMemo(() => {
     if (!rawProducts) return [];
 
@@ -24,10 +24,16 @@ export default function ShopPage() {
       const sizes = p.sizes ?? [];
       const hasSizes = sizes.length > 0;
 
-      // Always return a NUMBER (important for TS + sorting)
-      const displayPrice: number = hasSizes
+      // Base price = min size OR single price
+      const basePrice: number = hasSizes
         ? Math.min(...sizes.map((s) => s.price))
         : p.price ?? 0;
+
+      // Discounted price
+      const finalPrice =
+        p.discount > 0
+          ? Math.round(basePrice - (basePrice * p.discount) / 100)
+          : basePrice;
 
       return {
         id: p._id,
@@ -36,7 +42,10 @@ export default function ShopPage() {
         image: p.imageUrl,
         inStock: !p.soldOut,
 
-        price: displayPrice,
+        basePrice,
+        finalPrice,
+        discount: p.discount,
+
         hasSizes,
         sizesCount: sizes.length,
       };
@@ -55,8 +64,8 @@ export default function ShopPage() {
         return matchesSearch && matchesCategory;
       })
       .sort((a, b) => {
-        if (sortBy === "price-low") return a.price - b.price;
-        if (sortBy === "price-high") return b.price - a.price;
+        if (sortBy === "price-low") return a.finalPrice - b.finalPrice;
+        if (sortBy === "price-high") return b.finalPrice - a.finalPrice;
         return 0;
       });
   }, [products, search, category, sortBy]);
@@ -110,7 +119,6 @@ export default function ShopPage() {
             </h3>
 
             <div className="space-y-1">
-              {/* ALL */}
               <button
                 onClick={() => setCategory("All")}
                 className={`block w-full text-left px-4 py-2 rounded-lg text-sm ${
@@ -122,7 +130,6 @@ export default function ShopPage() {
                 All
               </button>
 
-              {/* DYNAMIC */}
               {categories.map((cat) => (
                 <button
                   key={cat}
@@ -140,7 +147,7 @@ export default function ShopPage() {
           </div>
         </aside>
 
-        {/* ================= MAIN ================= */}
+        {/* ================= GRID ================= */}
         <main className="flex-1">
 
           {/* SORT BAR */}
@@ -166,14 +173,21 @@ export default function ShopPage() {
             </div>
           )}
 
-          {/* GRID */}
+          {/* PRODUCT GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <Link
                 href={`/shop/${product.id}`}
                 key={product.id}
-                className="group bg-white rounded-xl border border-gray-200 hover:shadow-xl transition-all overflow-hidden flex flex-col"
+                className="group relative bg-white rounded-xl border border-gray-200 hover:shadow-xl transition-all overflow-hidden flex flex-col"
               >
+                {/* DISCOUNT BADGE */}
+                {product.discount > 0 && (
+                  <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
+                    -{product.discount}% OFF
+                  </div>
+                )}
+
                 {/* IMAGE */}
                 <div className="h-64 bg-gray-50 flex items-center justify-center p-6">
                   {product.image ? (
@@ -201,9 +215,15 @@ export default function ShopPage() {
 
                   <div className="mt-auto flex justify-between items-center pt-4 border-t">
                     <div>
+                      {product.discount > 0 && (
+                        <span className="text-xs text-gray-400 line-through mr-2">
+                          ₹{product.basePrice}
+                        </span>
+                      )}
                       <span className="text-xl font-bold">
-                        ₹{product.price}
+                        ₹{product.finalPrice}
                       </span>
+
                       {product.hasSizes && (
                         <p className="text-[10px] text-gray-400">
                           From {product.sizesCount} sizes
