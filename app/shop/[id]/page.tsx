@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -15,6 +15,22 @@ export default function ProductPage() {
   const product = useQuery(api.product.getProduct, {
     id: id as any,
   });
+
+  /* ================= STATE (MUST BE TOP LEVEL) ================= */
+  const [selectedSize, setSelectedSize] = useState<{
+    label: string;
+    value: string;
+    price: number;
+  } | null>(null);
+
+  /* ================= EFFECT ================= */
+  useEffect(() => {
+    if (product?.sizes && product.sizes.length > 0) {
+      setSelectedSize(product.sizes[0]);
+    } else {
+      setSelectedSize(null);
+    }
+  }, [product]);
 
   /* ================= LOADING / ERROR ================= */
   if (product === undefined) {
@@ -37,17 +53,11 @@ export default function ProductPage() {
   const sizes = product.sizes ?? [];
   const hasSizes = sizes.length > 0;
 
-  const [selectedSize, setSelectedSize] = useState<
-    (typeof sizes)[number] | null
-  >(hasSizes ? sizes[0] : null);
-
   /* ================= PRICE LOGIC ================= */
-  // Base price = selected size OR single price
   const basePrice: number = hasSizes
     ? selectedSize?.price ?? 0
     : product.price ?? 0;
 
-  // Discounted price
   const finalPrice: number =
     product.discount > 0
       ? Math.round(basePrice - (basePrice * product.discount) / 100)
@@ -58,7 +68,6 @@ export default function ProductPage() {
     <div className="min-h-screen bg-white text-gray-900 px-6 py-20">
       <div className="max-w-6xl mx-auto">
 
-        {/* ================= TOP SECTION ================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
           {/* IMAGE */}
@@ -116,10 +125,6 @@ export default function ProductPage() {
                   You save {product.discount}%
                 </p>
               )}
-
-              <p className="text-xs text-gray-400 mt-1">
-                Inclusive of all taxes
-              </p>
             </div>
 
             {/* SIZE SELECTOR */}
@@ -178,13 +183,12 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* ================= DETAILED DESCRIPTION ================= */}
+        {/* DETAILED DESCRIPTION */}
         {product.details && (
           <div className="mt-20 border-t pt-12 max-w-4xl">
             <h2 className="text-xl font-bold uppercase tracking-wide mb-6">
               Product Details
             </h2>
-
             <div className="text-gray-600 leading-relaxed whitespace-pre-line">
               {product.details}
             </div>
