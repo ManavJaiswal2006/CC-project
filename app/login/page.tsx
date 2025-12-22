@@ -1,17 +1,15 @@
 "use client";
-import React, { useState } from "react";
-import {
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
+
+import React, { useState, Suspense } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Chrome } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react"; // Added Loader2 for the spinner
 import { auth } from "../lib/firebase";
 import AuthLayout from "@/components/auth/Authlayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthbutton";
 
-export default function LoginPage() {
+// 1. Create a sub-component for the logic
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +19,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/product"); // Where elite members go
+      router.push("/product");
     } catch (err: any) {
       setError("Invalid credentials. Please try again.");
     }
@@ -38,7 +36,7 @@ export default function LoginPage() {
             type="email"
             required
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent"
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="member@bourgon.com"
           />
         </div>
@@ -50,7 +48,7 @@ export default function LoginPage() {
             type="password"
             required
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent"
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="••••••••"
           />
         </div>
@@ -76,5 +74,20 @@ export default function LoginPage() {
         <GoogleAuthButton />
       </div>
     </AuthLayout>
+  );
+}
+
+// 2. Export the Main Page wrapped in Suspense
+export default function LoginPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="h-screen w-full flex items-center justify-center bg-white">
+          <Loader2 className="animate-spin text-slate-900" size={32} />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

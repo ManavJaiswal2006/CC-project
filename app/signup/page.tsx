@@ -1,13 +1,15 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, Suspense } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Loader2 } from "lucide-react";
 import { auth } from "../lib/firebase";
 import AuthLayout from "@/components/auth/Authlayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthbutton";
 
-export default function SignUpPage() {
+// 1. Separate Logic into Sub-Component
+function SignUpContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,7 +44,8 @@ export default function SignUpPage() {
             type="email"
             required
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent"
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="newmember@bourgon.com"
           />
         </div>
         <div className="space-y-2">
@@ -53,7 +56,8 @@ export default function SignUpPage() {
             type="password"
             required
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent"
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="••••••••"
           />
         </div>
         <div className="space-y-2">
@@ -64,7 +68,8 @@ export default function SignUpPage() {
             type="password"
             required
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent"
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="••••••••"
           />
         </div>
         {error && (
@@ -89,5 +94,20 @@ export default function SignUpPage() {
         <GoogleAuthButton />
       </div>
     </AuthLayout>
+  );
+}
+
+// 2. Export Main Page with Suspense Wrapper
+export default function SignUpPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="h-screen w-full flex items-center justify-center bg-white">
+          <Loader2 className="animate-spin text-slate-900" size={32} />
+        </div>
+      }
+    >
+      <SignUpContent />
+    </Suspense>
   );
 }

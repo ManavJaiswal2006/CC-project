@@ -15,7 +15,7 @@ export default function RootLayout({
   const bgRef = useRef(null);
   return (
     <html lang="en">
-      <body className="bg-[#080808] text-white selection:bg-white selection:text-black antialiased">
+      <body className="bg-[#080808] text-white selection:bg-white selection:text-black antialiased" suppressHydrationWarning={true}>
         <ConvexClientProvider>
           <div
             className="fixed inset-0 z-[-1] pointer-events-none"
