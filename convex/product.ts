@@ -1,24 +1,37 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { Doc } from "./_generated/dataModel";
 
-/* ================= ADMIN CHECK ================= */
+/* =====================================================
+   ADMIN CHECK (HARDENED)
+===================================================== */
 async function checkAdmin(ctx: any) {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity) throw new Error("Unauthenticated");
+  if (!identity || !identity.email) {
+    throw new Error("Unauthenticated");
+  }
 
+  // ⚠️ Move this to env later if needed
   const ADMIN_EMAILS = ["2858.manav@gmail.com"];
+
   if (!ADMIN_EMAILS.includes(identity.email)) {
     throw new Error("Unauthorized");
   }
+
+  return identity;
 }
 
-/* ================= IMAGE UPLOAD ================= */
+/* =====================================================
+   IMAGE UPLOAD
+===================================================== */
 export const generateUploadUrl = mutation(async (ctx) => {
   await checkAdmin(ctx);
   return await ctx.storage.generateUploadUrl();
 });
 
-/* ================= CREATE PRODUCT ================= */
+/* =====================================================
+   CREATE PRODUCT
+===================================================== */
 export const createProduct = mutation({
   args: {
     name: v.string(),
@@ -47,19 +60,22 @@ export const createProduct = mutation({
   handler: async (ctx, args) => {
     await checkAdmin(ctx);
 
-    // prevent duplicate product names
+    // ❗ normalize name for duplicate check
+    const name = args.name.trim();
+
     const existing = await ctx.db
       .query("products")
-      .filter((q) => q.eq(q.field("name"), args.name))
+      .filter((q) => q.eq(q.field("name"), name))
       .first();
 
     if (existing) {
       throw new Error("Product already exists");
     }
 
-    // safety: normalize empty sizes
+    // normalize sizes
     const product = {
       ...args,
+      name,
       sizes:
         Array.isArray(args.sizes) && args.sizes.length > 0
           ? args.sizes
@@ -70,13 +86,16 @@ export const createProduct = mutation({
   },
 });
 
-/* ================= UPDATE PRODUCT ================= */
+/* =====================================================
+   UPDATE PRODUCT
+===================================================== */
 export const updateProduct = mutation({
   args: {
     id: v.id("products"),
 
     name: v.string(),
     description: v.string(),
+    details: v.optional(v.string()),
     category: v.string(),
     soldOut: v.boolean(),
     discount: v.number(),
@@ -99,6 +118,7 @@ export const updateProduct = mutation({
 
     const normalized = {
       ...updates,
+      name: updates.name.trim(),
       sizes:
         Array.isArray(updates.sizes) && updates.sizes.length > 0
           ? updates.sizes
@@ -109,16 +129,20 @@ export const updateProduct = mutation({
   },
 });
 
-/* ================= DELETE PRODUCT ================= */
+/* =====================================================
+   DELETE PRODUCT
+===================================================== */
 export const deleteProduct = mutation({
   args: { id: v.id("products") },
-  handler: async (ctx, args) => {
+  handler: async (ctx, { id }) => {
     await checkAdmin(ctx);
-    await ctx.db.delete(args.id);
+    await ctx.db.delete(id);
   },
 });
 
-/* ================= GET ALL PRODUCTS ================= */
+/* =====================================================
+   GET ALL PRODUCTS (ADMIN / SHOP LIST)
+===================================================== */
 export const getAllProducts = query({
   args: {},
   handler: async (ctx) => {
@@ -135,11 +159,13 @@ export const getAllProducts = query({
   },
 });
 
-/* ================= GET SINGLE PRODUCT ================= */
+/* =====================================================
+   GET SINGLE PRODUCT (PUBLIC)
+===================================================== */
 export const getProduct = query({
   args: { id: v.id("products") },
-  handler: async (ctx, args) => {
-    const product = await ctx.db.get(args.id);
+  handler: async (ctx, { id }) => {
+    const product = await ctx.db.get(id);
     if (!product) return null;
 
     const imageUrl = product.storageId
@@ -150,18 +176,47 @@ export const getProduct = query({
   },
 });
 
+/* =====================================================
+   SEARCH PRODUCTS (🔥 NEW 🔥)
+===================================================== */
+export const search = query({
+  args: {
+    q: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { q, limit = 6 }) => {
+    const text = q.trim();
+    if (text.length < 2) return [];
+
+    const products = await ctx.db
+      .query("products")
+      .withSearchIndex("search_products", (qIndex) =>
+        qIndex.search("name", text)
+      )
+      .filter((qf) => qf.eq(qf.field("soldOut"), false))
+      .take(limit);
+
+    return products.map((p: Doc<"products">) => ({
+      id: p._id,
+      name: p.name,
+      category: p.category,
+      price: p.price ?? null,
+      hasSizes: Boolean(p.sizes?.length),
+    }));
+  },
+});
+
+/* =====================================================
+   GET UNIQUE CATEGORIES
+===================================================== */
 export const getCategories = query({
   args: {},
   handler: async (ctx) => {
     const products = await ctx.db.query("products").collect();
 
-    // Extract unique categories
     const categories = Array.from(
       new Set(products.map((p) => p.category).filter(Boolean))
-    );
-
-    // Sort for clean UI
-    categories.sort((a, b) => a.localeCompare(b));
+    ).sort((a, b) => a.localeCompare(b));
 
     return categories;
   },

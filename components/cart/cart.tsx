@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Minus,
   Plus,
@@ -9,6 +10,7 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 
 export default function CartPage() {
@@ -19,6 +21,8 @@ export default function CartPage() {
     clearCart,
     cartTotal,
   } = useCart();
+
+  const [confirmClear, setConfirmClear] = useState(false);
 
   /* ================= EMPTY STATE ================= */
   if (cart.length === 0) {
@@ -41,6 +45,16 @@ export default function CartPage() {
     );
   }
 
+  /* ================= TOTALS (UI ONLY) ================= */
+  const gst = useMemo(
+    () => Math.round(cartTotal * 0.18),
+    [cartTotal]
+  );
+  const grandTotal = useMemo(
+    () => cartTotal + gst,
+    [cartTotal, gst]
+  );
+
   /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-white text-gray-900 pt-28 pb-20">
@@ -59,19 +73,35 @@ export default function CartPage() {
             </h1>
           </div>
 
-          <button
-            onClick={clearCart}
-            className="text-[10px] font-black uppercase tracking-widest text-red-600 hover:underline"
-          >
-            Clear Cart
-          </button>
+          {!confirmClear ? (
+            <button
+              onClick={() => setConfirmClear(true)}
+              className="text-[10px] font-black uppercase tracking-widest text-red-600 hover:underline"
+            >
+              Clear Cart
+            </button>
+          ) : (
+            <div className="flex gap-4">
+              <button
+                onClick={clearCart}
+                className="text-[10px] font-black uppercase tracking-widest text-red-600"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => setConfirmClear(false)}
+                className="text-[10px] uppercase tracking-widest text-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
 
           {/* ================= CART ITEMS ================= */}
           <div className="lg:col-span-8 divide-y">
-
             {cart.map((item) => (
               <div
                 key={`${item.id}-${item.size}`}
@@ -80,10 +110,12 @@ export default function CartPage() {
                 {/* IMAGE */}
                 <div className="w-32 h-32 bg-gray-50 flex items-center justify-center overflow-hidden">
                   {item.image ? (
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
-                      className="w-3/4 h-3/4 object-contain group-hover:scale-110 transition-transform"
+                      width={120}
+                      height={120}
+                      className="object-contain group-hover:scale-110 transition-transform"
                     />
                   ) : (
                     <div className="text-xs text-gray-300 font-bold">
@@ -121,7 +153,7 @@ export default function CartPage() {
                     </button>
                   </div>
 
-                  {/* PRICE */}
+                  {/* PRICE + QTY */}
                   <div className="flex justify-between items-center mt-6">
 
                     <div>
@@ -138,6 +170,7 @@ export default function CartPage() {
                     {/* QUANTITY */}
                     <div className="flex items-center border">
                       <button
+                        disabled={item.quantity <= 1}
                         onClick={() =>
                           updateQuantity(
                             item.id,
@@ -145,7 +178,7 @@ export default function CartPage() {
                             item.quantity - 1
                           )
                         }
-                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-600"
+                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-600 disabled:opacity-30"
                       >
                         <Minus size={12} />
                       </button>
@@ -172,7 +205,6 @@ export default function CartPage() {
                 </div>
               </div>
             ))}
-
           </div>
 
           {/* ================= SUMMARY ================= */}
@@ -186,9 +218,7 @@ export default function CartPage() {
               <div className="space-y-5 text-[11px] font-bold uppercase tracking-widest mb-10">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="text-gray-900">
-                    ₹{cartTotal}
-                  </span>
+                  <span>₹{cartTotal}</span>
                 </div>
 
                 <div className="flex justify-between">
@@ -198,9 +228,7 @@ export default function CartPage() {
 
                 <div className="flex justify-between">
                   <span>GST (18%)</span>
-                  <span>
-                    ₹{Math.round(cartTotal * 0.18)}
-                  </span>
+                  <span>₹{gst}</span>
                 </div>
               </div>
 
@@ -210,15 +238,25 @@ export default function CartPage() {
                     Total
                   </span>
                   <span className="text-2xl font-bold">
-                    ₹{Math.round(cartTotal * 1.18)}
+                    ₹{grandTotal}
                   </span>
                 </div>
               </div>
 
-              <button className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 transition-all">
+              <button
+                onClick={() => {
+                  // TODO: route to checkout
+                  console.warn("Proceed to checkout");
+                }}
+                className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 transition-all"
+              >
                 Proceed to Checkout
                 <ArrowRight size={14} />
               </button>
+
+              <p className="text-[10px] text-gray-400 mt-4 text-center">
+                Prices will be verified at checkout
+              </p>
 
             </div>
           </div>

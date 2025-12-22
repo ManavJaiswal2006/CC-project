@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ShoppingBag, Check } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
+import Image from "next/image";
+
+type Size = {
+  label: string;
+  value: string;
+  price: number;
+};
 
 export default function ProductPage() {
   /* ================= PARAM ================= */
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = useParams<{ id: string }>();
 
   /* ================= DATA ================= */
   const product = useQuery(api.product.getProduct, {
@@ -20,21 +26,47 @@ export default function ProductPage() {
   /* ================= CART ================= */
   const { addToCart } = useCart();
 
-  /* ================= STATE (HOOKS AT TOP LEVEL) ================= */
-  const [selectedSize, setSelectedSize] = useState<{
-    label: string;
-    value: string;
-    price: number;
-  } | null>(null);
+  /* ================= STATE ================= */
+  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+  const initializedRef = useRef(false);
 
   /* ================= INIT SIZE ================= */
   useEffect(() => {
-    if (product?.sizes && product.sizes.length > 0) {
+    if (!product || initializedRef.current) return;
+
+    if (product.sizes && product.sizes.length > 0) {
       setSelectedSize(product.sizes[0]);
-    } else {
-      setSelectedSize(null);
     }
+
+    initializedRef.current = true;
   }, [product]);
+
+  /* ================= NORMALIZATION (SAFE) ================= */
+  const sizes = product?.sizes ?? [];
+  const hasSizes = sizes.length > 0;
+
+  /* ================= PRICE (HOOKS MUST BE HERE) ================= */
+  const basePrice = useMemo(() => {
+    if (!product) return null;
+    if (hasSizes) return selectedSize?.price ?? null;
+    return product.price ?? null;
+  }, [product, hasSizes, selectedSize]);
+
+  const finalPrice = useMemo(() => {
+    if (!product || basePrice == null) return null;
+    if (product.discount > 0) {
+      return Math.round(
+        basePrice - (basePrice * product.discount) / 100
+      );
+    }
+    return basePrice;
+  }, [product, basePrice]);
+
+  const canAddToCart =
+    !!product &&
+    !product.soldOut &&
+    basePrice !== null &&
+    (!hasSizes || selectedSize !== null);
 
   /* ================= LOADING ================= */
   if (product === undefined) {
@@ -53,31 +85,19 @@ export default function ProductPage() {
     );
   }
 
-  /* ================= NORMALIZE ================= */
-  const sizes = product.sizes ?? [];
-  const hasSizes = sizes.length > 0;
-
-  /* ================= PRICE LOGIC ================= */
-  const basePrice: number = hasSizes
-    ? selectedSize?.price ?? 0
-    : product.price ?? 0;
-
-  const finalPrice: number =
-    product.discount > 0
-      ? Math.round(basePrice - (basePrice * product.discount) / 100)
-      : basePrice;
-
   /* ================= ADD TO CART ================= */
   const handleAddToCart = () => {
+    if (!canAddToCart || finalPrice == null || basePrice == null) return;
+
     addToCart(
       {
         id: product._id,
         name: product.name,
         image: product.imageUrl ?? "",
         category: product.category,
-
         size: selectedSize?.label ?? null,
 
+        // ⚠️ UI ONLY — server must revalidate
         basePrice,
         price: finalPrice,
         discount: product.discount,
@@ -91,16 +111,18 @@ export default function ProductPage() {
     <div className="min-h-screen bg-white text-gray-900 px-6 py-20">
       <div className="max-w-6xl mx-auto">
 
-        {/* ================= TOP ================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
           {/* IMAGE */}
           <div className="bg-gray-50 flex items-center justify-center p-12">
             {product.imageUrl ? (
-              <img
+              <Image
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-full object-contain"
+                width={600}
+                height={600}
+                className="object-contain"
+                priority
               />
             ) : (
               <div className="text-6xl text-gray-300 font-bold">
@@ -112,7 +134,6 @@ export default function ProductPage() {
           {/* DETAILS */}
           <div className="space-y-8">
 
-            {/* TITLE */}
             <div>
               <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest mb-2">
                 {product.category}
@@ -122,7 +143,6 @@ export default function ProductPage() {
               </h1>
             </div>
 
-            {/* SHORT DESCRIPTION */}
             <p className="text-gray-500 leading-relaxed max-w-xl">
               {product.description}
             </p>
@@ -134,25 +154,17 @@ export default function ProductPage() {
               </p>
 
               <div className="flex items-end gap-4">
-                {product.discount > 0 && (
+                {product.discount > 0 && basePrice !== null && (
                   <span className="text-lg text-gray-400 line-through">
                     ₹{basePrice}
                   </span>
                 )}
-                <span className="text-3xl font-bold">
-                  ₹{finalPrice}
-                </span>
+                {finalPrice !== null && (
+                  <span className="text-3xl font-bold">
+                    ₹{finalPrice}
+                  </span>
+                )}
               </div>
-
-              {product.discount > 0 && (
-                <p className="text-xs text-green-600 font-bold mt-1">
-                  You save {product.discount}%
-                </p>
-              )}
-
-              <p className="text-xs text-gray-400 mt-1">
-                Inclusive of all taxes
-              </p>
             </div>
 
             {/* SIZE SELECTOR */}
@@ -163,39 +175,36 @@ export default function ProductPage() {
                 </p>
 
                 <div className="flex flex-wrap gap-3">
-                  {sizes.map((s) => {
-                    const active =
-                      selectedSize?.value === s.value;
-
-                    return (
-                      <button
-                        key={s.value}
-                        onClick={() => setSelectedSize(s)}
-                        className={`px-5 py-3 border text-sm font-bold transition ${
-                          active
-                            ? "border-black bg-black text-white"
-                            : "border-gray-300 hover:border-black"
-                        }`}
-                      >
-                        {s.label}
-                      </button>
-                    );
-                  })}
+                  {sizes.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => setSelectedSize(s)}
+                      className={`px-5 py-3 border text-sm font-bold transition ${
+                        selectedSize?.value === s.value
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 hover:border-black"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
 
             {/* ADD TO CART */}
-            <div className="pt-6 border-t">
-              <button
-                disabled={product.soldOut}
-                onClick={handleAddToCart}
-                className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 transition-all disabled:bg-gray-300"
-              >
-                <ShoppingBag size={16} />
-                {product.soldOut ? "Out of Stock" : "Add to Cart"}
-              </button>
-            </div>
+            <button
+              disabled={!canAddToCart}
+              onClick={handleAddToCart}
+              className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <ShoppingBag size={16} />
+              {product.soldOut
+                ? "Out of Stock"
+                : hasSizes && !selectedSize
+                ? "Select Size"
+                : "Add to Cart"}
+            </button>
 
             {/* TRUST */}
             <div className="pt-6 space-y-2 text-sm text-gray-500">
@@ -213,13 +222,12 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* ================= DETAILS SECTION ================= */}
         {product.details && (
           <div className="mt-20 border-t pt-12 max-w-4xl">
             <h2 className="text-xl font-bold uppercase tracking-wide mb-6">
               Product Details
             </h2>
-            <div className="text-gray-600 leading-relaxed whitespace-pre-line">
+            <div className="text-gray-600 whitespace-pre-line">
               {product.details}
             </div>
           </div>

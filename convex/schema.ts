@@ -24,7 +24,7 @@ export default defineSchema({
   orders: defineTable({
     userId: v.string(),
     orderId: v.string(),
-    items: v.any(), // cart snapshot (size-aware)
+    items: v.any(), // cart snapshot
     totalAmount: v.number(),
     status: v.string(),
     trackingNumber: v.optional(v.string()),
@@ -49,13 +49,18 @@ export default defineSchema({
     sizes: v.optional(
       v.array(
         v.object({
-          label: v.string(), // "22 CM"
-          value: v.string(), // "22"
-          price: v.number(), // 3385
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
         })
       )
     ),
-  }),
+  })
+    /* 🔥 SEARCH INDEX (FIXES YOUR ERROR) 🔥 */
+    .searchIndex("search_products", {
+      searchField: "name",
+      filterFields: ["category", "soldOut"],
+    }),
 
   /* ================= PROMOS ================= */
   promos: defineTable({

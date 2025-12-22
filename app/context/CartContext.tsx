@@ -5,12 +5,19 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
+  useRef,
 } from "react";
+
+/* ================= CONSTANTS ================= */
+
+const STORAGE_KEY = "bourgon_cart";
+const MAX_QTY_PER_ITEM = 10;
 
 /* ================= TYPES ================= */
 
 export interface CartItem {
-  id: string;            // Product ID
+  id: string; // product id
   name: string;
   image: string;
   category?: string;
@@ -18,9 +25,9 @@ export interface CartItem {
   // Variant
   size?: string | null;
 
-  // Pricing
-  basePrice: number;     // MRP
-  price: number;         // Final (discounted)
+  // Pricing (⚠️ UI ONLY — server recalculates)
+  basePrice: number;
+  price: number;
   discount: number;
 
   quantity: number;
@@ -42,37 +49,46 @@ interface CartContextType {
 
 /* ================= CONTEXT ================= */
 
-const CartContext = createContext<CartContextType | undefined>(
-  undefined
-);
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
 /* ================= PROVIDER ================= */
 
-export function CartProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const hydratedRef = useRef(false);
 
-  /* ---------- Load from localStorage ---------- */
+  /* ---------- Load from localStorage (SAFE) ---------- */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const saved = localStorage.getItem("bourgon_cart");
-    if (saved) {
-      try {
-        setCart(JSON.parse(saved));
-      } catch {
-        console.error("Failed to parse cart");
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        hydratedRef.current = true;
+        return;
       }
+
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        setCart(
+          parsed.filter(
+            (i) =>
+              typeof i?.id === "string" &&
+              typeof i?.name === "string" &&
+              typeof i?.price === "number" &&
+              typeof i?.quantity === "number"
+          )
+        );
+      }
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      hydratedRef.current = true;
     }
   }, []);
 
   /* ---------- Persist to localStorage ---------- */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem("bourgon_cart", JSON.stringify(cart));
+    if (!hydratedRef.current) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
   }, [cart]);
 
   /* ================= ACTIONS ================= */
@@ -81,6 +97,8 @@ export function CartProvider({
     item: Omit<CartItem, "quantity">,
     quantity = 1
   ) => {
+    const safeQty = Math.min(Math.max(quantity, 1), MAX_QTY_PER_ITEM);
+
     setCart((prev) => {
       const existing = prev.find(
         (p) => p.id === item.id && p.size === item.size
@@ -89,12 +107,24 @@ export function CartProvider({
       if (existing) {
         return prev.map((p) =>
           p.id === item.id && p.size === item.size
-            ? { ...p, quantity: p.quantity + quantity }
+            ? {
+                ...p,
+                quantity: Math.min(
+                  p.quantity + safeQty,
+                  MAX_QTY_PER_ITEM
+                ),
+              }
             : p
         );
       }
 
-      return [...prev, { ...item, quantity }];
+      return [
+        ...prev,
+        {
+          ...item,
+          quantity: safeQty,
+        },
+      ];
     });
   };
 
@@ -109,12 +139,12 @@ export function CartProvider({
     size: string | null | undefined,
     quantity: number
   ) => {
-    if (quantity < 1) return;
+    const safeQty = Math.min(Math.max(quantity, 1), MAX_QTY_PER_ITEM);
 
     setCart((prev) =>
       prev.map((p) =>
         p.id === id && p.size === size
-          ? { ...p, quantity }
+          ? { ...p, quantity: safeQty }
           : p
       )
     );
@@ -122,16 +152,20 @@ export function CartProvider({
 
   const clearCart = () => setCart([]);
 
-  /* ================= TOTALS ================= */
+  /* ================= TOTALS (MEMOIZED) ================= */
 
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  const cartTotal = useMemo(
+    () =>
+      cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      ),
+    [cart]
   );
 
-  const cartCount = cart.reduce(
-    (sum, item) => sum + item.quantity,
-    0
+  const cartCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
   );
 
   /* ================= PROVIDER ================= */

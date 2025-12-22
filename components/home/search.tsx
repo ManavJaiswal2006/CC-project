@@ -1,67 +1,81 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import { Search, ArrowRight, History, X } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Search, ArrowRight, History, X, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Modal, ModalBody, ModalContent, ModalTrigger } from "../UI/modal";
 import { searchedItems } from "@/constants";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+/* ---------------- Types ---------------- */
 
 interface HistoryItem {
   title: string;
   href: string;
 }
 
+/* ---------------- Constants ---------------- */
+
+const HISTORY_KEY = "bourgon_search_history";
+const MAX_QUERY = 40;
+
+/* ---------------- Component ---------------- */
+
 export default function SearchModal() {
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const router = useRouter();
 
+  /* ---------- Load history safely ---------- */
   useEffect(() => {
-    const saved = localStorage.getItem("bourgon_search_history");
-    if (saved) {
-      try { setHistory(JSON.parse(saved)); } catch (e) { console.error(e); }
+    try {
+      const saved = localStorage.getItem(HISTORY_KEY);
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) setHistory(parsed);
+    } catch {
+      localStorage.removeItem(HISTORY_KEY);
     }
   }, []);
 
-  const results = useMemo(() => {
-    const searchStr = query.toLowerCase().trim();
-    if (searchStr.length < 2) return [];
-
-    const searchWords = searchStr.split(" ");
-
-    return searchedItems
-      .map((item) => {
-        const title = item.title.toLowerCase();
-        let score = 0;
-
-        // 1. Exact match (Highest Priority)
-        if (title === searchStr) score += 100;
-
-        // 2. Starts with query (High Priority)
-        if (title.startsWith(searchStr)) score += 50;
-
-        // 3. Keyword matching (Medium Priority)
-        // Checks how many words of the query exist in the title
-        const matches = searchWords.filter(word => title.includes(word));
-        score += matches.length * 10;
-
-        // 4. Consecutive sequence (Lower Priority)
-        if (title.includes(searchStr)) score += 5;
-
-        return { ...item, score };
-      })
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score) // Sort by highest score
-      .slice(0, 8); // Limit results for better UI
+  /* ---------- Debounce ---------- */
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebounced(query.trim());
+    }, 250);
+    return () => clearTimeout(t);
   }, [query]);
 
+  /* ---------- Convex Product Search ---------- */
+  const products =
+    debounced.length >= 2
+      ? useQuery(api.product.search, { q: debounced })
+      : [];
+
+  /* ---------- Static Page Search ---------- */
+  const pages = useMemo(() => {
+    if (debounced.length < 2) return [];
+
+    return searchedItems.filter((item) =>
+      item.title.toLowerCase().includes(debounced.toLowerCase())
+    );
+  }, [debounced]);
+
+  const results = [...(products ?? []), ...pages].slice(0, 8);
+
+  /* ---------- Navigation ---------- */
   const handleNavigate = (item: HistoryItem) => {
-    // Add to history
-    const newHistory = [item, ...history.filter((h) => h.href !== item.href)].slice(0, 5);
-    setHistory(newHistory);
-    localStorage.setItem("bourgon_search_history", JSON.stringify(newHistory));
-    
-    // Perform navigation (Modal usually closes on route change in most Modal implementations)
+    const next = [
+      item,
+      ...history.filter((h) => h.href !== item.href),
+    ].slice(0, 5);
+
+    setHistory(next);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+
     setQuery("");
     router.push(item.href);
   };
@@ -69,8 +83,10 @@ export default function SearchModal() {
   const clearHistory = (e: React.MouseEvent) => {
     e.stopPropagation();
     setHistory([]);
-    localStorage.removeItem("bourgon_search_history");
+    localStorage.removeItem(HISTORY_KEY);
   };
+
+  /* ---------------- JSX ---------------- */
 
   return (
     <Modal>
@@ -78,75 +94,103 @@ export default function SearchModal() {
         <Search size={22} strokeWidth={1.5} />
       </ModalTrigger>
 
-      <ModalBody className="bg-white border border-zinc-200 max-w-2xl">
+      <ModalBody className="bg-white border max-w-2xl">
         <ModalContent className="!p-0">
-          <div className="p-8 border-b border-zinc-100 flex items-center gap-6">
-            <Search className="text-zinc-400" size={24} />
+          {/* Input */}
+          <div className="p-8 border-b flex items-center gap-6">
+            <Search size={24} className="text-zinc-400" />
             <input
-              type="text"
               value={query}
+              maxLength={MAX_QUERY}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search catalog..."
-              className="w-full bg-transparent text-zinc-900 text-3xl md:text-5xl font-black uppercase tracking-tighter focus:outline-none placeholder:text-zinc-200"
+              placeholder="Search products or pages..."
+              className="w-full text-4xl font-black uppercase bg-transparent outline-none"
               autoFocus
             />
             {query && (
-              <button onClick={() => setQuery("")} className="hover:text-red-600 transition-colors">
+              <button onClick={() => setQuery("")}>
                 <X size={24} />
               </button>
             )}
           </div>
 
-          <div className="p-8 min-h-[400px] max-h-[70vh] bg-zinc-50/30 overflow-y-auto">
-            {query.length >= 2 ? (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center mb-4">
-                   <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Results found: {results.length}</p>
-                </div>
-                {results.map((res) => (
-                  <button
-                    key={res.id}
-                    onClick={() => handleNavigate({ title: res.title, href: res.href })}
-                    className="w-full group flex items-center justify-between p-4 bg-white border border-zinc-100 hover:border-red-600 transition-all text-left"
-                  >
-                    <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900">{res.title}</h3>
-                    <ArrowRight className="text-zinc-300 group-hover:text-red-600 group-hover:translate-x-1 transition-all" size={18} />
-                  </button>
-                ))}
-                {results.length === 0 && (
-                  <div className="py-20 text-center">
-                    <p className="text-zinc-400 text-sm">No results for "{query}"</p>
-                  </div>
+          {/* Results */}
+          <div className="p-8 min-h-[350px] overflow-y-auto">
+            {debounced.length >= 2 ? (
+              <>
+                {results.map((item: any) =>
+                  "name" in item ? (
+                    /* Product */
+                    <button
+                      key={item.id}
+                      onClick={() =>
+                        handleNavigate({
+                          title: item.name,
+                          href: `/shop/${item.id}`,
+                        })
+                      }
+                      className="w-full p-4 border mb-2 flex justify-between items-center hover:border-red-600"
+                    >
+                      <div>
+                        <h3 className="font-black uppercase">
+                          {item.name}
+                        </h3>
+                        <p className="text-xs text-zinc-400 uppercase">
+                          Product · {item.category}
+                        </p>
+                      </div>
+                      <Package size={16} />
+                    </button>
+                  ) : (
+                    /* Page */
+                    <button
+                      key={item.id}
+                      onClick={() =>
+                        handleNavigate({
+                          title: item.title,
+                          href: item.href,
+                        })
+                      }
+                      className="w-full p-4 border mb-2 flex justify-between items-center"
+                    >
+                      <h3 className="font-black uppercase">{item.title}</h3>
+                      <ArrowRight size={16} />
+                    </button>
+                  )
                 )}
-              </div>
+
+                {results.length === 0 && (
+                  <p className="text-center text-zinc-400 py-16">
+                    No results found
+                  </p>
+                )}
+              </>
             ) : (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold flex items-center gap-2">
+              <>
+                <div className="flex justify-between mb-4">
+                  <p className="text-xs flex items-center gap-2">
                     <History size={12} /> Recent Searches
                   </p>
                   {history.length > 0 && (
-                    <button onClick={clearHistory} className="text-[9px] uppercase tracking-widest text-red-600 font-bold hover:underline">
-                      Clear All
-                    </button>
-                  )}
-                </div>
-                
-                <div className="flex flex-col gap-3">
-                  {history.length > 0 ? history.map((item, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => handleNavigate(item)}
-                      className="text-left text-sm font-bold uppercase tracking-tight text-zinc-600 hover:text-red-600 transition-colors flex items-center justify-between group"
+                    <button
+                      onClick={clearHistory}
+                      className="text-xs text-red-600"
                     >
-                      {item.title}
-                      <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      Clear
                     </button>
-                  )) : (
-                    <p className="text-zinc-300 text-[10px] uppercase tracking-widest italic py-4">Your search history is empty</p>
                   )}
                 </div>
-              </div>
+
+                {history.map((h, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleNavigate(h)}
+                    className="block w-full text-left py-2 hover:text-red-600"
+                  >
+                    {h.title}
+                  </button>
+                ))}
+              </>
             )}
           </div>
         </ModalContent>
