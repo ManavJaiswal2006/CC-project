@@ -38,6 +38,11 @@ NEXT_PUBLIC_ADMIN_API_KEY=your_secure_random_string_here
 # Example: ADMIN_EMAILS=admin1@example.com,admin2@example.com
 ADMIN_EMAILS=your_admin_email@example.com
 
+# Client-side Admin Emails (REQUIRED for admin panel access on client)
+# Must be NEXT_PUBLIC_* for client-side access
+# Should match ADMIN_EMAILS
+NEXT_PUBLIC_ADMIN_EMAILS=your_admin_email@example.com
+
 # Google Analytics (OPTIONAL)
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 ```

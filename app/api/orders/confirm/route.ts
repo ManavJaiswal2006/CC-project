@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import { sendOrderStatusEmail } from "@/lib/emailNotifications";
 import { api } from "@/convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
+  let body: any = null;
+  
   try {
     const adminKey = req.headers.get("x-admin-key");
     if (!process.env.ADMIN_API_KEY || adminKey !== process.env.ADMIN_API_KEY) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    body = await req.json();
     const { orderId, customerEmail, customerName, status, trackingNumber } = body as {
       orderId: string;
       customerEmail?: string;
@@ -76,9 +79,17 @@ export async function POST(req: Request) {
     }, order.status);
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error("Order confirm email error", error);
-    return NextResponse.json({ success: false }, { status: 500 });
+  } catch (error: any) {
+    logger.error("Order confirm email error", error, {
+      orderId: body?.orderId || "unknown",
+    });
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: "Failed to send email notification. Please try again." 
+      }, 
+      { status: 500 }
+    );
   }
 }
 

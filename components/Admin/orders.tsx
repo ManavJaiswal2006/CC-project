@@ -135,12 +135,6 @@ export default function AdminOrdersPage() {
               >
                 Products
               </Link>
-              <Link
-                href="/admin2424/promos"
-                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-3 text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-black hover:text-white transition-colors whitespace-nowrap"
-              >
-                Promo Codes
-              </Link>
             </div>
           </div>
         </header>

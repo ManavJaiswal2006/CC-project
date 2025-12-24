@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { sanitizeString, validateEmail, validatePhone, escapeHtml } from "@/lib/validation";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -23,6 +24,8 @@ export async function POST(req: Request) {
     );
   }
 
+  let sanitizedEmail: string | undefined;
+  
   try {
     const { name, email, phone, company, location, message } = await req.json();
 
@@ -64,7 +67,7 @@ export async function POST(req: Request) {
 
     // Sanitize inputs
     const sanitizedName = sanitizeString(name, 200);
-    const sanitizedEmail = email.toLowerCase().trim();
+    sanitizedEmail = email.toLowerCase().trim();
     const sanitizedPhone = sanitizeString(phone, 15);
     const sanitizedCompany = company ? sanitizeString(company, 200) : "";
     const sanitizedLocation = sanitizeString(location, 200);
@@ -89,7 +92,7 @@ export async function POST(req: Request) {
     const mailOptions = {
       from: `"${escapeHtml(sanitizedName)}" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
-      replyTo: sanitizedEmail,
+      replyTo: sanitizedEmail!,
       subject: `New Distributor Application: ${escapeHtml(sanitizedName)}`,
       html: `
         <div style="font-family: 'Georgia', serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 40px; color: #1e293b;">
@@ -97,7 +100,7 @@ export async function POST(req: Request) {
           
           <div style="margin-top: 20px;">
             <p style="margin: 8px 0;"><strong>Name:</strong> ${escapeHtml(sanitizedName)}</p>
-            <p style="margin: 8px 0;"><strong>Email:</strong> ${escapeHtml(sanitizedEmail)}</p>
+            <p style="margin: 8px 0;"><strong>Email:</strong> ${escapeHtml(sanitizedEmail!)}</p>
             <p style="margin: 8px 0;"><strong>Phone:</strong> ${escapeHtml(sanitizedPhone)}</p>
             ${sanitizedCompany ? `<p style="margin: 8px 0;"><strong>Company:</strong> ${escapeHtml(sanitizedCompany)}</p>` : ''}
             <p style="margin: 8px 0;"><strong>Location:</strong> ${escapeHtml(sanitizedLocation)}</p>
@@ -119,7 +122,7 @@ export async function POST(req: Request) {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       await transporter.sendMail({
         from: `"Bourgon Industries" <${process.env.EMAIL_USER}>`,
-        to: sanitizedEmail,
+        to: sanitizedEmail!,
         subject: "Thank you for your distributor application",
         html: `
           <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 640px; margin: 0 auto; padding: 32px; border: 1px solid #e5e7eb;">
@@ -144,9 +147,17 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error("Distributor application error", error);
-    return NextResponse.json({ success: false }, { status: 500 });
+  } catch (error: any) {
+    logger.error("Distributor application error", error, {
+      email: sanitizedEmail || "unknown",
+    });
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: "Failed to submit application. Please try again later." 
+      }, 
+      { status: 500 }
+    );
   }
 }
 

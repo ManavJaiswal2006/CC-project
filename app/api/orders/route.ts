@@ -11,6 +11,7 @@ import {
 } from "@/lib/validation";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import { generateBillHTML } from "@/lib/billTemplate";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -32,8 +33,10 @@ export async function POST(req: Request) {
     );
   }
 
+  let body: any = null;
+  
   try {
-    const body = await req.json();
+    body = await req.json();
 
     const {
       userId,
@@ -244,9 +247,18 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, orderId }, { status: 200 });
-  } catch (error) {
-    console.error("Order API error", error);
-    return NextResponse.json({ success: false }, { status: 500 });
+  } catch (error: any) {
+    logger.error("Order API error", error, {
+      userId: body?.userId,
+      paymentMethod: body?.paymentMethod,
+    });
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: "Failed to create order. Please try again or contact support." 
+      }, 
+      { status: 500 }
+    );
   }
 }
 

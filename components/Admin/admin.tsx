@@ -129,20 +129,6 @@ export default function AdminPage() {
           <h1 className="text-3xl text-black font-bold uppercase">
             Admin Panel
           </h1>
-          <div className="flex gap-3">
-            <Link
-              href="/admin2424/promos"
-              className="inline-flex items-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-black hover:text-white transition-colors"
-            >
-              Promo Codes
-            </Link>
-            <Link
-              href="/admin2424/orders"
-              className="inline-flex items-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-black hover:text-white transition-colors"
-            >
-              Review Orders
-            </Link>
-          </div>
         </div>
 
         {/* ================= FORM ================= */}

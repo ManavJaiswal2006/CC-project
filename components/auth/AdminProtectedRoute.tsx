@@ -2,11 +2,27 @@
 
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-const ADMIN_EMAILS = ["2858.manav@gmail.com"]; // Should match convex/product.ts
+// Get admin emails from environment variable (client-side, so must be NEXT_PUBLIC_*)
+// Format: "email1@example.com,email2@example.com"
+// Fallback to hardcoded email if env not set (for backward compatibility)
+const getAdminEmails = (): string[] => {
+  const adminEmailsEnv = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
+  const emails = adminEmailsEnv
+    .split(",")
+    .map((email) => email.trim())
+    .filter((email) => email.length > 0);
+  
+  // Fallback to hardcoded email if env not set (for backward compatibility)
+  if (emails.length === 0) {
+    return ["2858.manav@gmail.com"];
+  }
+  
+  return emails;
+};
 
 export default function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -14,10 +30,13 @@ export default function AdminProtectedRoute({ children }: { children: React.Reac
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
+  // Get admin emails (memoized to avoid recalculation)
+  const adminEmails = useMemo(() => getAdminEmails(), []);
+
   // Check if user is admin
   useEffect(() => {
     if (!authLoading && user?.email) {
-      const admin = ADMIN_EMAILS.includes(user.email);
+      const admin = adminEmails.includes(user.email);
       setIsAdmin(admin);
       
       if (!admin) {
@@ -26,7 +45,7 @@ export default function AdminProtectedRoute({ children }: { children: React.Reac
     } else if (!authLoading && !user) {
       router.push(`/login?returnTo=${pathname}`);
     }
-  }, [user, authLoading, router, pathname]);
+  }, [user, authLoading, router, pathname, adminEmails]);
 
   // Show loading while checking
   if (authLoading || isAdmin === null) {

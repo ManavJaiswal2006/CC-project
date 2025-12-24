@@ -12,8 +12,12 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log critical error
-    console.error("Global error:", error);
+    // Log critical error (only in development or to error tracking service)
+    if (process.env.NODE_ENV === "development") {
+      console.error("Global error:", error);
+    }
+    // TODO: In production, send to error tracking service
+    // Example: Sentry.captureException(error);
   }, [error]);
 
   return (

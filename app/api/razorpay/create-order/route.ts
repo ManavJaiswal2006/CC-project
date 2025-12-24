@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 // Lazy initialization function to avoid build-time errors
 function getRazorpayInstance() {
@@ -18,9 +19,16 @@ function getRazorpayInstance() {
 }
 
 export async function POST(req: Request) {
+  let amount: number | undefined;
+  let currency: string = "INR";
+  let receipt: string | undefined;
+  
   try {
     const body = await req.json();
-    const { amount, currency = "INR", receipt, notes } = body;
+    amount = body.amount;
+    currency = body.currency || "INR";
+    receipt = body.receipt;
+    const notes = body.notes;
 
     // Validate amount
     if (!amount || amount < 1) {
@@ -59,7 +67,11 @@ export async function POST(req: Request) {
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error: any) {
-    console.error("Razorpay order creation error:", error);
+    logger.error("Razorpay order creation error", error, {
+      amount,
+      currency,
+      receipt,
+    });
     
     // Provide more specific error messages
     let errorMessage = "Failed to create payment order";

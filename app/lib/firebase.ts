@@ -10,8 +10,8 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Safety Check: Ensure config is loaded
-if (!firebaseConfig.projectId) {
+// Safety Check: Ensure config is loaded (only log in development)
+if (!firebaseConfig.projectId && process.env.NODE_ENV === "development") {
   console.error(
     "Error: Firebase Project ID is missing. Check your .env.local file."
   );

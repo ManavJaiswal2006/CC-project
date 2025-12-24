@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { api } from "@/convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { generateBillHTML } from "@/lib/billTemplate";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
+  let orderId: string | null = null;
+  
   try {
     const { searchParams } = new URL(req.url);
-    const orderId = searchParams.get("orderId");
+    orderId = searchParams.get("orderId");
 
     if (!orderId) {
       return NextResponse.json(
@@ -77,10 +80,15 @@ export async function GET(req: Request) {
         "Content-Disposition": `inline; filename="invoice-${orderId}.html"`,
       },
     });
-  } catch (error) {
-    console.error("PDF generation error", error);
+  } catch (error: any) {
+    logger.error("PDF generation error", error, {
+      orderId: orderId || "unknown",
+    });
     return NextResponse.json(
-      { success: false, message: "Failed to generate invoice" },
+      { 
+        success: false, 
+        message: "Failed to generate invoice. Please try again later." 
+      },
       { status: 500 }
     );
   }
