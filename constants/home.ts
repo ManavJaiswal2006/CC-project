@@ -3,7 +3,7 @@ export const navlinks = [
   { name: "ABOUT", href: "/about" },
   { name: "PRODUCTS", href: "/shop" },
   { name: "CONTACT", href: "/customer-care" },
-
+  { name: "BECOME A DISTRIBUTOR", href: "/distributor" },
 ];
 
 export const heroData = {

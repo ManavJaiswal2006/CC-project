@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -31,6 +32,7 @@ export default function AdminPage() {
     description: "", // short
     details: "",     // ✅ long / detailed
     discount: 0,
+    stock: 0,
     soldOut: false,
     price: 0,
     sizes: [] as Size[],
@@ -40,7 +42,7 @@ export default function AdminPage() {
   /* ================= LOADING ================= */
   if (!products) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         Loading admin…
       </div>
     );
@@ -49,6 +51,20 @@ export default function AdminPage() {
   /* ================= HELPERS ================= */
   const uploadImage = async () => {
     if (!form.image) return undefined;
+
+    // Validate file type
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(form.image.type)) {
+      alert('Invalid file type. Please upload a JPEG, PNG, or WebP image.');
+      return undefined;
+    }
+
+    // Validate file size (5MB max)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (form.image.size > MAX_FILE_SIZE) {
+      alert('File too large. Maximum size is 5MB.');
+      return undefined;
+    }
 
     const uploadUrl = await generateUploadUrl();
     const res = await fetch(uploadUrl, {
@@ -70,6 +86,7 @@ export default function AdminPage() {
       description: "",
       details: "",
       discount: 0,
+      stock: 0,
       soldOut: false,
       price: 0,
       sizes: [],
@@ -86,6 +103,7 @@ export default function AdminPage() {
       description: form.description,
       details: form.details || undefined,
       discount: form.discount,
+      stock: form.stock,
       soldOut: form.soldOut,
       storageId,
 
@@ -104,12 +122,28 @@ export default function AdminPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-gray-50 px-8 py-16">
+    <div className="bg-gray-50 px-8 py-8">
       <div className="max-w-6xl mx-auto">
 
-        <h1 className="text-3xl text-black font-bold uppercase mb-12">
-          Admin Panel
-        </h1>
+        <div className="flex items-center justify-between mb-12 gap-4">
+          <h1 className="text-3xl text-black font-bold uppercase">
+            Admin Panel
+          </h1>
+          <div className="flex gap-3">
+            <Link
+              href="/admin2424/promos"
+              className="inline-flex items-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-black hover:text-white transition-colors"
+            >
+              Promo Codes
+            </Link>
+            <Link
+              href="/admin2424/orders"
+              className="inline-flex items-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-black hover:text-white transition-colors"
+            >
+              Review Orders
+            </Link>
+          </div>
+        </div>
 
         {/* ================= FORM ================= */}
         <div className="bg-white border p-8 mb-20 space-y-8">
@@ -170,20 +204,38 @@ export default function AdminPage() {
             />
           </div>
 
-          {/* DISCOUNT */}
-          <div>
-            <label className="label">Discount (%)</label>
-            <input
-              type="number"
-              className="input"
-              value={form.discount}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  discount: Number(e.target.value),
-                })
-              }
-            />
+          {/* STOCK & DISCOUNT */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="label">In Stock (qty)</label>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                value={form.stock}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    stock: Math.max(0, Number(e.target.value)),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="label">Discount (%)</label>
+              <input
+                type="number"
+                className="input"
+                value={form.discount}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    discount: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
           </div>
 
           {/* PRICING MODE */}
@@ -329,7 +381,8 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-500">
                   {p.sizes?.length
                     ? `${p.sizes.length} sizes`
-                    : `₹${p.price}`} • {p.discount}% off
+                    : `₹${p.price}`}{" "}
+                  • {p.discount}% off • In stock: {p.stock ?? 0}
                 </p>
               </div>
 
@@ -344,6 +397,7 @@ export default function AdminPage() {
                       description: p.description,
                       details: p.details ?? "",
                       discount: p.discount,
+                      stock: p.stock ?? 0,
                       soldOut: p.soldOut,
                       price: p.price ?? 0,
                       sizes: p.sizes ?? [],

@@ -1,6 +1,7 @@
 import AdminPage from '@/components/Admin/admin'
 import { adminPageDescription, adminPageTitle } from '@/constants/metadata';
 import { Metadata } from 'next';
+import AdminProtectedRoute from '@/components/auth/AdminProtectedRoute';
 
 export const metadata: Metadata = {
   title: adminPageTitle,
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 
 function page() {
   return (
-    <div><AdminPage /></div>
+    <AdminProtectedRoute>
+      <div><AdminPage /></div>
+    </AdminProtectedRoute>
   )
 }
 

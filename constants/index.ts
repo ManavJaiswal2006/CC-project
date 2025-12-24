@@ -1,4 +1,4 @@
-import {  Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Building2, Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 export const BRAND = {
   name: "BOURGON",
@@ -42,9 +42,16 @@ export const footerData = {
         { icon: Facebook, href: "#" },
       ],
     },
+    {
+      title: "Business Opportunities",
+      items: [
+        { icon: Building2, text: "Become a Distributor", href: "/distributor" },
+      ],
+    },
   ],
   bottomBar: {
     links: [
+      { label: "Track Order", href: "/track-order" },
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms of Service", href: "/terms" },
     ],

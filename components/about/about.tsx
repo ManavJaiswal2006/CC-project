@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useLayoutEffect, useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -75,7 +76,7 @@ export default function RedesignedAboutPage() {
         </div>
 
         <div className="relative z-10 text-center space-y-8">
-          <img src={logoImg} alt="logo" className="mx-auto" />
+          <Image src={logoImg} alt="logo" className="mx-auto" width={160} height={60} priority />
           <h1 className="reveal-text text-xl md:text-3xl text-black font-bold tracking-[0.4em] uppercase">
             Beyond Quality <span className="opacity-50 ">|</span> Beyond Design
           </h1>
@@ -148,10 +149,12 @@ export default function RedesignedAboutPage() {
             ref={addToRefs}
             className="md:col-span-12 h-[500px] md:h-[700px] overflow-hidden relative shadow-2xl parallax-container"
           >
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1550989460-0adf9ea622e2?auto=format&fit=crop&q=80"
               alt="Dining Table"
-              className="w-full h-[120%] object-cover absolute top-[-10%] parallax-img"
+              fill
+              className="object-cover absolute top-[-10%] parallax-img"
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-12 left-12 text-white">

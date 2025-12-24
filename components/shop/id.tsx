@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ShoppingBag, Check } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
 import Image from "next/image";
+import type { Id } from "@/convex/_generated/dataModel";
+import WishlistButton from "@/components/wishlist/WishlistButton";
+import ReviewSection from "@/components/reviews/ReviewSection";
+import RecentlyViewed from "@/components/products/RecentlyViewed";
 
 type Size = {
   label: string;
@@ -23,27 +27,14 @@ export default function ProductPage() {
   /* ================= DATA (GUARDED) ================= */
   const product = useQuery(
     api.product.getProduct,
-    id ? { id: id as any } : "skip"
+    id ? { id: id as Id<"products"> } : "skip"
   );
 
   /* ================= CART ================= */
   const { addToCart } = useCart();
 
   /* ================= STATE ================= */
-  const [selectedSize, setSelectedSize] =
-    useState<Size | null>(null);
-  const initializedRef = useRef(false);
-
-  /* ================= INIT SIZE ================= */
-  useEffect(() => {
-    if (!product || initializedRef.current) return;
-
-    if (product.sizes && product.sizes.length > 0) {
-      setSelectedSize(product.sizes[0]);
-    }
-
-    initializedRef.current = true;
-  }, [product]);
+  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
 
   /* ================= NORMALIZATION ================= */
   const sizes = product?.sizes ?? [];
@@ -66,9 +57,11 @@ export default function ProductPage() {
     return basePrice;
   }, [product, basePrice]);
 
+  const stock = product?.stock ?? 0;
   const canAddToCart =
     !!product &&
     !product.soldOut &&
+    stock > 0 &&
     basePrice !== null &&
     (!hasSizes || selectedSize !== null);
 
@@ -111,24 +104,24 @@ export default function ProductPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-white text-gray-900 px-6 py-20">
+    <div className="min-h-screen bg-white text-gray-900 px-4 sm:px-6 py-12 sm:py-16 md:py-20">
       <div className="max-w-6xl mx-auto">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16">
 
           {/* IMAGE */}
-          <div className="bg-gray-50 flex items-center justify-center p-12">
+          <div className="bg-gray-50 flex items-center justify-center p-6 sm:p-8 md:p-12 aspect-square">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 width={600}
                 height={600}
-                className="object-contain"
+                className="object-contain w-full h-full"
                 priority
               />
             ) : (
-              <div className="text-6xl text-gray-300 font-bold">
+              <div className="text-4xl sm:text-5xl md:text-6xl text-gray-300 font-bold">
                 {product.name.charAt(0)}
               </div>
             )}
@@ -150,8 +143,8 @@ export default function ProductPage() {
               {product.description}
             </p>
 
-            {/* PRICE */}
-            <div>
+            {/* PRICE & STOCK */}
+            <div className="space-y-1">
               <p className="text-sm text-gray-400 mb-1">
                 {hasSizes ? "Price (selected size)" : "Price"}
               </p>
@@ -168,6 +161,12 @@ export default function ProductPage() {
                   </span>
                 )}
               </div>
+
+              <p className="text-xs text-gray-500">
+                {stock > 0
+                  ? "In stock"
+                  : "Out of stock"}
+              </p>
             </div>
 
             {/* SIZE SELECTOR */}
@@ -177,12 +176,12 @@ export default function ProductPage() {
                   Select Size
                 </p>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {sizes.map((s) => (
                     <button
                       key={s.value}
                       onClick={() => setSelectedSize(s)}
-                      className={`px-5 py-3 border text-sm font-bold transition ${
+                      className={`px-4 sm:px-5 py-2 sm:py-3 border text-sm font-bold transition whitespace-nowrap ${
                         selectedSize?.value === s.value
                           ? "border-black bg-black text-white"
                           : "border-gray-300 hover:border-black"
@@ -195,19 +194,27 @@ export default function ProductPage() {
               </div>
             )}
 
-            {/* ADD TO CART */}
-            <button
-              disabled={!canAddToCart}
-              onClick={handleAddToCart}
-              className="w-full bg-black text-white py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              <ShoppingBag size={16} />
-              {product.soldOut
-                ? "Out of Stock"
-                : hasSizes && !selectedSize
-                ? "Select Size"
-                : "Add to Cart"}
-            </button>
+            {/* ADD TO CART & WISHLIST */}
+            <div className="flex items-center gap-3">
+              <button
+                disabled={!canAddToCart}
+                onClick={handleAddToCart}
+                className="flex-1 bg-black text-white py-4 sm:py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 sm:gap-3 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                <ShoppingBag size={16} className="shrink-0" />
+                <span className="truncate">
+                  {product.soldOut || stock <= 0
+                    ? "Out of Stock"
+                    : hasSizes && !selectedSize
+                    ? "Select Size"
+                    : "Add to Cart"}
+                </span>
+              </button>
+              <WishlistButton
+                productId={product._id}
+                className="p-4 sm:p-5 border border-gray-300 hover:border-black transition-colors shrink-0"
+              />
+            </div>
 
             {/* TRUST */}
             <div className="pt-6 space-y-2 text-sm text-gray-500">
@@ -235,6 +242,12 @@ export default function ProductPage() {
             </div>
           </div>
         )}
+
+        {/* REVIEWS */}
+        <ReviewSection productId={product._id} />
+
+        {/* RECENTLY VIEWED */}
+        <RecentlyViewed currentProductId={product._id} />
 
       </div>
     </div>

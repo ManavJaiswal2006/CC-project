@@ -24,9 +24,11 @@ export const updateUser = mutation({
       v.object({
         id: v.string(),
         label: v.string(),
+        customLabel: v.optional(v.string()),
         street: v.string(),
         city: v.string(),
-        zip: v.string(),
+        pincode: v.string(),
+        state: v.string(),
       })
     ),
   },

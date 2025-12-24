@@ -3,15 +3,11 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
-import {
-  User,
-  MapPin,
-  Plus,
-  Trash2,
-  Package,
-  Phone,
-} from "lucide-react";
+import { User, MapPin, Plus, Trash2, Package, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 /* ================= TYPES ================= */
 
@@ -27,28 +23,65 @@ type Address = {
 
 export default function AccountPage() {
   const router = useRouter();
+  const { logout } = useAuth();
 
   /* ================= AUTH ================= */
   const [authLoading, setAuthLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setUserEmail(user?.email ?? null);
+      setUserId(user?.uid ?? null);
       setAuthLoading(false);
     });
     return () => unsub();
   }, []);
 
+  /* ================= CONVEX ================= */
+  const userData = useQuery(
+    api.user.getUser,
+    userId ? { userId } : "skip"
+  );
+  const updateUser = useMutation(api.user.updateUser);
+
   /* ================= PROFILE ================= */
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const isProfileValid =
     name.trim().length > 0 && phone.trim().length === 10;
 
   /* ================= ADDRESSES ================= */
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [savingAddresses, setSavingAddresses] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  /* ================= LOAD USER DATA ================= */
+  useEffect(() => {
+    // Only load data once when userData first becomes available and hasn't been loaded yet
+    if (userData && !dataLoaded) {
+      setName(userData.name || "");
+      setPhone(userData.phone || "");
+      if (userData.addresses && userData.addresses.length > 0) {
+        // Map database addresses to component format
+        setAddresses(
+          userData.addresses.map((addr) => ({
+            id: addr.id,
+            label: (addr.label as "Home" | "Work" | "Other") || "Home",
+            customLabel: addr.customLabel,
+            street: addr.street || "",
+            pincode: addr.pincode || "",
+            city: addr.city || "",
+            state: addr.state || "",
+          }))
+        );
+      }
+      setDataLoaded(true);
+    }
+  }, [userData, dataLoaded]);
 
   /* ---------- HELPERS ---------- */
 
@@ -101,6 +134,72 @@ export default function AccountPage() {
     );
   };
 
+  /* ================= SAVE HANDLERS ================= */
+
+  const handleSaveProfile = async () => {
+    if (!isProfileValid || !userId || !userEmail || savingProfile) return;
+
+    setSavingProfile(true);
+    try {
+      // Map addresses to database format
+      const dbAddresses = addresses.map((addr) => ({
+        id: addr.id,
+        label: addr.label,
+        customLabel: addr.customLabel,
+        street: addr.street,
+        city: addr.city,
+        pincode: addr.pincode,
+        state: addr.state,
+      }));
+
+      await updateUser({
+        userId,
+        name: name.trim(),
+        email: userEmail,
+        phone: phone.trim(),
+        addresses: dbAddresses,
+      });
+      alert("Profile saved successfully!");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Failed to save profile. Please try again.");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleSaveAddresses = async () => {
+    if (!canSaveAddresses || !userId || !userEmail || savingAddresses) return;
+
+    setSavingAddresses(true);
+    try {
+      // Map addresses to database format
+      const dbAddresses = addresses.map((addr) => ({
+        id: addr.id,
+        label: addr.label,
+        customLabel: addr.customLabel,
+        street: addr.street,
+        city: addr.city,
+        pincode: addr.pincode,
+        state: addr.state,
+      }));
+
+      await updateUser({
+        userId,
+        name: name.trim() || userData?.name || "",
+        email: userEmail,
+        phone: phone.trim() || userData?.phone || "",
+        addresses: dbAddresses,
+      });
+      alert("Addresses saved successfully!");
+    } catch (error) {
+      console.error("Error saving addresses:", error);
+      alert("Failed to save addresses. Please try again.");
+    } finally {
+      setSavingAddresses(false);
+    }
+  };
+
   /* ================= PIN LOOKUP ================= */
   useEffect(() => {
     addresses.forEach((addr) => {
@@ -148,34 +247,47 @@ export default function AccountPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-white text-zinc-900 px-6 py-24">
-      <div className="max-w-4xl mx-auto space-y-20">
+    <div className="min-h-screen bg-white text-zinc-900 px-4 sm:px-6 py-12 sm:py-16 md:py-24">
+      <div className="max-w-4xl mx-auto space-y-12 sm:space-y-16 md:space-y-20">
 
         {/* HEADER */}
-        <header className="flex justify-between items-center">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
             <User size={20} />
-            <h1 className="text-2xl font-bold uppercase">
+            <h1 className="text-xl sm:text-2xl font-bold uppercase">
               My Account
             </h1>
           </div>
 
-          <button
-            onClick={() => router.push("/orders")}
-            className="flex items-center gap-2 text-xs font-black uppercase tracking-widest border border-zinc-300 px-5 py-3 hover:border-black"
-          >
-            <Package size={14} />
-            Orders
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <button
+              onClick={() => router.push("/orders")}
+              className="flex items-center gap-2 text-xs font-black uppercase tracking-widest border border-zinc-300 px-4 sm:px-5 py-2 sm:py-3 hover:border-black whitespace-nowrap"
+            >
+              <Package size={14} />
+              Orders
+            </button>
+
+            <button
+              onClick={async () => {
+                await logout();
+                router.push("/");
+              }}
+              className="flex items-center gap-2 text-xs font-black uppercase tracking-widest border border-red-300 text-red-600 px-4 sm:px-5 py-2 sm:py-3 hover:border-red-600 hover:bg-red-50 transition whitespace-nowrap"
+            >
+              <LogOut size={14} />
+              Logout
+            </button>
+          </div>
         </header>
 
         {/* PROFILE */}
-        <section className="border border-zinc-200 p-8 space-y-6">
+        <section className="border border-zinc-200 p-6 sm:p-8 space-y-6">
           <h2 className="text-xs font-black uppercase tracking-widest text-zinc-500">
             Profile
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-2xl">
 
             {/* NAME */}
             <div>
@@ -185,7 +297,7 @@ export default function AccountPage() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-zinc-300 px-4 py-3 text-sm"
+                className="w-full border border-zinc-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               />
             </div>
 
@@ -202,7 +314,7 @@ export default function AccountPage() {
                   onChange={(e) =>
                     setPhone(e.target.value.replace(/\D/g, ""))
                   }
-                  className="flex-1 px-4 py-3 text-sm outline-none"
+                  className="flex-1 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
             </div>
@@ -210,21 +322,22 @@ export default function AccountPage() {
           </div>
 
           <button
-            disabled={!isProfileValid}
-            className={`px-10 py-4 text-[11px] font-black uppercase tracking-[0.2em] transition
+            onClick={handleSaveProfile}
+            disabled={!isProfileValid || savingProfile}
+            className={`w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-[11px] font-black uppercase tracking-[0.2em] transition whitespace-nowrap
               ${
-                isProfileValid
+                isProfileValid && !savingProfile
                   ? "bg-black text-white hover:bg-zinc-800"
                   : "bg-zinc-300 text-zinc-500 cursor-not-allowed"
               }`}
           >
-            Save Profile
+            {savingProfile ? "Saving..." : "Save Profile"}
           </button>
         </section>
 
         {/* ADDRESSES */}
-        <section className="border border-zinc-200 p-8 space-y-8">
-          <div className="flex justify-between items-center">
+        <section className="border border-zinc-200 p-6 sm:p-8 space-y-6 sm:space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-xs font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
               <MapPin size={14} /> Addresses
             </h2>
@@ -232,7 +345,7 @@ export default function AccountPage() {
             <button
               onClick={addAddress}
               disabled={!canAddNewAddress}
-              className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest border px-4 py-2 transition
+              className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest border px-4 py-2 transition whitespace-nowrap
                 ${
                   canAddNewAddress
                     ? "border-zinc-300 hover:border-black"
@@ -252,22 +365,23 @@ export default function AccountPage() {
           {addresses.map((addr) => (
             <div
               key={addr.id}
-              className="border border-zinc-200 p-6 space-y-6 relative"
+              className="border border-zinc-200 p-4 sm:p-6 space-y-4 sm:space-y-6 relative"
             >
               <button
                 onClick={() => removeAddress(addr.id)}
-                className="absolute top-4 right-4 text-zinc-400 hover:text-red-600"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 text-zinc-400 hover:text-red-600"
+                aria-label="Remove address"
               >
                 <Trash2 size={16} />
               </button>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pr-8 sm:pr-0">
                 <select
                   value={addr.label}
                   onChange={(e) =>
                     updateAddress(addr.id, "label", e.target.value)
                   }
-                  className="border px-3 py-2 text-sm"
+                  className="border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                 >
                   <option>Home</option>
                   <option>Work</option>
@@ -285,7 +399,7 @@ export default function AccountPage() {
                         e.target.value
                       )
                     }
-                    className="border px-3 py-2 text-sm"
+                    className="border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 )}
               </div>
@@ -296,10 +410,10 @@ export default function AccountPage() {
                 onChange={(e) =>
                   updateAddress(addr.id, "street", e.target.value)
                 }
-                className="w-full border px-4 py-3 text-sm"
+                className="w-full border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <input
                   placeholder="PIN code"
                   maxLength={6}
@@ -311,7 +425,7 @@ export default function AccountPage() {
                       e.target.value.replace(/\D/g, "")
                     )
                   }
-                  className="border px-4 py-3 text-sm"
+                  className="border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                 />
 
                 <input
@@ -332,15 +446,16 @@ export default function AccountPage() {
           ))}
 
           <button
-            disabled={!canSaveAddresses}
-            className={`px-10 py-4 text-[11px] font-black uppercase tracking-[0.2em] transition
+            onClick={handleSaveAddresses}
+            disabled={!canSaveAddresses || savingAddresses}
+            className={`w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-[11px] font-black uppercase tracking-[0.2em] transition whitespace-nowrap
               ${
-                canSaveAddresses
+                canSaveAddresses && !savingAddresses
                   ? "bg-black text-white hover:bg-zinc-800"
                   : "bg-zinc-300 text-zinc-500 cursor-not-allowed"
               }`}
           >
-            Save Addresses
+            {savingAddresses ? "Saving..." : "Save Addresses"}
           </button>
         </section>
 

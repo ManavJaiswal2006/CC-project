@@ -25,20 +25,21 @@ const MAX_QUERY = 40;
 export default function SearchModal() {
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const router = useRouter();
-
-  /* ---------- Load history ---------- */
-  useEffect(() => {
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
     try {
-      const saved = localStorage.getItem(HISTORY_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) setHistory(parsed);
+      if (typeof window === "undefined") return [];
+      const saved = window.localStorage.getItem(HISTORY_KEY);
+      if (!saved) return [];
+      const parsed = JSON.parse(saved) as unknown;
+      return Array.isArray(parsed) ? (parsed as HistoryItem[]) : [];
     } catch {
-      localStorage.removeItem(HISTORY_KEY);
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(HISTORY_KEY);
+      }
+      return [];
     }
-  }, []);
+  });
+  const router = useRouter();
 
   /* ---------- Debounce ---------- */
   useEffect(() => {
@@ -70,13 +71,13 @@ export default function SearchModal() {
 
   /* ---------- Navigation ---------- */
   const handleNavigate = (item: HistoryItem) => {
-    const next = [
-      item,
-      ...history.filter((h) => h.href !== item.href),
-    ].slice(0, 5);
+    const next = [item, ...history.filter((h) => h.href !== item.href)].slice(
+      0,
+      5
+    );
 
     setHistory(next);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
 
     setQuery("");
     router.push(item.href);
@@ -85,7 +86,7 @@ export default function SearchModal() {
   const clearHistory = (e: React.MouseEvent) => {
     e.stopPropagation();
     setHistory([]);
-    localStorage.removeItem(HISTORY_KEY);
+    window.localStorage.removeItem(HISTORY_KEY);
   };
 
   /* ---------------- JSX ---------------- */
@@ -121,14 +122,14 @@ export default function SearchModal() {
           <div className="p-8 min-h-[350px] overflow-y-auto">
             {debounced.length >= 2 ? (
               <>
-                {results.map((item: any) =>
+                {results.map((item) =>
                   "name" in item ? (
                     <button
-                      key={item._id}
+                      key={item.id}
                       onClick={() =>
                         handleNavigate({
                           title: item.name,
-                          href: `/shop/${item._id}`,
+                          href: `/shop/${item.id}`,
                         })
                       }
                       className="w-full p-4 border mb-2 flex justify-between items-center hover:border-red-600"

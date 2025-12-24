@@ -5,14 +5,28 @@ import { Doc } from "./_generated/dataModel";
 /* =====================================================
    ADMIN CHECK (HARDENED)
 ===================================================== */
-async function checkAdmin(ctx: any) {
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+
+type AdminCtx = MutationCtx | QueryCtx;
+
+async function checkAdmin(ctx: AdminCtx) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity || !identity.email) {
     throw new Error("Unauthenticated");
   }
 
-  // ⚠️ Move this to env later if needed
-  const ADMIN_EMAILS = ["2858.manav@gmail.com"];
+  // Get admin emails from environment variable
+  // Format: "email1@example.com,email2@example.com"
+  const adminEmailsEnv = process.env.ADMIN_EMAILS || "";
+  const ADMIN_EMAILS = adminEmailsEnv
+    .split(",")
+    .map((email) => email.trim())
+    .filter((email) => email.length > 0);
+
+  // Fallback to hardcoded email if env not set (for backward compatibility)
+  if (ADMIN_EMAILS.length === 0) {
+    ADMIN_EMAILS.push("2858.manav@gmail.com");
+  }
 
   if (!ADMIN_EMAILS.includes(identity.email)) {
     throw new Error("Unauthorized");
@@ -40,6 +54,7 @@ export const createProduct = mutation({
     category: v.string(),
     soldOut: v.boolean(),
     discount: v.number(),
+    stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),
 
@@ -99,6 +114,7 @@ export const updateProduct = mutation({
     category: v.string(),
     soldOut: v.boolean(),
     discount: v.number(),
+    stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),
     price: v.optional(v.number()),
@@ -219,5 +235,28 @@ export const getCategories = query({
     ).sort((a, b) => a.localeCompare(b));
 
     return categories;
+  },
+});
+
+/* =====================================================
+   GET PRODUCTS BY IDs (for recently viewed, etc.)
+===================================================== */
+export const getProductsByIds = query({
+  args: { productIds: v.array(v.id("products")) },
+  handler: async (ctx, { productIds }) => {
+    const products = await Promise.all(
+      productIds.map(async (id) => {
+        const product = await ctx.db.get(id);
+        if (!product) return null;
+
+        const imageUrl = product.storageId
+          ? await ctx.storage.getUrl(product.storageId)
+          : null;
+
+        return { ...product, imageUrl };
+      })
+    );
+
+    return products.filter((p) => p !== null);
   },
 });

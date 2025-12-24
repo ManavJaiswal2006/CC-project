@@ -14,6 +14,25 @@
   }
 }
 
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Ensure containers don't overflow */
+* {
+  box-sizing: border-box;
+}
+
+/* Text overflow handling */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 input {
   caret-color: #000000;
   color: #000000;

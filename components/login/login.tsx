@@ -20,7 +20,7 @@ function LoginContent() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/shop");
-    } catch (err: any) {
+    } catch {
       setError("Invalid credentials. Please try again.");
     }
   };

@@ -3,9 +3,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { 
-  Phone, Mail, MapPin, Clock, ChevronDown, Send, Globe, ShieldCheck 
-} from "lucide-react";
+import { Phone, Mail, Clock, ChevronDown, Send, Globe, ShieldCheck } from "lucide-react";
 import { contactFAQ } from "@/constants/contact";
 
 gsap.registerPlugin(ScrollTrigger);

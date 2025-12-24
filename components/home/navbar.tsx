@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { Search, ShoppingCart, User, Menu, X, LogIn } from "lucide-react";
+import { ShoppingCart, User, Menu, X, LogIn, Heart } from "lucide-react";
 import { navlinks } from "@/constants/home";
 import { logoImg } from "@/constants";
 // import SearchModal from "./search";
@@ -38,6 +38,21 @@ const CartIcon = memo(({ count }: { count: number }) => (
 ));
 CartIcon.displayName = "CartIcon";
 
+const WishlistIcon = memo(({ user }: { user: FirebaseUser | null }) => {
+  if (!user) return null;
+  return (
+    <Link
+      href="/wishlist"
+      className="hover:text-orange-600 transition-colors cursor-pointer"
+      aria-label="Wishlist"
+      title="Wishlist"
+    >
+      <Heart size={22} strokeWidth={1.5} />
+    </Link>
+  );
+});
+WishlistIcon.displayName = "WishlistIcon";
+
 const AuthButton = memo(
   ({ user, loading }: { user: FirebaseUser | null; loading: boolean }) => {
     if (loading) {
@@ -50,8 +65,9 @@ const AuthButton = memo(
       return (
         <Link
           href="/account"
-          className="hover:text-orange-600 transition-colors hidden sm:block"
+          className="hover:text-orange-600 transition-colors"
           title="Account"
+          aria-label="My Account"
         >
           <User size={22} strokeWidth={1.5} />
         </Link>
@@ -61,9 +77,9 @@ const AuthButton = memo(
     return (
       <Link
         href="/login"
-        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md text-xs font-bold tracking-wider hover:bg-orange-600 transition-all uppercase"
+        className="flex items-center gap-1 sm:gap-2 bg-black text-white px-2 sm:px-4 py-2 rounded-md text-xs font-bold tracking-wider hover:bg-orange-600 transition-all uppercase whitespace-nowrap"
       >
-        <LogIn size={14} />
+        <LogIn size={14} className="shrink-0" />
         <span className="hidden sm:inline">Login</span>
       </Link>
     );
@@ -176,7 +192,7 @@ const Navbar = () => {
           </div>
 
           {/* Logo */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 sm:w-32 md:w-48">
             <Link href="/" className="flex flex-col items-center">
               <Image
                 src={logoImg}
@@ -184,14 +200,15 @@ const Navbar = () => {
                 width={180}
                 height={60}
                 priority
-                className="h-auto md:pt-5 w-24 md:w-48 object-contain"
+                className="h-auto w-full object-contain"
               />
             </Link>
           </div>
 
           {/* Right Icons */}
-          <div className="flex items-center space-x-4 sm:space-x-6 text-gray-700 z-20 ml-auto">
+          <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-6 text-gray-700 z-20 ml-auto">
             {/* <SearchModal /> */}
+            <WishlistIcon user={user} />
             <AuthButton user={user} loading={loading} />
             <CartIcon count={cartCount} />
           </div>
@@ -245,6 +262,31 @@ const Navbar = () => {
               </Link>
             );
           })}
+          
+          {/* Account/Login in Mobile Menu */}
+          <div className="mobile-link-item w-full border-t border-gray-300 pt-4 mt-2">
+            {user ? (
+              <Link
+                href="/account"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-sm font-bold tracking-widest uppercase text-gray-700 hover:text-orange-600 py-2 ${
+                  pathname === "/account" ? "text-orange-600" : ""
+                }`}
+              >
+                My Account
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block text-sm font-bold tracking-widest uppercase text-gray-700 hover:text-orange-600 py-2 ${
+                  pathname === "/login" ? "text-orange-600" : ""
+                }`}
+              >
+                Login
+              </Link>
+            )}
+          </div>
         </nav>
       </div>
     </header>

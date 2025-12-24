@@ -24,12 +24,16 @@ function SignUpContent() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push("/shop");
-    } catch (err: any) {
-      setError(
-        err.message.includes("email-already-in-use")
-          ? "This email is already registered."
-          : "Could not create account."
-      );
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(
+          err.message.includes("email-already-in-use")
+            ? "This email is already registered."
+            : "Could not create account."
+        );
+      } else {
+        setError("Could not create account.");
+      }
     }
   };
 

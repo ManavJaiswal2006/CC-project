@@ -9,9 +9,9 @@ export default function PremiumFooter() {
     href.startsWith("http") || href.startsWith("mailto") || href.startsWith("tel");
 
   return (
-    <footer className="bg-[#0a0a0a] text-white border-t border-white/5 pt-24 pb-12">
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
+    <footer className="bg-[#0a0a0a] text-white border-t border-white/5">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 pt-12 sm:pt-16 md:pt-24 pb-8 sm:pb-10 md:pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-24">
 
           {/* Brand Identity */}
           <div className="lg:col-span-5 space-y-8">
@@ -117,20 +117,20 @@ export default function PremiumFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/5 pt-12 flex flex-col md:flex-row md:row-reverse justify-between items-center gap-8">
-          <div className="footer-item flex gap-8 text-[10px] uppercase tracking-widest text-zinc-500 font-medium">
+        <div className="border-t border-white/5 pt-8 sm:pt-10 md:pt-12 flex flex-col md:flex-row md:row-reverse justify-between items-center gap-6 sm:gap-8">
+          <div className="footer-item flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 text-[10px] uppercase tracking-widest text-zinc-500 font-medium">
             {footerData.bottomBar.links.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors whitespace-nowrap"
               >
                 {link.label}
               </Link>
             ))}
           </div>
 
-          <p className="footer-item text-[10px] uppercase tracking-widest text-zinc-600">
+          <p className="footer-item text-[10px] uppercase tracking-widest text-zinc-600 text-center md:text-left">
             {footerData.bottomBar.copyright}
           </p>
 
@@ -139,7 +139,7 @@ export default function PremiumFooter() {
             onClick={() =>
               window.scrollTo({ top: 0, behavior: "smooth" })
             }
-            className="footer-item w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-500"
+            className="footer-item w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-500 shrink-0"
           >
             <ArrowUp size={16} />
           </button>

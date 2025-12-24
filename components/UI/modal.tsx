@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import React, { ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { ReactNode, createContext, useContext, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -9,8 +9,12 @@ interface ModalContextType { open: boolean; setOpen: (open: boolean) => void; }
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
-  const [open, setOpen] = useState(false);
-  return <ModalContext.Provider value={{ open, setOpen }}>{children}</ModalContext.Provider>;
+  const [open, setOpen] = React.useState(false);
+  return (
+    <ModalContext.Provider value={{ open, setOpen }}>
+      {children}
+    </ModalContext.Provider>
+  );
 };
 
 export const useModal = () => {
@@ -19,9 +23,21 @@ export const useModal = () => {
   return context;
 };
 
-export function Modal({ children }: { children: ReactNode }) { return <ModalProvider>{children}</ModalProvider>; }
+export function Modal({ children }: { children: ReactNode }) {
+  return <ModalProvider>{children}</ModalProvider>;
+}
 
-export const ModalTrigger = ({ children, className = "", keyboardShortcut = false }: any) => {
+interface ModalTriggerProps {
+  children: ReactNode;
+  className?: string;
+  keyboardShortcut?: boolean;
+}
+
+export const ModalTrigger = ({
+  children,
+  className = "",
+  keyboardShortcut = false,
+}: ModalTriggerProps) => {
   const { setOpen } = useModal();
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
@@ -31,20 +47,26 @@ export const ModalTrigger = ({ children, className = "", keyboardShortcut = fals
     window.addEventListener('keydown', handle);
     return () => window.removeEventListener('keydown', handle);
   }, [keyboardShortcut, setOpen]);
-  return <button onClick={() => setOpen(true)} className={className}>{children}</button>;
+  return (
+    <button onClick={() => setOpen(true)} className={className}>
+      {children}
+    </button>
+  );
 };
 
 export const ModalBody = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const { open, setOpen } = useModal();
   const modalRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    if (typeof document === "undefined") return;
     document.body.style.overflow = open ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [open]);
 
-  if (!mounted) return null;
+  if (typeof document === "undefined") return null;
 
   return createPortal(
     <AnimatePresence>
@@ -66,7 +88,10 @@ export const ModalBody = ({ children, className = "" }: { children: ReactNode; c
             className={`relative w-full max-w-3xl bg-white border border-zinc-200 shadow-xl overflow-hidden mx-4 ${className}`}
           >
             <div className="absolute top-0 left-0 w-full h-[3px] bg-red-600" />
-            <button onClick={() => setOpen(false)} className="absolute top-6 right-6 text-zinc-300 hover:text-red-600 transition-colors">
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-6 right-6 text-zinc-300 hover:text-red-600 transition-colors"
+            >
               <X size={18} />
             </button>
             {children}
@@ -78,6 +103,11 @@ export const ModalBody = ({ children, className = "" }: { children: ReactNode; c
   );
 };
 
-export const ModalContent = ({ children, className = "" }: any) => (
+interface ModalContentProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export const ModalContent = ({ children, className = "" }: ModalContentProps) => (
   <div className={`p-8 ${className}`}>{children}</div>
 );

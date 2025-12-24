@@ -23,8 +23,12 @@ export default function GoogleAuthButton() {
     try {
       await signInWithPopup(auth, provider);
       router.push(returnTo);
-    } catch (error: any) {
-      console.error("Google Auth Error:", error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Google Auth Error:", error.message);
+      } else {
+        console.error("Google Auth Error:", error);
+      }
     } finally {
       setLoading(false);
     }
