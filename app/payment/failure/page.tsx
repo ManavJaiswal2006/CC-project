@@ -1,10 +1,11 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { XCircle, ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-export default function PaymentFailurePage() {
+function PaymentFailureContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const error = searchParams.get("error") || "Payment failed";
@@ -63,6 +64,20 @@ export default function PaymentFailurePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailurePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PaymentFailureContent />
+    </Suspense>
   );
 }
 
