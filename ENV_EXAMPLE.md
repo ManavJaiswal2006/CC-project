@@ -25,6 +25,10 @@ EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
 ADMIN_EMAIL=admin@yourdomain.com
 
+# Razorpay Configuration (REQUIRED for Card/UPI payments)
+RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
+RAZORPAY_KEY_SECRET=your_secret_key_here
+
 # Admin API Security (OPTIONAL - only if using admin order confirmation API)
 ADMIN_API_KEY=your_secure_random_string_here
 NEXT_PUBLIC_ADMIN_API_KEY=your_secure_random_string_here
@@ -44,6 +48,7 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 - All Firebase variables (`NEXT_PUBLIC_FIREBASE_*`)
 - `NEXT_PUBLIC_CONVEX_URL`
 - Email variables (`EMAIL_USER`, `EMAIL_PASS`, `ADMIN_EMAIL`) - Required if you want email notifications
+- Razorpay variables (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`) - Required for Card/UPI payments
 
 ### OPTIONAL:
 - `NEXT_PUBLIC_SITE_URL` - Defaults to "https://bourgon.com" if not set
@@ -65,6 +70,7 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 3. **Add the new variables** that were added:
    - `NEXT_PUBLIC_SITE_URL` (your actual domain)
    - `ADMIN_EMAIL` (if not already set)
+   - `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` (get from Razorpay Dashboard)
    - `NEXT_PUBLIC_GA_ID` (optional, only if using Google Analytics)
 
 4. **For Gmail email**: 
