@@ -45,3 +45,12 @@ export const orderDetailsPageDescription = "View detailed information about your
 
 export const adminDashboardPageTitle = "Admin Dashboard | Bourgon Industries";
 export const adminDashboardPageDescription = "Admin dashboard with analytics, revenue tracking, and store performance metrics.";
+
+export const cancellationRefundsPageTitle = "Cancellation & Refunds | Bourgon Industries";
+export const cancellationRefundsPageDescription = "Cancellation and Refunds Policy for Bourgon Industries - Learn about our return, refund, and cancellation policies.";
+
+export const shippingPageTitle = "Shipping Policy | Bourgon Industries";
+export const shippingPageDescription = "Shipping Policy for Bourgon Industries - Information about shipping methods, delivery times, and shipping charges.";
+
+export const contactPageTitle = "Contact Us | Bourgon Industries";
+export const contactPageDescription = "Contact Bourgon Industries - Get in touch with us for customer support, business inquiries, and more.";

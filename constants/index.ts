@@ -52,8 +52,11 @@ export const footerData = {
   bottomBar: {
     links: [
       { label: "Track Order", href: "/track-order" },
+      { label: "Contact Us", href: "/contact" },
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms of Service", href: "/terms" },
+      { label: "Shipping", href: "/shipping" },
+      { label: "Cancellation & Refunds", href: "/cancellation-refunds" },
     ],
     copyright: `© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd. All Rights Reserved.`,
   },
