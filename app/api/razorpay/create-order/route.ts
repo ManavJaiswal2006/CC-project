@@ -60,10 +60,29 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error("Razorpay order creation error:", error);
+    
+    // Provide more specific error messages
+    let errorMessage = "Failed to create payment order";
+    
+    if (error.message) {
+      errorMessage = error.message;
+    } else if (error.error) {
+      // Razorpay API errors
+      errorMessage = error.error.description || error.error.reason || errorMessage;
+    }
+    
+    // Check for common issues
+    if (errorMessage.includes("credentials") || errorMessage.includes("not configured")) {
+      errorMessage = "Razorpay is not configured. Please contact support.";
+    } else if (errorMessage.includes("authentication") || errorMessage.includes("invalid")) {
+      errorMessage = "Invalid Razorpay credentials. Please contact support.";
+    }
+    
     return NextResponse.json(
       {
         success: false,
-        message: error.message || "Failed to create payment order",
+        message: errorMessage,
+        error: process.env.NODE_ENV === "development" ? error : undefined,
       },
       { status: 500 }
     );

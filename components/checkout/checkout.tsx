@@ -205,7 +205,9 @@ export default function CheckoutPage() {
       const orderData = await orderRes.json();
 
       if (!orderRes.ok || !orderData.success) {
-        throw new Error(orderData.message || "Failed to initialize payment");
+        const errorMsg = orderData.message || "Failed to initialize payment";
+        console.error("Razorpay order creation failed:", orderData);
+        throw new Error(errorMsg);
       }
 
       // Prepare order data for verification
