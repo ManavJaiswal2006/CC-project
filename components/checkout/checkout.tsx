@@ -185,13 +185,18 @@ export default function CheckoutPage() {
       await loadRazorpayScript();
 
       // Create Razorpay order
+      // Receipt must be max 40 characters (Razorpay requirement)
+      const timestamp = Date.now().toString().slice(-10); // Last 10 digits
+      const userIdShort = user.uid.slice(-8); // Last 8 characters of user ID
+      const receipt = `RCP${timestamp}${userIdShort}`; // Max 21 characters
+      
       const orderRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: finalTotal,
           currency: "INR",
-          receipt: `receipt_${Date.now()}_${user.uid}`,
+          receipt: receipt,
           notes: {
             userId: user.uid,
             customerEmail: user.email || "",
