@@ -42,8 +42,8 @@ export default function WishlistPage() {
     const sizes = product.sizes ?? [];
     const hasSizes = sizes.length > 0;
     const basePrice = hasSizes
-      ? Math.min(...sizes.map((s: any) => s.price))
-      : product.price ?? 0;
+      ? Math.min(...sizes.map((s: any) => s.customerPrice))
+      : product.customerPrice ?? 0;
     const finalPrice =
       product.discount > 0
         ? Math.round(basePrice - (basePrice * product.discount) / 100)
@@ -135,8 +135,8 @@ export default function WishlistPage() {
               const sizes = product.sizes ?? [];
               const hasSizes = sizes.length > 0;
               const basePrice = hasSizes
-                ? Math.min(...sizes.map((s: any) => s.price))
-                : product.price ?? 0;
+                ? Math.min(...sizes.map((s: any) => s.customerPrice))
+                : product.customerPrice ?? 0;
               const finalPrice =
                 product.discount > 0
                   ? Math.round(basePrice - (basePrice * product.discount) / 100)
