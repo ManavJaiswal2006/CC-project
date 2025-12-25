@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Download, CheckCircle2, Circle, Package, Truck, Home } from "lucide-react";
+import { Download, CheckCircle2, Circle, Package, Truck, Home, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import CancelOrderButton from "@/components/orders/CancelOrderButton";
 
@@ -57,11 +57,13 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `invoice-${orderId}.html`;
+        a.download = `invoice-${orderId}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+      } else {
+        console.error("Failed to download invoice");
       }
     } catch (error) {
       console.error("Download error", error);
@@ -112,7 +114,7 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
   /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-white text-gray-900 pt-24 pb-20">
-      <div className="max-w-4xl mx-auto px-6 space-y-8">
+      <div className="w-full px-6 space-y-8">
         {/* HEADER */}
         <header className="border-b pb-6">
           <div className="flex items-start justify-between mb-4">
@@ -149,12 +151,25 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
             </div>
             <div>
               {order.trackingNumber && order.trackingNumber !== "Awaiting payment" && (
-                <p className="text-gray-500">
-                  Tracking:{" "}
-                  <span className="font-mono font-semibold text-gray-900">
-                    {order.trackingNumber}
-                  </span>
-                </p>
+                <div className="space-y-2">
+                  <p className="text-gray-500">
+                    Tracking:{" "}
+                    <span className="font-mono font-semibold text-gray-900">
+                      {order.trackingNumber}
+                    </span>
+                  </p>
+                  {order.trackingUrl && (
+                    <a
+                      href={order.trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-red-600 transition-all"
+                    >
+                      Track Details
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
               )}
               {order._creationTime && (
                 <p className="text-gray-500 mt-1">

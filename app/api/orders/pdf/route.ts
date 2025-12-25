@@ -3,6 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { generateBillHTML } from "@/lib/billTemplate";
 import { logger } from "@/lib/logger";
+import puppeteer from "puppeteer";
 
 export async function GET(req: Request) {
   let orderId: string | null = null;
@@ -72,14 +73,53 @@ export async function GET(req: Request) {
       paymentMethod: order.paymentMethod || "N/A",
     }, false);
 
-    // For now, return HTML that can be printed/saved as PDF
-    // In production, you might want to use a library like puppeteer or pdfkit
-    return new NextResponse(billHTML, {
-      headers: {
-        "Content-Type": "text/html",
-        "Content-Disposition": `inline; filename="invoice-${orderId}.html"`,
-      },
-    });
+    // Convert HTML to PDF using Puppeteer
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(billHTML, { waitUntil: 'networkidle0' });
+      
+      // Generate PDF
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '0.5cm',
+          right: '0.5cm',
+          bottom: '0.5cm',
+          left: '0.5cm',
+        },
+      });
+
+      await browser.close();
+
+      // Return PDF
+      return new NextResponse(Buffer.from(pdfBuffer), {
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="invoice-${orderId}.pdf"`,
+        },
+      });
+    } catch (pdfError: any) {
+      if (browser) {
+        await browser.close();
+      }
+      logger.error("PDF generation error", pdfError, {
+        orderId: orderId || "unknown",
+      });
+      // Fallback to HTML if PDF generation fails
+      return new NextResponse(billHTML, {
+        headers: {
+          "Content-Type": "text/html",
+          "Content-Disposition": `inline; filename="invoice-${orderId}.html"`,
+        },
+      });
+    }
   } catch (error: any) {
     logger.error("PDF generation error", error, {
       orderId: orderId || "unknown",

@@ -15,7 +15,8 @@ import RecentlyViewed from "@/components/products/RecentlyViewed";
 type Size = {
   label: string;
   value: string;
-  price: number;
+  customerPrice: number;
+  retailerPrice: number;
 };
 
 export default function ProductPage() {
@@ -43,8 +44,8 @@ export default function ProductPage() {
   /* ================= PRICE ================= */
   const basePrice = useMemo(() => {
     if (!product) return null;
-    if (hasSizes) return selectedSize?.price ?? null;
-    return product.price ?? null;
+    if (hasSizes) return selectedSize?.customerPrice ?? null;
+    return product.customerPrice ?? null;
   }, [product, hasSizes, selectedSize]);
 
   const finalPrice = useMemo(() => {
@@ -68,16 +69,25 @@ export default function ProductPage() {
   /* ================= LOADING ================= */
   if (product === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Loading product…
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm font-medium text-gray-600">Loading product…</p>
+        </div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Product not found
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-gray-200 w-full max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+            <ShoppingBag size={32} className="text-gray-400" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Product not found</h2>
+          <p className="text-sm text-gray-500">The product you're looking for doesn't exist</p>
+        </div>
       </div>
     );
   }
@@ -104,87 +114,104 @@ export default function ProductPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-white text-gray-900 px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-16">
 
           {/* IMAGE */}
-          <div className="bg-gray-50 flex items-center justify-center p-6 sm:p-8 md:p-12 aspect-square">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-xl border-2 border-gray-200 flex items-center justify-center p-6 sm:p-8 md:p-12 aspect-square overflow-hidden group/image">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 width={600}
                 height={600}
-                className="object-contain w-full h-full"
+                className="object-contain w-full h-full transition-transform duration-500 group-hover/image:scale-105"
                 priority
               />
             ) : (
-              <div className="text-4xl sm:text-5xl md:text-6xl text-gray-300 font-bold">
+              <div className="text-6xl sm:text-7xl md:text-8xl text-gray-300 font-bold">
                 {product.name.charAt(0)}
               </div>
             )}
           </div>
 
           {/* DETAILS */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
 
             <div>
-              <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest mb-2">
+              <p className="text-xs text-red-600 font-bold uppercase tracking-widest mb-3">
                 {product.category}
               </p>
-              <h1 className="text-3xl font-bold uppercase tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4 text-gray-900">
                 {product.name}
               </h1>
             </div>
 
-            <p className="text-gray-500 leading-relaxed max-w-xl">
+            <p className="text-gray-600 leading-relaxed text-base sm:text-lg w-full">
               {product.description}
             </p>
 
             {/* PRICE & STOCK */}
-            <div className="space-y-1">
-              <p className="text-sm text-gray-400 mb-1">
+            <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-md">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
                 {hasSizes ? "Price (selected size)" : "Price"}
               </p>
 
-              <div className="flex items-end gap-4">
+              <div className="flex items-baseline gap-4 mb-3">
                 {product.discount > 0 && basePrice !== null && (
-                  <span className="text-lg text-gray-400 line-through">
+                  <span className="text-lg sm:text-xl text-gray-400 line-through">
                     ₹{basePrice}
                   </span>
                 )}
                 {finalPrice !== null && (
-                  <span className="text-3xl font-bold">
+                  <span className="text-4xl sm:text-5xl font-bold text-gray-900">
                     ₹{finalPrice}
+                  </span>
+                )}
+                {product.discount > 0 && (
+                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                    {product.discount}% OFF
                   </span>
                 )}
               </div>
 
-              <p className="text-xs text-gray-500">
-                {stock > 0
-                  ? "In stock"
-                  : "Out of stock"}
-              </p>
+              <div className="flex items-center gap-2">
+                {stock > 0 ? (
+                  <>
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-green-600">
+                      In Stock
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-red-600">
+                      Out of Stock
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* SIZE SELECTOR */}
             {hasSizes && (
-              <div>
-                <p className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-3">
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
+                <p className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-4">
                   Select Size
                 </p>
 
-                <div className="flex flex-wrap gap-2 sm:gap-3">
+                <div className="flex flex-wrap gap-3 sm:gap-4">
                   {sizes.map((s) => (
                     <button
                       key={s.value}
-                      onClick={() => setSelectedSize(s)}
-                      className={`px-4 sm:px-5 py-2 sm:py-3 border text-sm font-bold transition whitespace-nowrap ${
+                      onClick={() => setSelectedSize({ label: s.label, value: s.value, customerPrice: s.customerPrice, retailerPrice: s.retailerPrice })}
+                      className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
                         selectedSize?.value === s.value
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300 hover:border-black"
+                          ? "border-black bg-black text-white shadow-lg transform scale-105"
+                          : "border-gray-300 hover:border-black hover:shadow-md bg-white"
                       }`}
                     >
                       {s.label}
@@ -195,37 +222,46 @@ export default function ProductPage() {
             )}
 
             {/* ADD TO CART & WISHLIST */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 disabled={!canAddToCart}
                 onClick={handleAddToCart}
-                className="flex-1 bg-black text-white py-4 sm:py-5 font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 sm:gap-3 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex-1 bg-black text-white py-4 sm:py-5 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center justify-center gap-3 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none cursor-pointer"
               >
-                <ShoppingBag size={16} className="shrink-0" />
+                <ShoppingBag size={20} className="shrink-0" />
                 <span className="truncate">
                   {product.soldOut || stock <= 0
                     ? "Out of Stock"
                     : hasSizes && !selectedSize
-                    ? "Select Size"
+                    ? "Select Size First"
                     : "Add to Cart"}
                 </span>
               </button>
               <WishlistButton
                 productId={product._id}
-                className="p-4 sm:p-5 border border-gray-300 hover:border-black transition-colors shrink-0"
+                className="p-4 sm:p-5 border-2 border-gray-300 hover:border-black rounded-lg transition-all duration-200 shrink-0 shadow-md hover:shadow-lg bg-white"
               />
             </div>
 
             {/* TRUST */}
-            <div className="pt-6 space-y-2 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <Check size={14} /> Premium stainless steel
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-6 space-y-3">
+              <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
+                <div className="p-1.5 bg-green-100 rounded-full">
+                  <Check size={16} className="text-green-600" />
+                </div>
+                <span>Premium stainless steel construction</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check size={14} /> Secure payments
+              <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
+                <div className="p-1.5 bg-blue-100 rounded-full">
+                  <Check size={16} className="text-blue-600" />
+                </div>
+                <span>Secure payment options</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check size={14} /> Easy returns
+              <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
+                <div className="p-1.5 bg-purple-100 rounded-full">
+                  <Check size={16} className="text-purple-600" />
+                </div>
+                <span>Easy returns & exchanges</span>
               </div>
             </div>
 
@@ -233,21 +269,25 @@ export default function ProductPage() {
         </div>
 
         {product.details && (
-          <div className="mt-20 border-t pt-12 max-w-4xl">
-            <h2 className="text-xl font-bold uppercase tracking-wide mb-6">
+          <div className="mt-12 sm:mt-16 bg-white rounded-2xl shadow-lg border border-gray-200 p-8 sm:p-10 md:p-12 w-full">
+            <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-wide mb-6 sm:mb-8 pb-4 border-b-2 border-gray-200">
               Product Details
             </h2>
-            <div className="text-gray-600 whitespace-pre-line">
+            <div className="text-gray-700 whitespace-pre-line leading-relaxed text-base sm:text-lg">
               {product.details}
             </div>
           </div>
         )}
 
         {/* REVIEWS */}
-        <ReviewSection productId={product._id} />
+        <div className="mt-12 sm:mt-16">
+          <ReviewSection productId={product._id} />
+        </div>
 
         {/* RECENTLY VIEWED */}
-        <RecentlyViewed currentProductId={product._id} />
+        <div className="mt-12 sm:mt-16">
+          <RecentlyViewed currentProductId={product._id} />
+        </div>
 
       </div>
     </div>

@@ -80,7 +80,7 @@ export default function RedesignedAboutPage() {
           <h1 className="reveal-text text-xl md:text-3xl text-black font-bold tracking-[0.4em] uppercase">
             Beyond Quality <span className="opacity-50 ">|</span> Beyond Design
           </h1>
-          <p className="reveal-text max-w-xl mx-auto text-black/80 text-sm md:text-base tracking-wide leading-relaxed">
+          <p className="reveal-text w-full text-black/80 text-sm md:text-base tracking-wide leading-relaxed">
             In the world of technology and innovation, we provide products that
             match your expectations and earn your trust through world-class
             quality.
@@ -97,7 +97,7 @@ export default function RedesignedAboutPage() {
       </section>
 
       {/* --- BOXED CONTENT GRID --- */}
-      <section className="max-w-[1400px] mx-auto p-4 md:p-12 -mt-20 relative z-20">
+      <section className="w-full p-4 md:p-12 -mt-20 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Main Philosophy Box */}
           <div
@@ -114,7 +114,7 @@ export default function RedesignedAboutPage() {
               The Harmony of <br />
               <span className="italic text-red-600">Man & Machine.</span>
             </h3>
-            <p className="text-slate-500 text-lg leading-relaxed font-sans max-w-lg">
+            <p className="text-slate-500 text-lg leading-relaxed font-sans w-full">
               We believe in an innovative approach using Man-Machine
               combination. Each item from BOURGON goes through expert inspection
               to ensure undemanding perfection.

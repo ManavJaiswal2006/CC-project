@@ -12,7 +12,7 @@ function PaymentFailureContent() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-6">
-      <div className="max-w-md w-full text-center space-y-6">
+      <div className="w-full text-center space-y-6">
         <div className="flex justify-center">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
             <XCircle className="text-red-600" size={48} />

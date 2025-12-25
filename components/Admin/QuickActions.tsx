@@ -31,7 +31,8 @@ export default function QuickActions({
   const handleQuickAction = async (
     status: string,
     paymentStatus?: string,
-    trackingNumber?: string
+    trackingNumber?: string,
+    trackingUrl?: string
   ) => {
     setLoading(status);
     try {
@@ -40,6 +41,7 @@ export default function QuickActions({
         status,
         paymentStatus,
         trackingNumber,
+        trackingUrl,
       });
 
       // Send email notification if status changed
@@ -56,6 +58,7 @@ export default function QuickActions({
             customerName,
             status,
             trackingNumber,
+            trackingUrl,
           }),
         }).catch(() => {});
       }
@@ -113,7 +116,8 @@ export default function QuickActions({
             onClick={() => {
               const tracking = prompt("Enter tracking number:");
               if (tracking) {
-                handleQuickAction("Shipped", currentPaymentStatus, tracking.trim());
+                const trackingUrl = prompt("Enter tracking URL (third-party tracking link):");
+                handleQuickAction("Shipped", currentPaymentStatus, tracking.trim(), trackingUrl?.trim() || undefined);
               }
             }}
             disabled={loading !== null}

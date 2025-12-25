@@ -112,7 +112,7 @@ export default function PromosPage() {
   /* ================= UI ================= */
   return (
     <div className="bg-gray-50 px-4 sm:px-6 md:px-8 py-6 sm:py-8">
-      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+      <div className="w-full space-y-6 sm:space-y-8">
         {/* HEADER */}
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-3xl text-black font-bold uppercase">

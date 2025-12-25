@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function AuthLayout({ children, title, subtitle }: { children: React.ReactNode, title: string, subtitle: string }) {
   return (
     <main className="min-h-screen bg-[#fcfcfc] flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md mx-auto">
         <Link href="/" className="inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-slate-400 hover:text-red-600 transition-colors mb-12 uppercase">
           <MoveLeft size={14} /> Back to Gallery
         </Link>

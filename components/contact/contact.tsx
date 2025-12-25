@@ -30,13 +30,28 @@ export default function ConciergePage() {
     const payload = { name: formData.get("name"), email: formData.get("email"), message: formData.get("message") };
 
     try {
-      const res = await fetch("/api/contact", { method: "POST", body: JSON.stringify(payload) });
-      if (res.ok) {
+      const res = await fetch("/api/contact", { 
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload) 
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
         setStatus("success");
         (e.target as HTMLFormElement).reset();
-      } else setStatus("error");
-    } catch { setStatus("error"); }
-    finally { setLoading(false); }
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      setStatus("error");
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   return (
@@ -45,11 +60,11 @@ export default function ConciergePage() {
       {/* HEADER */}
       <section className="pt-32 pb-16 px-6 text-center">
         <h1 className="reveal font-bold text-5xl md:text-7xl italic mb-6">Concierge <span className="text-slate-400">& Care</span></h1>
-        <p className="reveal max-w-xl mx-auto text-slate-500 font-light">Expert assistance for a world-class culinary journey.</p>
+        <p className="reveal w-full text-slate-500 font-light">Expert assistance for a world-class culinary journey.</p>
       </section>
 
       {/* CONTACT DETAILS BENTO */}
-      <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+      <section className="w-full px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <Phone className="text-red-600 mb-4" size={24} />
           <h3 className=" italic text-xl mb-2">Speak with Us</h3>
@@ -75,7 +90,7 @@ export default function ConciergePage() {
       </section>
 
       {/* FORM & FAQ GRID */}
-      <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20">
+      <section className="w-full px-6 grid grid-cols-1 lg:grid-cols-2 gap-20">
         {/* FORM */}
         <div className="reveal">
           <h2 className="text-4xl  italic mb-8">Send a <span className="text-slate-400">Message</span></h2>

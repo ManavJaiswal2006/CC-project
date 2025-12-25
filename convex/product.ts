@@ -59,7 +59,8 @@ export const createProduct = mutation({
     storageId: v.optional(v.id("_storage")),
 
     // single-price product
-    price: v.optional(v.number()),
+    customerPrice: v.optional(v.number()),
+    retailerPrice: v.optional(v.number()),
 
     // size-based product
     sizes: v.optional(
@@ -67,7 +68,8 @@ export const createProduct = mutation({
         v.object({
           label: v.string(),
           value: v.string(),
-          price: v.number(),
+          customerPrice: v.number(),
+          retailerPrice: v.number(),
         })
       )
     ),
@@ -117,14 +119,16 @@ export const updateProduct = mutation({
     stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),
-    price: v.optional(v.number()),
+    customerPrice: v.optional(v.number()),
+    retailerPrice: v.optional(v.number()),
 
     sizes: v.optional(
       v.array(
         v.object({
           label: v.string(),
           value: v.string(),
-          price: v.number(),
+          customerPrice: v.number(),
+          retailerPrice: v.number(),
         })
       )
     ),
@@ -193,6 +197,104 @@ export const getProduct = query({
 });
 
 /* =====================================================
+   GET SCOPED PRODUCT (ROLE-BASED PRICING)
+===================================================== */
+export const getScopedProduct = query({
+  args: {
+    productId: v.id("products"),
+    userId: v.optional(v.string()), // Firebase UID
+  },
+  handler: async (ctx, { productId, userId }) => {
+    const product = await ctx.db.get(productId);
+    if (!product) return null;
+
+    const imageUrl = product.storageId
+      ? await ctx.storage.getUrl(product.storageId)
+      : null;
+
+    // If no user ID provided, return customer pricing
+    if (!userId) {
+      return {
+        ...product,
+        imageUrl,
+        pricing: {
+          type: "customer",
+          price: product.customerPrice ?? 0,
+          sizes:
+            product.sizes?.map((s) => ({
+              ...s,
+              customerPrice: s.customerPrice,
+              retailerPrice: s.retailerPrice,
+            })) ?? [],
+        },
+      };
+    }
+
+    // Get user from Convex
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!user) {
+      // User not found, return customer pricing
+      return {
+        ...product,
+        imageUrl,
+        pricing: {
+          type: "customer",
+          price: product.customerPrice ?? 0,
+          sizes:
+            product.sizes?.map((s) => ({
+              ...s,
+              customerPrice: s.customerPrice,
+              retailerPrice: s.retailerPrice,
+            })) ?? [],
+        },
+      };
+    }
+
+    // Determine user role (prefer 'role' field, fallback to 'category')
+    const role = user.role || (user.category === "distributor" ? "distributor" : "customer");
+
+    // If customer, return customer pricing
+    if (role !== "distributor") {
+      return {
+        ...product,
+        imageUrl,
+        pricing: {
+          type: "customer",
+          price: product.customerPrice ?? 0,
+          sizes:
+            product.sizes?.map((s) => ({
+              ...s,
+              customerPrice: s.customerPrice,
+              retailerPrice: s.retailerPrice,
+            })) ?? [],
+        },
+      };
+    }
+
+    // User is a distributor - return retailer pricing
+    return {
+      ...product,
+      imageUrl,
+      pricing: {
+        type: "retailer",
+        price: product.retailerPrice ?? 0,
+        customerPrice: product.customerPrice ?? 0, // Include for reference
+        sizes:
+          product.sizes?.map((s) => ({
+            ...s,
+            customerPrice: s.customerPrice,
+            retailerPrice: s.retailerPrice,
+          })) ?? [],
+      },
+    };
+  },
+});
+
+/* =====================================================
    SEARCH PRODUCTS (🔥 NEW 🔥)
 ===================================================== */
 export const search = query({
@@ -216,7 +318,8 @@ export const search = query({
       id: p._id,
       name: p.name,
       category: p.category,
-      price: p.price ?? null,
+      customerPrice: p.customerPrice ?? null,
+      retailerPrice: p.retailerPrice ?? null,
       hasSizes: Boolean(p.sizes?.length),
     }));
   },

@@ -110,8 +110,8 @@ export default function OrdersPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-white text-gray-900 pt-20 sm:pt-24 pb-12 sm:pb-16 md:pb-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900 pt-20 sm:pt-24 pb-12 sm:pb-16 md:pb-20">
+      <div className="w-full px-4 sm:px-6 space-y-6 sm:space-y-8">
         {/* HEADER */}
         <header className="border-b pb-6">
           <div className="flex items-center gap-3 mb-4">
@@ -133,7 +133,7 @@ export default function OrdersPage() {
               placeholder="Search by order ID or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent shadow-sm hover:shadow-md transition-all"
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function OrdersPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 pr-8 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black appearance-none bg-white"
+              className="pl-10 pr-8 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent appearance-none bg-white shadow-sm hover:shadow-md transition-all cursor-pointer min-w-[180px]"
             >
               <option value="all">All Status</option>
               {uniqueStatuses.map((status) => (

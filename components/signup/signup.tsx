@@ -1,39 +1,95 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { ShieldCheck, Loader2, Mail } from "lucide-react";
 import AuthLayout from "@/components/auth/Authlayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthbutton";
 import { auth } from "@/app/lib/firebase";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 // 1. Separate Logic into Sub-Component
 function SignUpContent() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const router = useRouter();
+  const updateUser = useMutation(api.user.updateUser);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword)
+    setError("");
+    setSuccess("");
+    
+    // Validation
+    if (!name.trim()) {
+      return setError("Name is required.");
+    }
+
+    if (!phone.trim()) {
+      return setError("Phone number is required.");
+    }
+
+    // Validate phone number (should be 10 digits)
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 10) {
+      return setError("Phone number must be 10 digits.");
+    }
+
+    if (password !== confirmPassword) {
       return setError("Passwords do not match.");
+    }
+
+    if (password.length < 6) {
+      return setError("Password must be at least 6 characters.");
+    }
+
+    setLoading(true);
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push("/shop");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Save user profile to Convex
+      try {
+        await updateUser({
+          userId: user.uid,
+          email: email,
+          name: name.trim(),
+          phone: phoneDigits,
+          addresses: [],
+        });
+      } catch (convexError) {
+        console.error("Error saving user profile:", convexError);
+        // Don't fail signup if Convex save fails, but log it
+      }
+      
+      // Send email verification
+      await sendEmailVerification(user);
+      setVerificationSent(true);
+      setSuccess("Verification email sent! Please check your inbox and verify your email before logging in.");
     } catch (err) {
       if (err instanceof Error) {
         setError(
           err.message.includes("email-already-in-use")
             ? "This email is already registered."
-            : "Could not create account."
+            : err.message.includes("invalid-email")
+            ? "Invalid email address."
+            : "Could not create account. Please try again."
         );
       } else {
-        setError("Could not create account.");
+        setError("Could not create account. Please try again.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,11 +98,45 @@ function SignUpContent() {
       <form onSubmit={handleSignUp} className="space-y-6">
         <div className="space-y-2">
           <label className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+            Full Name
+          </label>
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="John Doe"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            required
+            value={phone}
+            onChange={(e) => {
+              // Only allow digits and limit to 10 digits
+              const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setPhone(value);
+            }}
+            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="9876543210"
+          />
+          <p className="text-slate-400 text-[9px] font-light mt-1">
+            10-digit phone number
+          </p>
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
             Email Address
           </label>
           <input
             type="email"
             required
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="newmember@bourgon.com"
@@ -59,6 +149,7 @@ function SignUpContent() {
           <input
             type="password"
             required
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="••••••••"
@@ -71,6 +162,7 @@ function SignUpContent() {
           <input
             type="password"
             required
+            value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="••••••••"
@@ -81,9 +173,60 @@ function SignUpContent() {
             {error}
           </p>
         )}
-        <button className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all">
-          CREATE ACCOUNT <ShieldCheck size={14} />
-        </button>
+        {success && (
+          <div className="bg-green-50 border border-green-200 p-4 rounded">
+            <p className="text-green-700 text-[11px] font-bold tracking-wider uppercase mb-2">
+              Verification Email Sent!
+            </p>
+            <p className="text-green-600 text-xs font-light">
+              {success}
+            </p>
+          </div>
+        )}
+        {verificationSent ? (
+          <div className="space-y-4">
+            <button 
+              type="button"
+              onClick={() => router.push("/login")}
+              className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all"
+            >
+              GO TO LOGIN <ShieldCheck size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (auth.currentUser) {
+                  try {
+                    await sendEmailVerification(auth.currentUser);
+                    setSuccess("Verification email sent again! Please check your inbox.");
+                  } catch (err) {
+                    setError("Could not resend verification email. Please try again later.");
+                  }
+                }
+              }}
+              className="w-full border border-slate-300 text-slate-700 py-3 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"
+            >
+              RESEND VERIFICATION EMAIL <Mail size={14} />
+            </button>
+          </div>
+        ) : (
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                CREATING ACCOUNT...
+              </>
+            ) : (
+              <>
+                CREATE ACCOUNT <ShieldCheck size={14} />
+              </>
+            )}
+          </button>
+        )}
       </form>
 
       <div className="mt-8 pt-8 border-t border-slate-50 text-center">

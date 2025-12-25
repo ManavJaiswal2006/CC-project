@@ -14,12 +14,13 @@ export async function POST(req: Request) {
     }
 
     body = await req.json();
-    const { orderId, customerEmail, customerName, status, trackingNumber } = body as {
+    const { orderId, customerEmail, customerName, status, trackingNumber, trackingUrl } = body as {
       orderId: string;
       customerEmail?: string;
       customerName?: string;
       status: string;
       trackingNumber?: string;
+      trackingUrl?: string;
     };
 
     if (!orderId || !customerEmail) {
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
       customerEmail,
       status: status || order.status,
       trackingNumber: trackingNumber || order.trackingNumber,
+      trackingUrl: trackingUrl || order.trackingUrl,
       items: (order.items || []) as Array<{
         id: string;
         name: string;

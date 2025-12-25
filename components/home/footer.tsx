@@ -10,7 +10,7 @@ export default function PremiumFooter() {
 
   return (
     <footer className="bg-[#0a0a0a] text-white border-t border-white/5">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 pt-12 sm:pt-16 md:pt-24 pb-8 sm:pb-10 md:pb-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12 pt-12 sm:pt-16 md:pt-24 pb-8 sm:pb-10 md:pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-24">
 
           {/* Brand Identity */}
@@ -25,7 +25,7 @@ export default function PremiumFooter() {
               </p>
             </div>
 
-            <p className="footer-item text-zinc-400 font-light leading-relaxed max-w-sm">
+            <p className="footer-item text-zinc-400 font-light leading-relaxed w-full">
               {footerData.brand.description}
             </p>
           </div>

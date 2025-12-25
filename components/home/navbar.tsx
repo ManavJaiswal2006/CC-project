@@ -6,13 +6,16 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { ShoppingCart, User, Menu, X, LogIn, Heart } from "lucide-react";
+import { ShoppingCart, User, Menu, X, LogIn, Heart, Briefcase } from "lucide-react";
 import { navlinks } from "@/constants/home";
 import { logoImg } from "@/constants";
 // import SearchModal from "./search";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useCart } from "@/app/context/CartContext";
+import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 gsap.registerPlugin(useGSAP);
 
@@ -87,6 +90,39 @@ const AuthButton = memo(
 );
 AuthButton.displayName = "AuthButton";
 
+const ProfessionalModeToggle = memo(({ userId }: { userId: string | null }) => {
+  const { isProfessionalMode, toggleProfessionalMode } = useProfessionalMode();
+  const userData = useQuery(
+    api.user.getUser,
+    userId ? { userId } : "skip"
+  );
+
+  // Only show toggle if user is a distributor
+  const isDistributor =
+    userData?.role === "distributor" || userData?.category === "distributor";
+
+  if (!isDistributor) return null;
+
+  return (
+    <button
+      onClick={toggleProfessionalMode}
+      className={`flex items-center gap-2 px-3 py-2 rounded-md text-xs font-bold tracking-wider transition-all uppercase whitespace-nowrap ${
+        isProfessionalMode
+          ? "bg-red-600 text-white hover:bg-red-700"
+          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+      }`}
+      title={isProfessionalMode ? "Switch to Retail Mode" : "Switch to Professional Mode"}
+      aria-label={isProfessionalMode ? "Switch to Retail Mode" : "Switch to Professional Mode"}
+    >
+      <Briefcase size={14} className="shrink-0" />
+      <span className="hidden sm:inline">
+        {isProfessionalMode ? "Professional" : "Retail"}
+      </span>
+    </button>
+  );
+});
+ProfessionalModeToggle.displayName = "ProfessionalModeToggle";
+
 /* ----------------------------------------
    Navbar Component
 ---------------------------------------- */
@@ -98,6 +134,7 @@ const Navbar = () => {
 
   const { cartCount } = useCart();
   const pathname = usePathname();
+  const userId = user?.uid ?? null;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -177,7 +214,7 @@ const Navbar = () => {
       ref={containerRef}
       className="sticky top-0 z-50 w-full bg-[#eeeaeae0] backdrop-blur-sm font-sans border-b border-gray-200"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between py-4 relative">
           {/* Mobile Toggle */}
           <div className="flex md:hidden z-20">
@@ -206,17 +243,18 @@ const Navbar = () => {
           </div>
 
           {/* Right Icons */}
-          <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-6 text-gray-700 z-20 ml-auto">
+          <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 text-gray-700 z-20 ml-auto">
             {/* <SearchModal /> */}
             <WishlistIcon user={user} />
+            <ProfessionalModeToggle userId={userId} />
             <AuthButton user={user} loading={loading} />
             <CartIcon count={cartCount} />
           </div>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex justify-center pt-2">
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-semibold tracking-wider text-gray-700 uppercase">
+        <nav className="hidden md:flex justify-center pt-2 pb-2">
+          <ul className="flex flex-wrap items-center justify-center gap-x-4 lg:gap-x-6 gap-y-2 text-[11px] font-semibold tracking-wider text-gray-700 uppercase">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (

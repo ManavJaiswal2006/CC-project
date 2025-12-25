@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { CartProvider } from "./context/CartContext";
+import { ProfessionalModeProvider } from "./context/ProfessionalModeContext";
 import ErrorBoundary from "@/components/UI/ErrorBoundary";
 import GoogleAnalytics from "@/components/Analytics/GoogleAnalytics";
 import ConditionalLayout from "@/components/ConditionalLayout";
@@ -87,9 +88,11 @@ export default function RootLayout({
           <ErrorBoundary>
             <CartProvider>
               <AuthProvider>
-                <ConditionalLayout>
-                  {children}
-                </ConditionalLayout>
+                <ProfessionalModeProvider>
+                  <ConditionalLayout>
+                    {children}
+                  </ConditionalLayout>
+                </ProfessionalModeProvider>
               </AuthProvider>
             </CartProvider>
           </ErrorBoundary>

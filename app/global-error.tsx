@@ -24,7 +24,7 @@ export default function GlobalError({
     <html lang="en">
       <body className="bg-white">
         <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          <div className="max-w-md w-full space-y-6">
+          <div className="w-full space-y-6">
             <div className="flex justify-center">
               <AlertTriangle className="text-red-600" size={64} />
             </div>

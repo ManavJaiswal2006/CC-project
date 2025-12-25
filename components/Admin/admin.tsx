@@ -9,7 +9,8 @@ import type { Id } from "@/convex/_generated/dataModel";
 type Size = {
   label: string;
   value: string;
-  price: number;
+  customerPrice: number;
+  retailerPrice: number;
 };
 
 export default function AdminPage() {
@@ -23,6 +24,7 @@ export default function AdminPage() {
   /* ================= STATE ================= */
   const [editingId, setEditingId] = useState<Id<"products"> | null>(null);
   const [mode, setMode] = useState<"single" | "sizes">("single");
+  const [pricingView, setPricingView] = useState<"customer" | "retailer">("customer");
 
   const imageRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +36,8 @@ export default function AdminPage() {
     discount: 0,
     stock: 0,
     soldOut: false,
-    price: 0,
+    customerPrice: 0,
+    retailerPrice: 0,
     sizes: [] as Size[],
     image: null as File | null,
   });
@@ -80,6 +83,7 @@ export default function AdminPage() {
   const resetForm = () => {
     setEditingId(null);
     setMode("single");
+    setPricingView("customer");
     setForm({
       name: "",
       category: "",
@@ -88,7 +92,8 @@ export default function AdminPage() {
       discount: 0,
       stock: 0,
       soldOut: false,
-      price: 0,
+      customerPrice: 0,
+      retailerPrice: 0,
       sizes: [],
       image: null,
     });
@@ -107,7 +112,8 @@ export default function AdminPage() {
       soldOut: form.soldOut,
       storageId,
 
-      price: mode === "single" ? form.price : undefined,
+      customerPrice: mode === "single" ? form.customerPrice : undefined,
+      retailerPrice: mode === "single" ? form.retailerPrice : undefined,
       sizes: mode === "sizes" ? form.sizes : undefined,
     };
 
@@ -123,7 +129,7 @@ export default function AdminPage() {
   /* ================= UI ================= */
   return (
     <div className="bg-gray-50 px-8 py-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full">
 
         <div className="flex items-center justify-between mb-12 gap-4">
           <h1 className="text-3xl text-black font-bold uppercase">
@@ -253,31 +259,112 @@ export default function AdminPage() {
 
           {/* SINGLE PRICE */}
           {mode === "single" && (
-            <div>
-              <label className="label">Price (₹)</label>
-              <input
-                type="number"
-                className="input"
-                value={form.price}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    price: Number(e.target.value),
-                  })
-                }
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="label">Pricing</label>
+                <div className="flex gap-4 border-b border-gray-200 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setPricingView("customer")}
+                    className={`px-4 py-2 border-b-2 transition-colors ${
+                      pricingView === "customer"
+                        ? "border-black text-black font-bold"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    Customer Price
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPricingView("retailer")}
+                    className={`px-4 py-2 border-b-2 transition-colors ${
+                      pricingView === "retailer"
+                        ? "border-black text-black font-bold"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    Retailer Price
+                  </button>
+                </div>
+
+                {pricingView === "customer" && (
+                  <div>
+                    <input
+                      type="number"
+                      className="input"
+                      value={form.customerPrice}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          customerPrice: Number(e.target.value),
+                        })
+                      }
+                      placeholder="Enter customer price (B2C)"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Price shown to customers (B2C)
+                    </p>
+                  </div>
+                )}
+
+                {pricingView === "retailer" && (
+                  <div>
+                    <input
+                      type="number"
+                      className="input"
+                      value={form.retailerPrice}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          retailerPrice: Number(e.target.value),
+                        })
+                      }
+                      placeholder="Enter retailer price (B2B)"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Price shown to retailers/distributors (B2B)
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* SIZE BASED */}
           {mode === "sizes" && (
             <div className="space-y-4">
-              <label className="label">Sizes</label>
+              <div>
+                <label className="label">Sizes</label>
+                <div className="flex gap-4 border-b border-gray-200 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setPricingView("customer")}
+                    className={`px-4 py-2 border-b-2 transition-colors ${
+                      pricingView === "customer"
+                        ? "border-black text-black font-bold"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    Customer Prices
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPricingView("retailer")}
+                    className={`px-4 py-2 border-b-2 transition-colors ${
+                      pricingView === "retailer"
+                        ? "border-black text-black font-bold"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    Retailer Prices
+                  </button>
+                </div>
+              </div>
 
               {form.sizes.map((s, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-3 gap-3"
+                  className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded"
                 >
                   <input
                     className="input"
@@ -302,24 +389,36 @@ export default function AdminPage() {
                   <input
                     type="number"
                     className="input"
-                    placeholder="Price"
-                    value={s.price}
+                    placeholder={pricingView === "customer" ? "Customer Price" : "Retailer Price"}
+                    value={pricingView === "customer" ? s.customerPrice : s.retailerPrice}
                     onChange={(e) => {
                       const sizes = [...form.sizes];
-                      sizes[i].price = Number(e.target.value);
+                      if (pricingView === "customer") {
+                        sizes[i].customerPrice = Number(e.target.value);
+                      } else {
+                        sizes[i].retailerPrice = Number(e.target.value);
+                      }
                       setForm({ ...form, sizes });
                     }}
                   />
+                  <div className="text-xs text-gray-500 flex items-center">
+                    {pricingView === "customer" ? (
+                      <span>Retailer: ₹{s.retailerPrice || 0}</span>
+                    ) : (
+                      <span>Customer: ₹{s.customerPrice || 0}</span>
+                    )}
+                  </div>
                 </div>
               ))}
 
               <button
+                type="button"
                 onClick={() =>
                   setForm({
                     ...form,
                     sizes: [
                       ...form.sizes,
-                      { label: "", value: "", price: 0 },
+                      { label: "", value: "", customerPrice: 0, retailerPrice: 0 },
                     ],
                   })
                 }
@@ -356,53 +455,117 @@ export default function AdminPage() {
         </div>
 
         {/* ================= PRODUCT LIST ================= */}
-        <div className="space-y-4 text-black">
-          {products.map((p) => (
-            <div
-              key={p._id}
-              className="bg-white border p-4 flex justify-between items-center"
+        <div className="space-y-6 text-black">
+          {/* Pricing View Tabs */}
+          <div className="flex gap-4 border-b border-gray-300">
+            <button
+              onClick={() => setPricingView("customer")}
+              className={`px-6 py-3 border-b-2 transition-colors font-bold uppercase text-sm tracking-wider ${
+                pricingView === "customer"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
             >
-              <div>
-                <p className="font-bold">{p.name}</p>
-                <p className="text-xs text-gray-500">
-                  {p.sizes?.length
-                    ? `${p.sizes.length} sizes`
-                    : `₹${p.price}`}{" "}
-                  • {p.discount}% off • In stock: {p.stock ?? 0}
-                </p>
-              </div>
+              Customer Pricing
+            </button>
+            <button
+              onClick={() => setPricingView("retailer")}
+              className={`px-6 py-3 border-b-2 transition-colors font-bold uppercase text-sm tracking-wider ${
+                pricingView === "retailer"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              Retailer Pricing
+            </button>
+          </div>
 
-              <div className="flex gap-4 text-sm">
-                <button
-                  onClick={() => {
-                    setEditingId(p._id);
-                    setMode(p.sizes?.length ? "sizes" : "single");
-                    setForm({
-                      name: p.name,
-                      category: p.category,
-                      description: p.description,
-                      details: p.details ?? "",
-                      discount: p.discount,
-                      stock: p.stock ?? 0,
-                      soldOut: p.soldOut,
-                      price: p.price ?? 0,
-                      sizes: p.sizes ?? [],
-                      image: null,
-                    });
-                  }}
-                >
-                  Edit
-                </button>
+          {/* Products List */}
+          <div className="space-y-4">
+            {products.map((p) => {
+              const customerPrice = p.customerPrice ?? 0;
+              const retailerPrice = p.retailerPrice ?? 0;
+              const displayPrice = pricingView === "customer" ? customerPrice : retailerPrice;
+              const otherPrice = pricingView === "customer" ? retailerPrice : customerPrice;
 
-                <button
-                  className="text-red-600"
-                  onClick={() => deleteProduct({ id: p._id })}
+              return (
+                <div
+                  key={p._id}
+                  className="bg-white border p-4"
                 >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="font-bold text-lg mb-2">{p.name}</p>
+                      <p className="text-xs text-gray-500 mb-4">
+                        {p.sizes?.length
+                          ? `${p.sizes.length} sizes`
+                          : `Single price`}{" "}
+                        • {p.discount}% off • In stock: {p.stock ?? 0}
+                      </p>
+
+                      {/* PRICING DISPLAY */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className={`p-4 rounded ${pricingView === "customer" ? "bg-gray-50 border-2 border-gray-900" : "bg-gray-50 border border-gray-200"}`}>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
+                            {pricingView === "customer" ? "Customer Price (B2C)" : "Retailer Price (B2B)"}
+                          </p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            ₹{displayPrice.toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="p-4 rounded bg-gray-50 border border-gray-200">
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
+                            {pricingView === "customer" ? "Retailer Price (B2B)" : "Customer Price (B2C)"}
+                          </p>
+                          <p className="text-xl font-semibold text-gray-600">
+                            ₹{otherPrice.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 text-sm ml-4">
+                      <button
+                        onClick={() => {
+                          setEditingId(p._id);
+                          setMode(p.sizes?.length ? "sizes" : "single");
+                          setPricingView("customer");
+                          setForm({
+                            name: p.name,
+                            category: p.category,
+                            description: p.description,
+                            details: p.details ?? "",
+                            discount: p.discount,
+                            stock: p.stock ?? 0,
+                            soldOut: p.soldOut,
+                            customerPrice: p.customerPrice ?? 0,
+                            retailerPrice: p.retailerPrice ?? 0,
+                            sizes: (p.sizes ?? []).map((s: any) => ({
+                              label: s.label,
+                              value: s.value,
+                              customerPrice: s.customerPrice ?? 0,
+                              retailerPrice: s.retailerPrice ?? 0,
+                            })),
+                            image: null,
+                          });
+                        }}
+                        className="px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors uppercase text-xs font-bold tracking-wider"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase text-xs font-bold tracking-wider"
+                        onClick={() => deleteProduct({ id: p._id })}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
       </div>

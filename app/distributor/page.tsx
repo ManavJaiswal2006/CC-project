@@ -1,6 +1,7 @@
 import DistributorPage from '@/components/distributor/distributor'
 import { distributorPageDescription, distributorPageTitle } from '@/constants/metadata';
 import { Metadata } from 'next';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export const metadata: Metadata = {
   title: distributorPageTitle,
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 
 function page() {
   return (
-    <DistributorPage />
+    <ProtectedRoute>
+      <DistributorPage />
+    </ProtectedRoute>
   )
 }
 

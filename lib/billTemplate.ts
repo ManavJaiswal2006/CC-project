@@ -40,14 +40,9 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
     paymentMethod,
   } = data;
 
-  // Calculate item totals
-  const itemsWithTotals = items.map((item) => ({
-    ...item,
-    itemTotal: item.price * item.quantity,
-  }));
-
-  // Format payment method display
   const paymentMethodDisplay = {
+    online: "Online Payment",
+    razorpay: "Online Payment",
     card: "Credit/Debit Card",
     upi: "UPI",
     cod: "Cash on Delivery",
@@ -60,240 +55,142 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invoice - ${escapeHtml(orderId)}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@300;400;600&display=swap');
+    
+    body { margin: 0; padding: 0; background-color: #fcfcfc; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; table-layout: fixed; background-color: #fcfcfc; padding: 40px 0; }
+    .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 650px; border-spacing: 0; font-family: 'Inter', sans-serif; color: #111111; border: 1px solid #e5e5e5; }
+    .header { background-color: #000000; text-align: center; padding: 60px 40px; }
+    .logo { font-family: 'Cormorant Garamond', serif; font-size: 38px; color: #ffffff; letter-spacing: 10px; text-transform: uppercase; margin: 0; line-height: 1; }
+    .logo-sub { color: #a1a1a1; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-top: 12px; }
+    .section-padding { padding: 40px 50px; }
+    .meta-table { width: 100%; margin-bottom: 40px; }
+    .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #888888; margin-bottom: 8px; font-weight: 600; }
+    .value { font-size: 14px; font-weight: 400; color: #111111; }
+    .item-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .item-header { border-bottom: 1px solid #111111; padding-bottom: 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888888; }
+    .item-row { border-bottom: 1px solid #f0f0f0; }
+    .item-name { font-size: 14px; font-weight: 600; padding: 20px 0 5px; }
+    .item-meta { font-size: 12px; color: #888888; padding-bottom: 20px; }
+    .price-col { font-size: 14px; text-align: right; vertical-align: top; padding-top: 20px; }
+    .total-section { padding: 30px 50px; background-color: #fafafa; border-top: 1px solid #eeeeee; }
+    .total-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .grand-total { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; border-top: 2px solid #111111; padding-top: 15px; margin-top: 10px; }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          
-          <!-- Header -->
-          <tr>
-            <td style="padding: 40px 40px 30px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-bottom: 3px solid #b91c1c;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
+<body>
+  <div class="wrapper">
+    <table class="main" align="center">
+      <tr>
+        <td class="header">
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
+          <div style="margin-top: 30px; display: inline-block; padding: 8px 15px; border: 1px solid #444; color: #fff; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;">
+            Official Invoice
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="section-padding">
+          <table class="meta-table">
+            <tr>
+              <td width="50%" valign="top">
+                <div class="label">Reference ID</div>
+                <div class="value" style="font-weight: 600;">#${escapeHtml(orderId)}</div>
+              </td>
+              <td width="50%" valign="top" align="right">
+                <div class="label">Issue Date</div>
+                <div class="value">${escapeHtml(orderDate)}</div>
+              </td>
+            </tr>
+          </table>
+
+          <table class="meta-table">
+            <tr>
+              <td width="50%" valign="top">
+                <div class="label">Billed To</div>
+                <div class="value" style="font-weight: 600;">${escapeHtml(customerName)}</div>
+                <div class="value" style="color: #666; font-size: 13px;">${customerEmail ? escapeHtml(customerEmail) : ''}</div>
+              </td>
+              <td width="50%" valign="top">
+                <div class="label">Shipping Destination</div>
+                <div class="value" style="line-height: 1.6; font-size: 13px;">${escapeHtml(shippingAddress)}</div>
+              </td>
+            </tr>
+          </table>
+
+          <table class="item-table">
+            <thead>
+              <tr>
+                <th align="left" class="item-header">Product Details</th>
+                <th align="center" class="item-header" width="60">Qty</th>
+                <th align="right" class="item-header" width="100">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map((item) => `
+                <tr class="item-row">
                   <td>
-                    <h1 style="margin: 0; font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: 2px; font-style: italic;">
-                      BOURGON
-                    </h1>
-                    <p style="margin: 5px 0 0; font-size: 11px; color: #d1d5db; letter-spacing: 3px; text-transform: uppercase;">
-                      Beyond Quality. Beyond Design.
-                    </p>
-                  </td>
-                  <td align="right">
-                    <div style="background-color: #ffffff; padding: 12px 20px; border-radius: 4px; display: inline-block;">
-                      <p style="margin: 0; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                        Invoice
-                      </p>
+                    <div class="item-name">${escapeHtml(item.name)}</div>
+                    <div class="item-meta">
+                      ${item.size ? `Size: ${escapeHtml(item.size)}` : ''}
+                      ${item.discount ? ` <span style="color: #b91c1c; margin-left: 10px;">(${item.discount}% off)</span>` : ''}
                     </div>
                   </td>
+                  <td align="center" class="price-col" style="color: #888;">${item.quantity}</td>
+                  <td align="right" class="price-col">₹${(item.price * item.quantity).toFixed(2)}</td>
                 </tr>
-              </table>
-            </td>
-          </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </td>
+      </tr>
 
-          <!-- Order Info -->
-          <tr>
-            <td style="padding: 30px 40px; background-color: #fafafa; border-bottom: 1px solid #e5e7eb;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="50%" valign="top">
-                    <p style="margin: 0 0 8px; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Order Number
-                    </p>
-                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1f2937;">
-                      ${escapeHtml(orderId)}
-                    </p>
-                  </td>
-                  <td width="50%" valign="top" align="right">
-                    <p style="margin: 0 0 8px; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Order Date
-                    </p>
-                    <p style="margin: 0; font-size: 16px; color: #1f2937;">
-                      ${escapeHtml(orderDate)}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      <tr>
+        <td class="total-section">
+          <table width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td align="right" style="padding: 5px 0; font-size: 13px; color: #888;">Subtotal</td>
+              <td align="right" width="120" style="padding: 5px 0; font-size: 13px;">₹${subtotal.toFixed(2)}</td>
+            </tr>
+            ${promoDiscount && promoDiscount > 0 ? `
+            <tr>
+              <td align="right" style="padding: 5px 0; font-size: 13px; color: #b91c1c;">Promo: ${escapeHtml(promoCode || 'Applied')}</td>
+              <td align="right" style="padding: 5px 0; font-size: 13px; color: #b91c1c;">-₹${promoDiscount.toFixed(2)}</td>
+            </tr>
+            ` : ''}
+            <tr>
+              <td align="right" class="grand-total">Total Amount</td>
+              <td align="right" class="grand-total">₹${total.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td colspan="2" align="right" style="padding-top: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #aaa;">
+                Method: ${escapeHtml(paymentMethodDisplay)}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
 
-          <!-- Customer & Shipping Info -->
-          <tr>
-            <td style="padding: 30px 40px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="50%" valign="top">
-                    <p style="margin: 0 0 12px; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Bill To
-                    </p>
-                    <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #1f2937;">
-                      ${escapeHtml(customerName)}
-                    </p>
-                    ${customerEmail ? `<p style="margin: 0 0 4px; font-size: 13px; color: #6b7280;">${escapeHtml(customerEmail)}</p>` : ''}
-                  </td>
-                  <td width="50%" valign="top">
-                    <p style="margin: 0 0 12px; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Ship To
-                    </p>
-                    <p style="margin: 0; font-size: 13px; color: #1f2937; line-height: 1.6; white-space: pre-line;">
-                      ${escapeHtml(shippingAddress)}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Items Table -->
-          <tr>
-            <td style="padding: 0 40px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-                <thead>
-                  <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                    <th align="left" style="padding: 12px 0; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Item
-                    </th>
-                    <th align="center" style="padding: 12px 0; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Qty
-                    </th>
-                    <th align="right" style="padding: 12px 0; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Price
-                    </th>
-                    <th align="right" style="padding: 12px 0; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsWithTotals.map((item) => `
-                    <tr style="border-bottom: 1px solid #f3f4f6;">
-                      <td style="padding: 16px 0;">
-                        <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #1f2937;">
-                          ${escapeHtml(item.name)}
-                        </p>
-                        ${item.size ? `<p style="margin: 0; font-size: 12px; color: #6b7280;">Size: ${escapeHtml(item.size)}</p>` : ''}
-                        ${item.discount && item.discount > 0 ? `<p style="margin: 4px 0 0; font-size: 11px; color: #b91c1c;">Discount: ${item.discount}%</p>` : ''}
-                      </td>
-                      <td align="center" style="padding: 16px 0; font-size: 14px; color: #1f2937;">
-                        ${item.quantity}
-                      </td>
-                      <td align="right" style="padding: 16px 0; font-size: 14px; color: #1f2937;">
-                        ₹${item.price.toFixed(2)}
-                      </td>
-                      <td align="right" style="padding: 16px 0; font-size: 14px; font-weight: 600; color: #1f2937;">
-                        ₹${item.itemTotal.toFixed(2)}
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Totals -->
-          <tr>
-            <td style="padding: 0 40px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0" align="right" style="max-width: 300px;">
-                <tr>
-                  <td align="right" style="padding: 8px 0;">
-                    <p style="margin: 0; font-size: 13px; color: #6b7280;">
-                      Subtotal
-                    </p>
-                  </td>
-                  <td align="right" style="padding: 8px 0; padding-left: 20px;">
-                    <p style="margin: 0; font-size: 13px; color: #1f2937;">
-                      ₹${subtotal.toFixed(2)}
-                    </p>
-                  </td>
-                </tr>
-                ${promoDiscount && promoDiscount > 0 ? `
-                  <tr>
-                    <td align="right" style="padding: 8px 0;">
-                      <p style="margin: 0; font-size: 13px; color: #6b7280;">
-                        Promo Code ${promoCode ? `(${escapeHtml(promoCode)})` : ''}
-                      </p>
-                    </td>
-                    <td align="right" style="padding: 8px 0; padding-left: 20px;">
-                      <p style="margin: 0; font-size: 13px; color: #b91c1c;">
-                        -₹${promoDiscount.toFixed(2)}
-                      </p>
-                    </td>
-                  </tr>
-                ` : ''}
-                <tr style="border-top: 2px solid #e5e7eb;">
-                  <td align="right" style="padding: 16px 0 8px;">
-                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #1f2937; text-transform: uppercase; letter-spacing: 1px;">
-                      Total
-                    </p>
-                  </td>
-                  <td align="right" style="padding: 16px 0 8px; padding-left: 20px;">
-                    <p style="margin: 0; font-size: 20px; font-weight: 700; color: #1f2937;">
-                      ₹${total.toFixed(2)}
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="right" style="padding: 8px 0;">
-                    <p style="margin: 0; font-size: 11px; color: #9ca3af;">
-                      Payment Method: ${escapeHtml(paymentMethodDisplay)}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding: 30px 40px; background-color: #fafafa; border-top: 1px solid #e5e7eb;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <p style="margin: 0 0 12px; font-size: 12px; font-weight: 600; color: #1f2937; text-transform: uppercase; letter-spacing: 1px;">
-                      Bourgon Industries Pvt. Ltd.
-                    </p>
-                    <p style="margin: 0 0 4px; font-size: 11px; color: #6b7280; line-height: 1.6;">
-                      B - 30, Ambedkar Colony, Chhatarpur<br>
-                      New Delhi - 110074, India
-                    </p>
-                    <p style="margin: 8px 0 4px; font-size: 11px; color: #6b7280;">
-                      Email: <a href="mailto:bourgonindustries@gmail.com" style="color: #b91c1c; text-decoration: none;">bourgonindustries@gmail.com</a>
-                    </p>
-                    <p style="margin: 0; font-size: 11px; color: #6b7280;">
-                      Phone: <a href="tel:+918800830465" style="color: #b91c1c; text-decoration: none;">+91 88008 30465</a>
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Thank You Message -->
-          <tr>
-            <td style="padding: 30px 40px; text-align: center; background-color: #ffffff;">
-              ${isAdmin ? `
-                <p style="margin: 0; font-size: 12px; color: #6b7280; font-style: italic;">
-                  This is a notification of a new order. Please process and confirm payment.
-                </p>
-              ` : `
-                <p style="margin: 0 0 8px; font-size: 14px; color: #1f2937; font-weight: 600;">
-                  Thank you for your order!
-                </p>
-                <p style="margin: 0; font-size: 12px; color: #6b7280; line-height: 1.6;">
-                  We're preparing your order with care. You'll receive another email when your order ships.<br>
-                  Track your order anytime using your Order ID: <strong>${escapeHtml(orderId)}</strong>
-                </p>
-              `}
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
+      <tr>
+        <td style="padding: 50px; background-color: #ffffff; text-align: center;">
+          <div style="font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; margin-bottom: 10px;">
+            ${isAdmin ? 'Notification of Sales' : 'Thank you for your patronage.'}
+          </div>
+          <div style="font-size: 11px; color: #999; line-height: 1.8; letter-spacing: 0.5px;">
+            BOURGON INDUSTRIES PVT. LTD.<br>
+            B - 30, Ambedkar Colony, Chhatarpur, New Delhi - 110074<br>
+            Phone: +91 88008 30465 | Email: bourgonindustries@gmail.com
+          </div>
+          <div style="margin-top: 30px; font-size: 10px; color: #ddd; text-transform: uppercase; letter-spacing: 2px;">
+            © ${new Date().getFullYear()} All Rights Reserved.
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
 </body>
 </html>
   `.trim();
 }
-

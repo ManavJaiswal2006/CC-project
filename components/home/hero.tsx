@@ -70,12 +70,12 @@ export default function RedesignedHero() {
       {/* Subtle Top Navigation Line */}
       <div className="nav-line fixed top-0 left-0 w-full h-[1px] bg-zinc-200 z-50" />
 
-      <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
+      <div className="w-full px-6 lg:px-12">
         
         {/* ================= HERO SECTION ================= */}
         <section className="relative min-h-screen flex flex-col pt-5 pb-20">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-10">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <div className="overflow-hidden mb-4">
                 <p className="reveal-up text-orange-600 font-bold tracking-[0.3em] uppercase text-[10px]">
                   {heroData.subtitle}
@@ -138,7 +138,7 @@ export default function RedesignedHero() {
               <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-12">
                 {brandSectionData.title}
               </h2>
-              <div className="space-y-8 text-zinc-500 text-xl font-light leading-relaxed max-w-lg">
+              <div className="space-y-8 text-zinc-500 text-xl font-light leading-relaxed w-full">
                 {brandSectionData.paragraphs.map((p, i) => (
                   <p key={i} className="hover:text-zinc-900 transition-colors duration-700">{p}</p>
                 ))}

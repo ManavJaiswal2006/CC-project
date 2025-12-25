@@ -52,7 +52,37 @@ export const openRazorpay = (options: RazorpayOptions) => {
     throw new Error("Razorpay script not loaded");
   }
 
-  const razorpay = new window.Razorpay(options);
+  // Razorpay options with theme to ensure proper visibility
+  const razorpayOptions: any = {
+    ...options,
+    theme: {
+      color: "#000000",
+    },
+  };
+
+  const razorpay = new window.Razorpay(razorpayOptions);
+  
+  // Inject styles to fix text visibility in Razorpay modal
+  // Note: Razorpay loads in an iframe, but we can still inject styles
+  // that may affect the parent page styling that could interfere
+  const injectRazorpayStyles = () => {
+    const styleId = "razorpay-fix-styles";
+    if (document.getElementById(styleId)) return;
+    
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      /* Prevent our global styles from affecting Razorpay iframe content */
+      iframe[src*="razorpay"],
+      iframe[id*="razorpay"] {
+        color-scheme: light;
+      }
+    `;
+    document.head.appendChild(style);
+  };
+
+  injectRazorpayStyles();
+  
   razorpay.open();
   return razorpay;
 };

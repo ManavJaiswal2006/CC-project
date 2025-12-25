@@ -49,8 +49,8 @@ export default function CartPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-white text-gray-900 pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16 md:pb-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900 pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16 md:pb-20">
+      <div className="w-full px-4 sm:px-6">
 
         {/* ================= HEADER ================= */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b pb-6 sm:pb-8 mb-8 sm:mb-12 gap-4">
@@ -95,11 +95,11 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16">
 
           {/* ================= CART ITEMS ================= */}
-          <div className="lg:col-span-8 divide-y min-w-0">
+          <div className="lg:col-span-8 divide-y divide-gray-200 min-w-0">
             {cart.map((item) => (
               <div
                 key={`${item.id}-${item.size}`}
-                className="py-6 sm:py-8 flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8 items-start group"
+                className="py-6 sm:py-8 flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8 items-start group bg-white rounded-xl p-4 sm:p-6 mb-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* IMAGE */}
                 <div className="w-full sm:w-24 md:w-32 h-32 sm:h-24 md:h-32 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
@@ -203,7 +203,7 @@ export default function CartPage() {
 
           {/* ================= SUMMARY ================= */}
           <div className="lg:col-span-4">
-            <div className="bg-gray-50 p-6 sm:p-8 md:p-10 sticky top-20 sm:top-24 md:top-32">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 md:p-10 sticky top-20 sm:top-24 md:top-32">
 
               <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-10 border-b pb-4">
                 Order Summary

@@ -3,6 +3,8 @@ import nodemailer from "nodemailer";
 import { sanitizeString, validateEmail, validatePhone, escapeHtml } from "@/lib/validation";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import { logger } from "@/lib/logger";
+import { fetchMutation } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -27,7 +29,7 @@ export async function POST(req: Request) {
   let sanitizedEmail: string | undefined;
   
   try {
-    const { name, email, phone, company, location, message } = await req.json();
+    const { name, email, phone, company, location, message, userId } = await req.json();
 
     // Validation
     if (!name || typeof name !== "string" || name.trim().length === 0 || name.length > 200) {
@@ -67,11 +69,30 @@ export async function POST(req: Request) {
 
     // Sanitize inputs
     const sanitizedName = sanitizeString(name, 200);
-    sanitizedEmail = email.toLowerCase().trim();
+    const sanitizedEmailValue = email.toLowerCase().trim();
+    sanitizedEmail = sanitizedEmailValue;
     const sanitizedPhone = sanitizeString(phone, 15);
     const sanitizedCompany = company ? sanitizeString(company, 200) : "";
     const sanitizedLocation = sanitizeString(location, 200);
     const sanitizedMessage = sanitizeString(message, 5000);
+
+    // Save application to Convex database
+    try {
+      await fetchMutation(api.distributorApplications.createApplication, {
+        name: sanitizedName,
+        email: sanitizedEmailValue,
+        phone: sanitizedPhone,
+        company: sanitizedCompany || undefined,
+        location: sanitizedLocation,
+        message: sanitizedMessage,
+        userId: userId || undefined, // Include userId if provided (required since login is mandatory)
+      });
+    } catch (error: any) {
+      logger.error("Error saving distributor application to database", error, {
+        email: sanitizedEmail,
+      });
+      // Continue to send emails even if DB save fails
+    }
 
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       return NextResponse.json(
@@ -95,25 +116,63 @@ export async function POST(req: Request) {
       replyTo: sanitizedEmail!,
       subject: `New Distributor Application: ${escapeHtml(sanitizedName)}`,
       html: `
-        <div style="font-family: 'Georgia', serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 40px; color: #1e293b;">
-          <h2 style="color: #b91c1c; font-style: italic; border-bottom: 2px solid #b91c1c; padding-bottom: 10px;">New Distributor Application</h2>
-          
-          <div style="margin-top: 20px;">
-            <p style="margin: 8px 0;"><strong>Name:</strong> ${escapeHtml(sanitizedName)}</p>
-            <p style="margin: 8px 0;"><strong>Email:</strong> ${escapeHtml(sanitizedEmail!)}</p>
-            <p style="margin: 8px 0;"><strong>Phone:</strong> ${escapeHtml(sanitizedPhone)}</p>
-            ${sanitizedCompany ? `<p style="margin: 8px 0;"><strong>Company:</strong> ${escapeHtml(sanitizedCompany)}</p>` : ''}
-            <p style="margin: 8px 0;"><strong>Location:</strong> ${escapeHtml(sanitizedLocation)}</p>
-          </div>
-          
-          <div style="background: #f8fafc; padding: 20px; border-left: 4px solid #b91c1c; margin: 20px 0;">
-            <p style="margin: 0; font-weight: bold; font-size: 12px; text-transform: uppercase; color: #64748b;">Application Details:</p>
-            <p style="line-height: 1.6; margin-top: 10px; white-space: pre-wrap;">${escapeHtml(sanitizedMessage)}</p>
-          </div>
-          
-          <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-top: 40px;">SENT VIA BOURGON INDUSTRIES DISTRIBUTOR PORTAL</p>
-        </div>
-      `,
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; background-color:#fcfcfc; font-family: 'Inter', sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fcfcfc; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" style="background-color:#ffffff; border:1px solid #e5e5e5;">
+          <tr>
+            <td style="background-color:#000000; padding:40px; text-align:center;">
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 20px auto; display: block;" />
+              <h1 style="font-family:'Cormorant Garamond', serif; font-size:20px; color:#ffffff; letter-spacing:3px; text-transform:uppercase; margin:0;">
+                Partnership Division
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px;">
+              <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; color:#b91c1c; font-weight:700; margin-bottom:10px;">
+                New Distributor Inquiry
+              </div>
+              <h2 style="font-family:'Cormorant Garamond', serif; font-size:28px; color:#111; margin:0 0 30px 0; font-style:italic;">
+                Application from ${escapeHtml(sanitizedName)}
+              </h2>
+              
+              <table width="100%" style="border-top: 1px solid #eee; padding-top:20px;">
+                <tr>
+                  <td style="padding:10px 0; font-size:12px; color:#888; text-transform:uppercase;">Origin</td>
+                  <td style="padding:10px 0; font-size:14px; text-align:right;">${escapeHtml(sanitizedLocation)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0; font-size:12px; color:#888; text-transform:uppercase;">Direct Contact</td>
+                  <td style="padding:10px 0; font-size:14px; text-align:right;">${escapeHtml(sanitizedPhone)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0; font-size:12px; color:#888; text-transform:uppercase;">Email</td>
+                  <td style="padding:10px 0; font-size:14px; text-align:right; color:#b91c1c;">${escapeHtml(sanitizedEmail!)}</td>
+                </tr>
+              </table>
+
+              <div style="margin-top:30px; background:#f9f9f9; padding:25px; border-left:2px solid #111;">
+                <p style="margin:0 0 10px 0; font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Executive Summary / Message:</p>
+                <p style="margin:0; font-size:14px; line-height:1.8; color:#333; white-space:pre-wrap;">${escapeHtml(sanitizedMessage)}</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px; text-align:center; background:#fafafa; font-size:10px; color:#aaa; letter-spacing:1px;">
+              PROCESSED VIA BOURGON SECURE PARTNER GATEWAY
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+      `.trim(),
     };
 
     await transporter.sendMail(mailOptions);
@@ -125,24 +184,49 @@ export async function POST(req: Request) {
         to: sanitizedEmail!,
         subject: "Thank you for your distributor application",
         html: `
-          <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 640px; margin: 0 auto; padding: 32px; border: 1px solid #e5e7eb;">
-            <h1 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">Thank you for your interest, ${escapeHtml(sanitizedName)}!</h1>
-            <p style="margin: 0 0 16px; color: #374151;">
-              We have received your distributor application and will review it carefully. 
-              Our team will contact you within 3-5 business days to discuss the opportunity further.
-            </p>
-            <p style="margin: 0 0 8px; color: #374151;"><strong>Application Summary:</strong></p>
-            <ul style="margin: 8px 0; padding-left: 20px; color: #374151;">
-              <li>Name: ${escapeHtml(sanitizedName)}</li>
-              <li>Location: ${escapeHtml(sanitizedLocation)}</li>
-              ${sanitizedCompany ? `<li>Company: ${escapeHtml(sanitizedCompany)}</li>` : ''}
-            </ul>
-            <p style="margin: 24px 0 8px; color: #374151;">If you have any questions, feel free to contact us:</p>
-            <p style="margin: 0; color: #374151;">Email: bourgonindustries@gmail.com</p>
-            <p style="margin: 0; color: #374151;">Phone: +91 88008 30465</p>
-            <p style="font-size: 12px; color: #6b7280; margin-top: 32px;">Bourgon Industries Pvt. Ltd.</p>
-          </div>
-        `,
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; background-color:#fcfcfc;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" style="background-color:#ffffff; border:1px solid #eeeeee;">
+          <tr>
+            <td style="padding:60px 40px; text-align:center;">
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto 30px auto; display: block;" />
+              <div style="height:1px; width:40px; background:#b91c1c; margin:0 auto 30px auto;"></div>
+              
+              <h2 style="font-family:'Cormorant Garamond', serif; font-size:22px; font-style:italic; margin-bottom:20px;">
+                Thank you for your interest in our network.
+              </h2>
+              
+              <p style="font-family:'Inter', sans-serif; font-size:14px; line-height:1.8; color:#555; margin-bottom:30px;">
+                Dear ${escapeHtml(sanitizedName)},<br><br>
+                We have successfully received your application to become an authorized distributor. 
+                Our partnership team reviews each inquiry to ensure alignment with our global standards. 
+                Expect a formal response within 3 to 5 business days.
+              </p>
+
+              <div style="border:1px solid #eee; padding:20px; display:inline-block; text-align:left; min-width:250px;">
+                <div style="font-size:10px; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Application Status</div>
+                <div style="font-size:13px; font-weight:600; color:#b91c1c;">PENDING REVIEW</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px; background:#000000; color:#ffffff; text-align:center;">
+              <p style="font-size:11px; letter-spacing:1px; margin:0;">
+                For urgent inquiries: <a href="mailto:bourgonindustries@gmail.com" style="color:#ffffff; text-decoration:underline;">concierge@bourgon.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `.trim(),
       });
     }
 

@@ -25,6 +25,67 @@ html, body {
   box-sizing: border-box;
 }
 
+/* Text Selection Styling - Ensure visible selection */
+::selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* For light backgrounds, use dark selection */
+body ::selection,
+p ::selection,
+span ::selection,
+div ::selection,
+h1 ::selection,
+h2 ::selection,
+h3 ::selection,
+h4 ::selection,
+h5 ::selection,
+h6 ::selection,
+label ::selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+body ::-moz-selection,
+p ::-moz-selection,
+span ::-moz-selection,
+div ::-moz-selection,
+h1 ::-moz-selection,
+h2 ::-moz-selection,
+h3 ::-moz-selection,
+h4 ::-moz-selection,
+h5 ::-moz-selection,
+h6 ::-moz-selection,
+label ::-moz-selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* For elements with dark backgrounds, use light selection */
+.bg-black ::selection,
+.bg-gray-900 ::selection,
+.bg-gray-800 ::selection,
+[class*="bg-black"] ::selection,
+[class*="bg-gray-900"] ::selection {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.bg-black ::-moz-selection,
+.bg-gray-900 ::-moz-selection,
+.bg-gray-800 ::-moz-selection,
+[class*="bg-black"] ::-moz-selection,
+[class*="bg-gray-900"] ::-moz-selection {
+  background-color: #ffffff;
+  color: #000000;
+}
+
 /* Text overflow handling */
 .line-clamp-2 {
   display: -webkit-box;
@@ -33,12 +94,153 @@ html, body {
   overflow: hidden;
 }
 
-input {
+/* Scoped input styles - only apply to our own inputs, not Razorpay */
+input:not([id*="razorpay"]):not([class*="razorpay"]):not([name*="razorpay"]) {
   caret-color: #000000;
   color: #000000;
 }
 
-textarea {
+textarea:not([id*="razorpay"]):not([class*="razorpay"]):not([name*="razorpay"]) {
   caret-color: #000000;
   color: #000000;
+}
+
+/* Enhanced Select/Dropdown Styling */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: black;
+  border-color: transparent;
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Smooth animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInSlideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.slide-in-from-top-2 {
+  animation: slide-in-from-top 0.2s ease-out;
+}
+
+/* Enhanced responsive utilities */
+@media (max-width: 640px) {
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+}
+
+/* Better focus states */
+*:focus-visible {
+  outline: 2px solid black;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions */
+button, a, input, select, textarea {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Razorpay Modal Styling - Fix text visibility */
+.razorpay-container,
+.razorpay-container *,
+[id*="razorpay"],
+[class*="razorpay"] {
+  color: inherit !important;
+}
+
+/* Razorpay input fields - ensure text is visible */
+.razorpay-container input,
+.razorpay-container input[type="text"],
+.razorpay-container input[type="number"],
+.razorpay-container input[type="email"],
+.razorpay-container input[type="tel"],
+.razorpay-container input[type="password"],
+[id*="razorpay"] input,
+[class*="razorpay"] input {
+  color: #333333 !important;
+  background-color: #ffffff !important;
+  caret-color: #333333 !important;
+}
+
+/* Razorpay OTP input fields */
+.razorpay-container input[type="text"][maxlength],
+[id*="razorpay"] input[type="text"][maxlength],
+[class*="razorpay"] input[type="text"][maxlength] {
+  color: #333333 !important;
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Razorpay modal text elements */
+.razorpay-container label,
+.razorpay-container p,
+.razorpay-container span,
+.razorpay-container div,
+[id*="razorpay"] label,
+[id*="razorpay"] p,
+[id*="razorpay"] span,
+[id*="razorpay"] div,
+[class*="razorpay"] label,
+[class*="razorpay"] p,
+[class*="razorpay"] span,
+[class*="razorpay"] div {
+  color: inherit !important;
+}
+
+/* Ensure Razorpay modal has proper contrast */
+iframe[src*="razorpay"],
+iframe[id*="razorpay"] {
+  color-scheme: light !important;
 }

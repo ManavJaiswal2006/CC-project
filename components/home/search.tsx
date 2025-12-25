@@ -97,7 +97,7 @@ export default function SearchModal() {
         <Search size={22} strokeWidth={1.5} />
       </ModalTrigger>
 
-      <ModalBody className="bg-white border max-w-2xl">
+      <ModalBody className="bg-white border w-full max-w-3xl">
         <ModalContent className="!p-0">
 
           {/* INPUT */}

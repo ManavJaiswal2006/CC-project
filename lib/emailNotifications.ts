@@ -8,6 +8,7 @@ interface OrderData {
   customerEmail?: string;
   status: string;
   trackingNumber?: string;
+  trackingUrl?: string;
   items: Array<{
     id: string;
     name: string;
@@ -44,7 +45,9 @@ export async function sendOrderStatusEmail(
   });
 
   const statusMessages: Record<string, string> = {
+    "Order Placed": "Your order has been successfully placed! We're preparing it for you.",
     "Awaiting Admin Confirmation": "Your order has been received and is awaiting confirmation.",
+    "Payment Received": "We've received your payment! Your order is now being processed.",
     "Confirmed": "Your order has been confirmed and is being prepared for shipment.",
     "Processing": "Your order is being processed and packed.",
     "Shipped": "Your order has been shipped and is on its way!",
@@ -57,93 +60,174 @@ export async function sendOrderStatusEmail(
 
   const subject = `Order ${orderData.orderId} - ${orderData.status} | Bourgon Industries`;
 
+  // Use provided tracking URL or generate default one
+  const trackingUrl = orderData.trackingUrl || 
+    (orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" && orderData.trackingNumber !== "Processing"
+      ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/track-order`
+      : "#");
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@300;400;600&display=swap');
+    
+    body { margin: 0; padding: 0; background-color: #fcfcfc; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; table-layout: fixed; background-color: #fcfcfc; padding-bottom: 60px; }
+    .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; font-family: 'Inter', sans-serif; color: #1a1a1a; }
+    .header { background-color: #000000; text-align: center; padding: 60px 0; }
+    .logo { font-family: 'Cormorant Garamond', serif; font-size: 42px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0; line-height: 1; }
+    .logo-sub { color: #a1a1a1; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-top: 10px; }
+    .content { padding: 50px 40px; }
+    .status-badge { display: inline-block; padding: 6px 12px; background-color: #fdf2f2; border: 1px solid #f8d7da; color: #b91c1c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+    .headline { font-family: 'Cormorant Garamond', serif; font-size: 28px; line-height: 1.2; margin-bottom: 20px; color: #111111; }
+    .order-box { border-top: 1px solid #eeeeee; border-bottom: 1px solid #eeeeee; padding: 30px 0; margin: 30px 0; }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .btn { display: inline-block; padding: 18px 40px; background-color: #111111; color: #ffffff !important; text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; }
+    .footer { padding: 40px; background-color: #ffffff; text-align: center; border-top: 1px solid #f0f0f0; }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+<body>
+  <div class="wrapper">
+    <table class="main" align="center">
+      <tr>
+        <td class="header">
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+        </td>
+      </tr>
+
+      <tr>
+        <td class="content">
+          <div class="status-badge">${escapeHtml(orderData.status)}</div>
+          <h2 class="headline">An update regarding <br/>your recent acquisition.</h2>
+          
+          <p style="font-size: 15px; color: #555555; line-height: 1.8;">
+            Dear ${escapeHtml(orderData.customerName)},<br><br>
+            ${statusMessage}
+          </p>
+
+          <div class="order-box">
+            <table width="100%" cellspacing="0" cellpadding="0">
+              <tr>
+                <td style="font-size: 12px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">Order Reference</td>
+                <td align="right" style="font-size: 14px; font-weight: 600;">#${escapeHtml(orderData.orderId)}</td>
+              </tr>
+              <tr><td height="15"></td></tr>
+              <tr>
+                <td style="font-size: 12px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">Amount Processed</td>
+                <td align="right" style="font-size: 14px; font-weight: 600;">₹${orderData.total.toFixed(2)}</td>
+              </tr>
+            </table>
+          </div>
+
+          ${orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" && orderData.trackingNumber !== "Processing" ? `
+          <div style="background-color: #f9f9f9; padding: 25px; text-align: center; margin-bottom: 30px;">
+            <p style="margin: 0 0 15px; font-size: 12px; letter-spacing: 1px; color: #666;">TRACKING IDENTIFIER: <strong>${escapeHtml(orderData.trackingNumber)}</strong></p>
+            <a href="${escapeHtml(trackingUrl)}" class="btn" style="background-color: #b91c1c;">Follow Shipment</a>
+          </div>
+          ` : ''}
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/orders/${escapeHtml(orderData.orderId)}" class="btn">View Collection Details</a>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="footer">
+          <p style="font-size: 12px; color: #888888; margin-bottom: 20px;">
+            Questions? Concierge is available at <strong>+91 88008 30465</strong>
+          </p>
+          <div style="height: 1px; background-color: #eeeeee; width: 50px; margin: 0 auto 20px;"></div>
+          <p style="font-size: 10px; color: #bbbbbb; text-transform: uppercase; letter-spacing: 2px;">
+            © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  await transporter.sendMail({
+    from: `"Bourgon Orders" <${process.env.EMAIL_USER}>`,
+    to: orderData.customerEmail,
+    subject,
+    html,
+  });
+}
+
+export async function sendOTPEmail(
+  email: string,
+  otp: string,
+  purpose: "signup" | "login" | "reset" = "signup"
+) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !email) {
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const subject = `Security Verification Code | Bourgon Industries`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@300;400;600&display=swap');
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #fcfcfc; font-family: 'Inter', sans-serif;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #fcfcfc; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <table width="100%" style="max-width: 500px; background-color: #ffffff; border: 1px solid #eeeeee; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
           
-          <!-- Header -->
           <tr>
-            <td style="padding: 40px 40px 30px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-bottom: 3px solid #b91c1c;">
-              <h1 style="margin: 0; font-size: 32px; font-weight: bold; color: #ffffff; letter-spacing: 2px; font-style: italic;">
-                BOURGON
-              </h1>
-              <p style="margin: 5px 0 0; font-size: 11px; color: #d1d5db; letter-spacing: 3px; text-transform: uppercase;">
-                Beyond Quality. Beyond Design.
+            <td style="background-color: #000000; padding: 40px; text-align: center;">
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 15px auto; display: block;" />
+              <p style="color: #a1a1a1; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;">
+                Secure Access Portal
               </p>
             </td>
           </tr>
 
-          <!-- Status Update -->
           <tr>
-            <td style="padding: 40px;">
-              <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #1f2937;">
-                Order Status Update
+            <td style="padding: 50px 40px; text-align: center;">
+              <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: #111111; margin-bottom: 20px; font-style: italic;">
+                Security Verification
               </h2>
-              <p style="margin: 0 0 16px; font-size: 14px; color: #374151; line-height: 1.6;">
-                Hi ${escapeHtml(orderData.customerName)},
-              </p>
-              <p style="margin: 0 0 24px; font-size: 14px; color: #374151; line-height: 1.6;">
-                ${statusMessage}
+              <p style="font-size: 14px; color: #555555; line-height: 1.6; margin-bottom: 40px;">
+                Your unique verification code for ${purpose === "signup" ? "creating an account" : purpose === "login" ? "accessing your profile" : "resetting your password"} is provided below.
               </p>
 
-              <div style="background-color: #f9fafb; border-left: 4px solid #b91c1c; padding: 20px; margin: 24px 0;">
-                <p style="margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; font-weight: 600;">
-                  Order Details
-                </p>
-                <p style="margin: 4px 0; font-size: 14px; color: #1f2937;">
-                  <strong>Order ID:</strong> ${escapeHtml(orderData.orderId)}
-                </p>
-                <p style="margin: 4px 0; font-size: 14px; color: #1f2937;">
-                  <strong>Status:</strong> <span style="color: #b91c1c; font-weight: 700;">${escapeHtml(orderData.status)}</span>
-                </p>
-                ${orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" ? `
-                  <p style="margin: 4px 0; font-size: 14px; color: #1f2937;">
-                    <strong>Tracking Number:</strong> <span style="font-family: monospace;">${escapeHtml(orderData.trackingNumber)}</span>
-                  </p>
-                ` : ''}
-                <p style="margin: 4px 0; font-size: 14px; color: #1f2937;">
-                  <strong>Total Amount:</strong> ₹${orderData.total.toFixed(2)}
-                </p>
+              <div style="background-color: #fafafa; border: 1px solid #f0f0f0; padding: 30px; margin-bottom: 30px;">
+                <span style="font-size: 36px; font-weight: 400; letter-spacing: 12px; color: #b91c1c; font-family: 'Inter', sans-serif;">
+                  ${otp}
+                </span>
               </div>
 
-              ${orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" ? `
-                <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; margin: 24px 0; border-radius: 4px;">
-                  <p style="margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #1e40af;">
-                    Track Your Order
-                  </p>
-                  <p style="margin: 0; font-size: 12px; color: #1e40af;">
-                    Use your tracking number <strong>${escapeHtml(orderData.trackingNumber)}</strong> to track your package on the courier's website.
-                  </p>
-                </div>
-              ` : ''}
-
-              <div style="margin-top: 32px; text-align: center;">
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/orders/${escapeHtml(orderData.orderId)}" 
-                   style="display: inline-block; padding: 12px 32px; background-color: #1a1a1a; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
-                  View Order Details
-                </a>
-              </div>
+              <p style="font-size: 11px; color: #999999; line-height: 1.8;">
+                This identification code is valid for <strong>10 minutes</strong>.<br>
+                For your security, do not share this token with anyone.
+              </p>
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
-            <td style="padding: 30px 40px; background-color: #fafafa; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="margin: 0; font-size: 11px; color: #6b7280; line-height: 1.6;">
-                If you have any questions, please contact us at<br>
-                <a href="mailto:bourgonindustries@gmail.com" style="color: #b91c1c; text-decoration: none;">bourgonindustries@gmail.com</a> or call <a href="tel:+918800830465" style="color: #b91c1c; text-decoration: none;">+91 88008 30465</a>
-              </p>
-              <p style="margin: 16px 0 0; font-size: 10px; color: #9ca3af;">
-                © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd. All Rights Reserved.
+            <td style="padding: 30px; background-color: #ffffff; border-top: 1px solid #f9f9f9; text-align: center;">
+              <p style="font-size: 10px; color: #cccccc; letter-spacing: 1px; text-transform: uppercase;">
+                © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
               </p>
             </td>
           </tr>
@@ -154,11 +238,11 @@ export async function sendOrderStatusEmail(
   </table>
 </body>
 </html>
-  `.trim();
+`.trim();
 
   await transporter.sendMail({
-    from: `"Bourgon Orders" <${process.env.EMAIL_USER}>`,
-    to: orderData.customerEmail,
+    from: `"Bourgon Security" <${process.env.EMAIL_USER}>`,
+    to: email,
     subject,
     html,
   });

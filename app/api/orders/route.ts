@@ -11,6 +11,7 @@ import {
 } from "@/lib/validation";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import { generateBillHTML } from "@/lib/billTemplate";
+import { sendOrderStatusEmail } from "@/lib/emailNotifications";
 import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
@@ -184,6 +185,50 @@ export async function POST(req: Request) {
       };
 
       await transporter.sendMail(mailOptions);
+
+      // Also send "Order Placed" status email
+      try {
+        // Calculate subtotal
+        const subtotal = promoDiscount && promoDiscount > 0 
+          ? total + promoDiscount 
+          : total;
+
+        // Format order date
+        const orderDate = new Date().toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        await sendOrderStatusEmail({
+          orderId,
+          customerName: sanitizedShippingName,
+          customerEmail: customerEmail.toLowerCase().trim(),
+          status: "Order Placed",
+          items: items as Array<{
+            id: string;
+            name: string;
+            image?: string;
+            size?: string | null;
+            price: number;
+            basePrice?: number;
+            discount?: number;
+            quantity: number;
+          }>,
+          subtotal,
+          promoDiscount: promoDiscount && promoDiscount > 0 ? promoDiscount : undefined,
+          promoCode: sanitizedPromoCode,
+          total,
+          paymentMethod,
+          shippingAddress: sanitizedShippingAddress,
+          orderDate,
+        });
+      } catch (emailError) {
+        logger.error("Failed to send order placed email", emailError);
+        // Don't fail the order creation if email fails
+      }
     }
 
     // Email to admin with full bill

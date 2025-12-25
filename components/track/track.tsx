@@ -34,7 +34,7 @@ export default function TrackOrder() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 pt-24 pb-20">
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="w-full px-6">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <PackageSearch size={64} className="text-red-600" />
@@ -42,7 +42,7 @@ export default function TrackOrder() {
           <h1 className="text-4xl font-bold uppercase mb-4 tracking-tight">
             Track Your Order
           </h1>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <p className="text-gray-500 w-full">
             Enter your order ID from your confirmation email to view order status, 
             tracking information, and delivery updates.
           </p>

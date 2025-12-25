@@ -4,11 +4,12 @@ import { v } from "convex/values";
 export default defineSchema({
   /* ================= USERS ================= */
   users: defineTable({
-    userId: v.string(),
+    userId: v.string(), // Firebase UID
     name: v.optional(v.string()),
     email: v.string(),
     phone: v.optional(v.string()),
-    category: v.string(),
+    category: v.string(), // Legacy field, prefer 'role'
+    role: v.optional(v.union(v.literal("customer"), v.literal("distributor"))), // 'customer' or 'distributor'
     addresses: v.array(
       v.object({
         id: v.string(),
@@ -30,6 +31,7 @@ export default defineSchema({
     totalAmount: v.number(),
     status: v.string(),
     trackingNumber: v.optional(v.string()),
+    trackingUrl: v.optional(v.string()),
     shippingName: v.optional(v.string()),
     shippingAddress: v.optional(v.string()),
     customerEmail: v.optional(v.string()),
@@ -53,7 +55,8 @@ export default defineSchema({
     storageId: v.optional(v.id("_storage")),
 
     /* -------- SINGLE PRICE PRODUCT -------- */
-    price: v.optional(v.number()),
+    customerPrice: v.optional(v.number()), // Price for customers (B2C)
+    retailerPrice: v.optional(v.number()), // Price for retailers/distributors (B2B)
 
     /* -------- SIZE-BASED PRODUCT -------- */
     sizes: v.optional(
@@ -61,7 +64,8 @@ export default defineSchema({
         v.object({
           label: v.string(),
           value: v.string(),
-          price: v.number(),
+          customerPrice: v.number(), // Customer price for this size
+          retailerPrice: v.number(), // Retailer price for this size
         })
       )
     ),
@@ -139,4 +143,35 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_userId_viewedAt", ["userId", "viewedAt"]),
+
+  /* ================= DISTRIBUTOR APPLICATIONS ================= */
+  distributor_applications: defineTable({
+    name: v.string(),
+    email: v.string(),
+    phone: v.string(),
+    company: v.optional(v.string()),
+    location: v.string(),
+    message: v.string(),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")), // Application status
+    reviewedBy: v.optional(v.string()), // Admin userId who reviewed
+    reviewedAt: v.optional(v.number()), // Timestamp of review
+    notes: v.optional(v.string()), // Admin notes
+    userId: v.optional(v.string()), // Firebase UID (assigned when user is created/approved)
+    createdAt: v.number(), // Timestamp
+  })
+    .index("by_status", ["status"])
+    .index("by_email", ["email"]),
+
+  /* ================= DISTRIBUTOR PROFILES ================= */
+  distributor_profiles: defineTable({
+    userId: v.string(), // Firebase UID (links to users.userId)
+    gstin: v.optional(v.string()), // GST Identification Number (optional, can be added later)
+    creditLimit: v.number(), // Credit limit in INR
+    companyName: v.optional(v.string()),
+    contactPerson: v.optional(v.string()),
+    businessAddress: v.optional(v.string()),
+    createdAt: v.number(), // Timestamp
+    updatedAt: v.number(), // Timestamp
+  })
+    .index("by_userId", ["userId"]),
 });

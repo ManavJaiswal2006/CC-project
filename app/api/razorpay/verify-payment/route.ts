@@ -48,7 +48,7 @@ export async function POST(req: Request) {
           shippingAddress: orderData.shippingAddress,
           items: orderData.items,
           total: orderData.total,
-          paymentMethod: "razorpay", // Use "razorpay" instead of "card" or "upi"
+          paymentMethod: "online", // Online payment via Razorpay (Card/UPI/Net Banking)
           promoCode: orderData.promoCode,
           promoDiscount: orderData.promoDiscount,
         });

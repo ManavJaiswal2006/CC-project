@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, Home, Users } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
@@ -43,11 +43,16 @@ export default function AdminNavbar() {
       label: "Promos",
       icon: Tag,
     },
+    {
+      href: "/admin2424/distributors",
+      label: "Distributors",
+      icon: Users,
+    },
   ];
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <div className="flex items-center gap-4">
@@ -65,7 +70,7 @@ export default function AdminNavbar() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || 
-                (item.href === "/admin2424" && pathname?.startsWith("/admin2424/orderdetails") === false && pathname !== "/admin2424/orders" && pathname !== "/admin2424/dashboard" && pathname !== "/admin2424/promos");
+                (item.href === "/admin2424" && pathname?.startsWith("/admin2424/orderdetails") === false && pathname !== "/admin2424/orders" && pathname !== "/admin2424/dashboard" && pathname !== "/admin2424/promos" && pathname !== "/admin2424/distributors");
               
               return (
                 <Link

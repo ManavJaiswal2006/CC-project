@@ -100,7 +100,7 @@ export default function WishlistPage() {
   /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-white text-gray-900 pt-24 pb-20">
-      <div className="max-w-6xl mx-auto px-6 space-y-8">
+      <div className="w-full px-6 space-y-8">
         {/* HEADER */}
         <header className="border-b pb-6">
           <div className="flex items-center gap-3 mb-4">

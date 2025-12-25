@@ -23,7 +23,7 @@ export default function Error({
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-      <div className="max-w-md w-full space-y-6">
+      <div className="w-full space-y-6">
         <div className="flex justify-center">
           <AlertCircle className="text-red-600" size={64} />
         </div>

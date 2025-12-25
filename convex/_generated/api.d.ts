@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as distributor from "../distributor.js";
+import type * as distributorApplications from "../distributorApplications.js";
 import type * as order from "../order.js";
 import type * as product from "../product.js";
 import type * as promo from "../promo.js";
@@ -22,6 +24,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  distributor: typeof distributor;
+  distributorApplications: typeof distributorApplications;
   order: typeof order;
   product: typeof product;
   promo: typeof promo;

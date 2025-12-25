@@ -70,17 +70,82 @@ export async function POST(req: Request) {
       replyTo: sanitizedEmail!,
       subject: `New Bourgon Inquiry: ${escapeHtml(sanitizedName)}`,
       html: `
-        <div style="font-family: 'Georgia', serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 40px; color: #1e293b;">
-          <h2 style="color: #b91c1c; font-style: italic; border-bottom: 2px solid #b91c1c; padding-bottom: 10px;">New Concierge Request</h2>
-          <p style="margin-top: 20px;"><strong>Client Name:</strong> ${escapeHtml(sanitizedName)}</p>
-          <p><strong>Client Email:</strong> ${escapeHtml(sanitizedEmail!)}</p>
-          <div style="background: #f8fafc; padding: 20px; border-left: 4px solid #b91c1c; margin: 20px 0;">
-            <p style="margin: 0; font-weight: bold; font-size: 12px; text-transform: uppercase; color: #64748b;">Message Detail:</p>
-            <p style="line-height: 1.6; margin-top: 10px; white-space: pre-wrap;">${escapeHtml(sanitizedMessage)}</p>
-          </div>
-          <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-top: 40px;">SENT VIA BOURGON INDUSTRIES SECURE PORTAL</p>
-        </div>
-      `,
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@300;400;600&display=swap');
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #fcfcfc; font-family: 'Inter', sans-serif;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #fcfcfc; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #eeeeee;">
+          
+          <tr>
+            <td style="background-color: #1a1a1a; padding: 50px 40px; text-align: left;">
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin-bottom: 20px; display: block;" />
+              <div style="color: #b91c1c; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px;">
+                Priority Handling Required
+              </div>
+              <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 32px; color: #ffffff; margin: 0; font-style: italic; font-weight: 400;">
+                Concierge Request
+              </h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 40px 40px 0 40px;">
+              <table width="100%" cellspacing="0" cellpadding="0" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 20px;">
+                <tr>
+                  <td width="50%" valign="top">
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 5px;">Client Identity</div>
+                    <div style="font-size: 15px; font-weight: 600; color: #111;">${escapeHtml(sanitizedName)}</div>
+                  </td>
+                  <td width="50%" valign="top" align="right">
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 5px;">Communication</div>
+                    <div style="font-size: 14px; color: #b91c1c;">${escapeHtml(sanitizedEmail!)}</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 30px 40px 50px 40px;">
+              <div style="background-color: #fafafa; padding: 30px; border-top: 1px solid #eeeeee;">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #111; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; display: inline-block;">
+                  Inquiry Details
+                </div>
+                <p style="font-size: 15px; line-height: 1.8; color: #333; margin: 0; white-space: pre-wrap; font-family: 'Inter', sans-serif;">
+                  ${escapeHtml(sanitizedMessage)}
+                </p>
+              </div>
+              
+              <div style="margin-top: 40px; text-align: center;">
+                <a href="mailto:${escapeHtml(sanitizedEmail!)}" style="display: inline-block; padding: 15px 35px; background-color: #111; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">
+                  Initiate Response
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 30px; background-color: #ffffff; border-top: 1px solid #f9f9f9; text-align: center;">
+              <p style="font-size: 9px; color: #bbbbbb; letter-spacing: 2px; text-transform: uppercase; margin: 0;">
+                © Bourgon Industries — Private & Confidential
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+      `.trim(),
     };
 
     await transporter.sendMail(mailOptions);

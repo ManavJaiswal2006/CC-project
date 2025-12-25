@@ -85,7 +85,7 @@ export const ModalBody = ({ children, className = "" }: { children: ReactNode; c
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
-            className={`relative w-full max-w-3xl bg-white border border-zinc-200 shadow-xl overflow-hidden mx-4 ${className}`}
+            className={`relative w-full max-w-2xl bg-white border border-zinc-200 shadow-xl overflow-hidden mx-4 ${className}`}
           >
             <div className="absolute top-0 left-0 w-full h-[3px] bg-red-600" />
             <button

@@ -91,9 +91,10 @@ export const createOrder = mutation({
     // Set payment status based on payment method
     const paymentStatus = 
       args.paymentMethod === "razorpay" || 
+      args.paymentMethod === "online" ||
       args.paymentMethod === "card" || 
       args.paymentMethod === "upi"
-        ? "Paid" // Razorpay payments are verified before order creation
+        ? "Paid" // Online payments (Razorpay) are verified before order creation
         : "Pending"; // COD or other methods
 
     const docId: Id<"orders"> = await ctx.db.insert("orders", {
@@ -135,6 +136,7 @@ export const updateStatus = mutation({
     id: v.id("orders"),
     status: v.string(),
     trackingNumber: v.optional(v.string()),
+    trackingUrl: v.optional(v.string()),
     paymentStatus: v.optional(v.string()),
     updatedBy: v.optional(v.string()),
   },
@@ -183,6 +185,7 @@ export const updateStatus = mutation({
     const patch: Partial<{
       status: string;
       trackingNumber?: string;
+      trackingUrl?: string;
       paymentStatus?: string;
     }> = {
       status: args.status,
@@ -190,6 +193,9 @@ export const updateStatus = mutation({
 
     if (args.trackingNumber !== undefined) {
       patch.trackingNumber = args.trackingNumber;
+    }
+    if (args.trackingUrl !== undefined) {
+      patch.trackingUrl = args.trackingUrl;
     }
     if (args.paymentStatus !== undefined) {
       patch.paymentStatus = args.paymentStatus;
@@ -238,5 +244,64 @@ export const getOrderRequests = query({
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .order("desc")
       .collect();
+  },
+});
+
+// Get order requests by orderId (for admin)
+export const getOrderRequestsByOrderId = query({
+  args: { orderId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("orderRequests")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .order("desc")
+      .collect();
+  },
+});
+
+// Approve or reject order cancellation/return request (admin)
+export const processOrderRequest = mutation({
+  args: {
+    requestId: v.id("orderRequests"),
+    action: v.union(v.literal("approve"), v.literal("reject")),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw new Error("Request not found");
+    }
+
+    // Update request status
+    await ctx.db.patch(args.requestId, {
+      status: args.action === "approve" ? "approved" : "rejected",
+      resolvedAt: Date.now(),
+      adminNotes: args.adminNotes,
+    });
+
+    // If approved and it's a cancellation, update the order status
+    if (args.action === "approve" && request.type === "cancellation") {
+      const order = await ctx.db
+        .query("orders")
+        .filter((q) => q.eq(q.field("orderId"), request.orderId))
+        .first();
+
+      if (order) {
+        await ctx.db.patch(order._id, {
+          status: "Cancelled",
+        });
+
+        // Track status change in history
+        await ctx.db.insert("orderStatusHistory", {
+          orderId: order.orderId,
+          status: "Cancelled",
+          message: `Order cancelled. Reason: ${request.reason}`,
+          timestamp: Date.now(),
+          updatedBy: "admin",
+        });
+      }
+    }
+
+    return { success: true };
   },
 });

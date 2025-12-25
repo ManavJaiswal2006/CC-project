@@ -4,13 +4,42 @@ import React, { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Phone, Mail, Building2, MapPin, Send, Users, TrendingUp, CheckCircle } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function DistributorPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const containerRef = useRef(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login?redirect=/distributor");
+    }
+  }, [user, authLoading, router]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm font-medium text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render form if not authenticated
+  if (!user) {
+    return null;
+  }
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -25,21 +54,37 @@ export default function DistributorPage() {
     const formData = new FormData(e.currentTarget);
     const payload = {
       name: formData.get("name"),
-      email: formData.get("email"),
+      email: user.email || formData.get("email") || "",
       phone: formData.get("phone"),
       company: formData.get("company"),
       location: formData.get("location"),
       message: formData.get("message"),
+      userId: user.uid, // Include user ID since login is now required
     };
 
     try {
-      const res = await fetch("/api/distributor", { method: "POST", body: JSON.stringify(payload) });
-      if (res.ok) {
+      const res = await fetch("/api/distributor", { 
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload) 
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
         setStatus("success");
         (e.target as HTMLFormElement).reset();
-      } else setStatus("error");
-    } catch { setStatus("error"); }
-    finally { setLoading(false); }
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      setStatus("error");
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   return (
@@ -50,13 +95,13 @@ export default function DistributorPage() {
         <h1 className="reveal font-bold text-5xl md:text-7xl italic mb-6">
           Become a <span className="text-red-600">Distributor</span>
         </h1>
-        <p className="reveal max-w-2xl mx-auto text-slate-500 font-light text-lg">
+        <p className="reveal w-full text-slate-500 font-light text-lg">
           Join Bourgon Industries as a distributor and become part of our network delivering premium stainless steel products across India.
         </p>
       </section>
 
       {/* BENEFITS */}
-      <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+      <section className="w-full px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <TrendingUp className="text-red-600 mb-4" size={32} />
           <h3 className="italic text-xl mb-3 font-semibold">Growth Opportunities</h3>
@@ -75,7 +120,7 @@ export default function DistributorPage() {
       </section>
 
       {/* CONTACT INFO & FORM GRID */}
-      <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20">
+      <section className="w-full px-6 grid grid-cols-1 lg:grid-cols-2 gap-20">
         {/* CONTACT INFO */}
         <div className="reveal space-y-8">
           <h2 className="text-4xl italic mb-8">
@@ -121,6 +166,7 @@ export default function DistributorPage() {
                 name="name" 
                 required 
                 placeholder="Full Name *" 
+                defaultValue={user.displayName || ""}
                 className="bg-transparent border-b border-slate-300 py-3 focus:border-red-600 outline-none transition-all font-light" 
               />
               <input 
@@ -128,7 +174,9 @@ export default function DistributorPage() {
                 required 
                 type="email" 
                 placeholder="Email Address *" 
-                className="bg-transparent border-b border-slate-300 py-3 focus:border-red-600 outline-none transition-all font-light" 
+                defaultValue={user.email || ""}
+                readOnly
+                className="bg-slate-50 border-b border-slate-300 py-3 focus:border-red-600 outline-none transition-all font-light cursor-not-allowed" 
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -179,7 +227,7 @@ export default function DistributorPage() {
       </section>
 
       {/* WHY BECOME A DISTRIBUTOR */}
-      <section className="max-w-7xl mx-auto px-6 mt-20">
+      <section className="w-full px-6 mt-20">
         <div className="reveal bg-[#1e2433] text-white p-12 md:p-16">
           <h2 className="text-3xl md:text-5xl italic mb-8">Why Partner With Bourgon?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
