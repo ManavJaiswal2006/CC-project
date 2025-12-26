@@ -7,8 +7,24 @@ import { Search, Filter, ShoppingBag } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Dropdown from "@/components/UI/Dropdown";
+import { useAuth } from "@/app/context/AuthContext";
+import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
 
 export default function ShopPage() {
+  /* ================= AUTH & ROLE ================= */
+  const { user } = useAuth();
+  const { isProfessionalMode } = useProfessionalMode();
+  const userId = user?.uid ?? null;
+  
+  const userData = useQuery(
+    api.user.getUser,
+    userId ? { userId } : "skip"
+  );
+  
+  // Determine if user is a distributor and in professional mode
+  const isDistributor = userData?.role === "distributor" || userData?.category === "distributor";
+  const useDistributorDiscount = isDistributor && isProfessionalMode;
+
   /* ================= DATA ================= */
   const rawProducts = useQuery(api.product.getAllProducts);
   const categories = useQuery(api.product.getCategories);
@@ -33,10 +49,15 @@ export default function ShopPage() {
         ? Math.min(...sizes.map((s) => s.customerPrice))
         : p.customerPrice ?? 0;
 
+      // Get appropriate discount based on user role
+      const discount = useDistributorDiscount 
+        ? (p.distributorDiscount ?? 0)
+        : (p.customerDiscount ?? 0);
+
       // Discounted price
       const finalPrice =
-        p.discount > 0
-          ? Math.round(basePrice - (basePrice * p.discount) / 100)
+        discount > 0
+          ? Math.round(basePrice - (basePrice * discount) / 100)
           : basePrice;
 
       const stock = p.stock ?? 0;
@@ -52,13 +73,13 @@ export default function ShopPage() {
 
         basePrice,
         finalPrice,
-        discount: p.discount,
+        discount,
 
         hasSizes,
         sizesCount: sizes.length,
       };
     });
-  }, [rawProducts]);
+  }, [rawProducts, useDistributorDiscount]);
 
   /* ================= FILTER + SORT ================= */
   const filteredProducts = useMemo(() => {

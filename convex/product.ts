@@ -53,7 +53,8 @@ export const createProduct = mutation({
     details: v.optional(v.string()),
     category: v.string(),
     soldOut: v.boolean(),
-    discount: v.number(),
+    customerDiscount: v.number(),
+    distributorDiscount: v.number(),
     stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),
@@ -115,7 +116,8 @@ export const updateProduct = mutation({
     details: v.optional(v.string()),
     category: v.string(),
     soldOut: v.boolean(),
-    discount: v.number(),
+    customerDiscount: v.number(),
+    distributorDiscount: v.number(),
     stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),

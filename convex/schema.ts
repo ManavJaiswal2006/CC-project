@@ -49,7 +49,8 @@ export default defineSchema({
     category: v.string(),
 
     soldOut: v.boolean(),
-    discount: v.number(),
+    customerDiscount: v.number(), // Discount percentage for customers (0-100)
+    distributorDiscount: v.number(), // Discount percentage for distributors (0-100)
     stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),

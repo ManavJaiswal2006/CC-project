@@ -8,11 +8,23 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/app/context/CartContext";
 import Link from "next/link";
+import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
 
 export default function WishlistPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { addToCart } = useCart();
+  const { isProfessionalMode } = useProfessionalMode();
+  
+  const userId = user?.uid ?? null;
+  const userData = useQuery(
+    api.user.getUser,
+    userId ? { userId } : "skip"
+  );
+  
+  // Determine if user is a distributor and in professional mode
+  const isDistributor = userData?.role === "distributor" || userData?.category === "distributor";
+  const useDistributorDiscount = isDistributor && isProfessionalMode;
 
   /* ================= CONVEX ================= */
   const wishlist = useQuery(
@@ -44,9 +56,15 @@ export default function WishlistPage() {
     const basePrice = hasSizes
       ? Math.min(...sizes.map((s: any) => s.customerPrice))
       : product.customerPrice ?? 0;
+    
+    // Get appropriate discount based on user role
+    const discount = useDistributorDiscount 
+      ? (product.distributorDiscount ?? 0)
+      : (product.customerDiscount ?? 0);
+    
     const finalPrice =
-      product.discount > 0
-        ? Math.round(basePrice - (basePrice * product.discount) / 100)
+      discount > 0
+        ? Math.round(basePrice - (basePrice * discount) / 100)
         : basePrice;
 
     addToCart(
@@ -58,7 +76,7 @@ export default function WishlistPage() {
         size: null,
         basePrice,
         price: finalPrice,
-        discount: product.discount,
+        discount,
       },
       1
     );
@@ -138,9 +156,14 @@ export default function WishlistPage() {
                 ? Math.min(...sizes.map((s: any) => s.customerPrice))
                 : product.customerPrice ?? 0;
               const finalPrice =
-                product.discount > 0
-                  ? Math.round(basePrice - (basePrice * product.discount) / 100)
-                  : basePrice;
+                (() => {
+                  const discount = useDistributorDiscount 
+                    ? (product.distributorDiscount ?? 0)
+                    : (product.customerDiscount ?? 0);
+                  return discount > 0
+                    ? Math.round(basePrice - (basePrice * discount) / 100)
+                    : basePrice;
+                })();
 
               return (
                 <div
@@ -162,11 +185,16 @@ export default function WishlistPage() {
                           {product.name.charAt(0)}
                         </div>
                       )}
-                      {product.discount > 0 && (
-                        <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
-                          -{product.discount}% OFF
-                        </div>
-                      )}
+                      {(() => {
+                        const discount = useDistributorDiscount 
+                          ? (product.distributorDiscount ?? 0)
+                          : (product.customerDiscount ?? 0);
+                        return discount > 0 && (
+                          <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
+                            -{discount}% OFF
+                          </div>
+                        );
+                      })()}
                       {product.soldOut && (
                         <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center text-sm font-bold uppercase text-red-600">
                           Out of stock
@@ -198,7 +226,12 @@ export default function WishlistPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        {product.discount > 0 && (
+                        {(() => {
+                          const discount = useDistributorDiscount 
+                            ? (product.distributorDiscount ?? 0)
+                            : (product.customerDiscount ?? 0);
+                          return discount > 0;
+                        })() && (
                           <p className="text-xs text-gray-400 line-through">
                             ₹{basePrice}
                           </p>

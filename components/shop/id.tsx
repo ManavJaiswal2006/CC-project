@@ -11,6 +11,8 @@ import type { Id } from "@/convex/_generated/dataModel";
 import WishlistButton from "@/components/wishlist/WishlistButton";
 import ReviewSection from "@/components/reviews/ReviewSection";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
+import { useAuth } from "@/app/context/AuthContext";
+import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
 
 type Size = {
   label: string;
@@ -24,6 +26,20 @@ export default function ProductPage() {
   const params = useParams();
   const id =
     typeof params?.id === "string" ? params.id : null;
+
+  /* ================= AUTH & ROLE ================= */
+  const { user } = useAuth();
+  const { isProfessionalMode } = useProfessionalMode();
+  const userId = user?.uid ?? null;
+  
+  const userData = useQuery(
+    api.user.getUser,
+    userId ? { userId } : "skip"
+  );
+  
+  // Determine if user is a distributor and in professional mode
+  const isDistributor = userData?.role === "distributor" || userData?.category === "distributor";
+  const useDistributorDiscount = isDistributor && isProfessionalMode;
 
   /* ================= DATA (GUARDED) ================= */
   const product = useQuery(
@@ -50,13 +66,19 @@ export default function ProductPage() {
 
   const finalPrice = useMemo(() => {
     if (!product || basePrice == null) return null;
-    if (product.discount > 0) {
+    
+    // Get appropriate discount based on user role
+    const discount = useDistributorDiscount 
+      ? (product.distributorDiscount ?? 0)
+      : (product.customerDiscount ?? 0);
+    
+    if (discount > 0) {
       return Math.round(
-        basePrice - (basePrice * product.discount) / 100
+        basePrice - (basePrice * discount) / 100
       );
     }
     return basePrice;
-  }, [product, basePrice]);
+  }, [product, basePrice, useDistributorDiscount]);
 
   const stock = product?.stock ?? 0;
   const canAddToCart =
@@ -97,6 +119,11 @@ export default function ProductPage() {
     if (!canAddToCart || finalPrice == null || basePrice == null)
       return;
 
+    // Get appropriate discount based on user role
+    const discount = useDistributorDiscount 
+      ? (product.distributorDiscount ?? 0)
+      : (product.customerDiscount ?? 0);
+
     addToCart(
       {
         id: product._id,
@@ -106,7 +133,7 @@ export default function ProductPage() {
         size: selectedSize?.label ?? null,
         basePrice,
         price: finalPrice,
-        discount: product.discount,
+        discount,
       },
       1
     );
@@ -160,7 +187,12 @@ export default function ProductPage() {
               </p>
 
               <div className="flex items-baseline gap-4 mb-3">
-                {product.discount > 0 && basePrice !== null && (
+                {(() => {
+                  const discount = useDistributorDiscount 
+                    ? (product.distributorDiscount ?? 0)
+                    : (product.customerDiscount ?? 0);
+                  return discount > 0 && basePrice !== null;
+                })() && (
                   <span className="text-lg sm:text-xl text-gray-400 line-through">
                     ₹{basePrice}
                   </span>
@@ -170,11 +202,16 @@ export default function ProductPage() {
                     ₹{finalPrice}
                   </span>
                 )}
-                {product.discount > 0 && (
-                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    {product.discount}% OFF
-                  </span>
-                )}
+                {(() => {
+                  const discount = useDistributorDiscount 
+                    ? (product.distributorDiscount ?? 0)
+                    : (product.customerDiscount ?? 0);
+                  return discount > 0 && (
+                    <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      {discount}% OFF
+                    </span>
+                  );
+                })()}
               </div>
 
               <div className="flex items-center gap-2">

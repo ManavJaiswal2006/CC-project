@@ -33,7 +33,8 @@ export default function AdminPage() {
     category: "",
     description: "", // short
     details: "",     // ✅ long / detailed
-    discount: 0,
+    customerDiscount: 0,
+    distributorDiscount: 0,
     stock: 0,
     soldOut: false,
     customerPrice: 0,
@@ -89,7 +90,8 @@ export default function AdminPage() {
       category: "",
       description: "",
       details: "",
-      discount: 0,
+      customerDiscount: 0,
+      distributorDiscount: 0,
       stock: 0,
       soldOut: false,
       customerPrice: 0,
@@ -107,7 +109,8 @@ export default function AdminPage() {
       category: form.category,
       description: form.description,
       details: form.details || undefined,
-      discount: form.discount,
+      customerDiscount: form.customerDiscount,
+      distributorDiscount: form.distributorDiscount,
       stock: form.stock,
       soldOut: form.soldOut,
       storageId,
@@ -196,8 +199,8 @@ export default function AdminPage() {
             />
           </div>
 
-          {/* STOCK & DISCOUNT */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* STOCK & DISCOUNTS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="label">In Stock (qty)</label>
               <input
@@ -215,15 +218,34 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <label className="label">Discount (%)</label>
+              <label className="label">Customer Discount (%)</label>
               <input
                 type="number"
+                min={0}
+                max={100}
                 className="input"
-                value={form.discount}
+                value={form.customerDiscount}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    discount: Number(e.target.value),
+                    customerDiscount: Math.max(0, Math.min(100, Number(e.target.value))),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="label">Distributor Discount (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                className="input"
+                value={form.distributorDiscount}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    distributorDiscount: Math.max(0, Math.min(100, Number(e.target.value))),
                   })
                 }
               />
@@ -500,7 +522,7 @@ export default function AdminPage() {
                         {p.sizes?.length
                           ? `${p.sizes.length} sizes`
                           : `Single price`}{" "}
-                        • {p.discount}% off • In stock: {p.stock ?? 0}
+                        • Customer: {p.customerDiscount ?? 0}% off • Distributor: {p.distributorDiscount ?? 0}% off • In stock: {p.stock ?? 0}
                       </p>
 
                       {/* PRICING DISPLAY */}
@@ -535,7 +557,8 @@ export default function AdminPage() {
                             category: p.category,
                             description: p.description,
                             details: p.details ?? "",
-                            discount: p.discount,
+                            customerDiscount: p.customerDiscount ?? 0,
+                            distributorDiscount: p.distributorDiscount ?? 0,
                             stock: p.stock ?? 0,
                             soldOut: p.soldOut,
                             customerPrice: p.customerPrice ?? 0,

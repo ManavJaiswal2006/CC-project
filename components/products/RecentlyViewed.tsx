@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
 
 interface RecentlyViewedProps {
   currentProductId?: Id<"products">;
@@ -18,7 +19,18 @@ export default function RecentlyViewed({
   limit = 4,
 }: RecentlyViewedProps) {
   const { user } = useAuth();
+  const { isProfessionalMode } = useProfessionalMode();
   const [viewedIds, setViewedIds] = useState<string[]>([]);
+  
+  const userId = user?.uid ?? null;
+  const userData = useQuery(
+    api.user.getUser,
+    userId ? { userId } : "skip"
+  );
+  
+  // Determine if user is a distributor and in professional mode
+  const isDistributor = userData?.role === "distributor" || userData?.category === "distributor";
+  const useDistributorDiscount = isDistributor && isProfessionalMode;
 
   // Track product view
   useEffect(() => {
@@ -63,9 +75,15 @@ export default function RecentlyViewed({
           const basePrice = hasSizes
             ? Math.min(...sizes.map((s) => s.customerPrice))
             : product.customerPrice ?? 0;
+          
+          // Get appropriate discount based on user role
+          const discount = useDistributorDiscount 
+            ? (product.distributorDiscount ?? 0)
+            : (product.customerDiscount ?? 0);
+          
           const finalPrice =
-            product.discount > 0
-              ? Math.round(basePrice - (basePrice * product.discount) / 100)
+            discount > 0
+              ? Math.round(basePrice - (basePrice * discount) / 100)
               : basePrice;
 
           return (
@@ -88,11 +106,16 @@ export default function RecentlyViewed({
                     {product.name.charAt(0)}
                   </div>
                 )}
-                {product.discount > 0 && (
-                  <div className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
-                    -{product.discount}%
-                  </div>
-                )}
+                {(() => {
+                  const discount = useDistributorDiscount 
+                    ? (product.distributorDiscount ?? 0)
+                    : (product.customerDiscount ?? 0);
+                  return discount > 0 && (
+                    <div className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
+                      -{discount}%
+                    </div>
+                  );
+                })()}
               </div>
               <div className="p-3">
                 <h3 className="text-sm font-semibold mb-1 line-clamp-2">
