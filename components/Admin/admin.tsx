@@ -864,7 +864,23 @@ export default function AdminPage() {
           {/* Products List */}
           <div className="space-y-4">
             {products.map((p) => {
-              const basePrice = p.price ?? 0;
+              // Calculate base price correctly for all product types
+              const sizes = p.sizes ?? [];
+              const hasSizes = sizes.length > 0;
+              const subproducts = p.subproducts ?? [];
+              const hasSubproducts = subproducts.length > 0;
+              const colors = p.colors ?? [];
+              const hasColors = colors.length > 0;
+
+              // Base price = min of sizes, subproducts, colors, or single price
+              const basePrice: number = hasSizes
+                ? Math.min(...sizes.map((s) => s.price ?? 0))
+                : hasSubproducts
+                ? Math.min(...subproducts.map((sp) => sp.price ?? 0))
+                : hasColors
+                ? Math.min(...colors.map((c) => c.price ?? 0))
+                : p.price ?? 0;
+
               const customerPrice = Math.round(basePrice - (basePrice * (p.customerDiscount ?? 0)) / 100);
               const retailerPrice = Math.round(basePrice - (basePrice * (p.distributorDiscount ?? 0)) / 100);
 
@@ -889,7 +905,7 @@ export default function AdminPage() {
                       </p>
 
                       {/* PRICING DISPLAY */}
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-3 gap-4 mb-4">
                         <div className="p-4 rounded bg-gray-50 border border-gray-200">
                           <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
                             Base Price
@@ -897,6 +913,21 @@ export default function AdminPage() {
                           <p className="text-2xl font-bold text-gray-900">
                             ₹{basePrice.toLocaleString()}
                           </p>
+                          {hasSubproducts && subproducts.length > 0 && (
+                            <p className="text-[9px] text-gray-400 mt-1">
+                              (Min from {subproducts.length} subproducts)
+                            </p>
+                          )}
+                          {hasSizes && sizes.length > 0 && (
+                            <p className="text-[9px] text-gray-400 mt-1">
+                              (Min from {sizes.length} sizes)
+                            </p>
+                          )}
+                          {hasColors && colors.length > 0 && (
+                            <p className="text-[9px] text-gray-400 mt-1">
+                              (Min from {colors.length} colors)
+                            </p>
+                          )}
                         </div>
                         <div className="p-4 rounded bg-gray-50 border border-gray-200">
                           <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
@@ -925,6 +956,120 @@ export default function AdminPage() {
                           )}
                         </div>
                       </div>
+
+                      {/* SUBPRODUCTS LIST */}
+                      {hasSubproducts && subproducts.length > 0 && (
+                        <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-200">
+                          <p className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">
+                            Subproducts & Prices
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {subproducts.map((sp, idx) => {
+                              const spBasePrice = sp.price ?? 0;
+                              const spCustomerPrice = Math.round(spBasePrice - (spBasePrice * (p.customerDiscount ?? 0)) / 100);
+                              const spRetailerPrice = Math.round(spBasePrice - (spBasePrice * (p.distributorDiscount ?? 0)) / 100);
+                              
+                              return (
+                                <div key={idx} className="p-4 bg-white rounded border border-gray-300">
+                                  <p className="font-bold text-base mb-3 text-gray-900 border-b border-gray-200 pb-2">
+                                    {sp.label}
+                                  </p>
+                                  <div className="space-y-2 text-xs">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Base Price:</span>
+                                      <span className="font-bold text-gray-900">₹{spBasePrice.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Customer (B2C):</span>
+                                      <span className="font-bold text-green-600">₹{spCustomerPrice.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Retailer (B2B):</span>
+                                      <span className="font-bold text-blue-600">₹{spRetailerPrice.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* SIZES LIST */}
+                      {hasSizes && sizes.length > 0 && (
+                        <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-200">
+                          <p className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">
+                            Sizes & Prices
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {sizes.map((s, idx) => {
+                              const sizeBasePrice = s.price ?? 0;
+                              const sizeCustomerPrice = Math.round(sizeBasePrice - (sizeBasePrice * (p.customerDiscount ?? 0)) / 100);
+                              const sizeRetailerPrice = Math.round(sizeBasePrice - (sizeBasePrice * (p.distributorDiscount ?? 0)) / 100);
+                              
+                              return (
+                                <div key={idx} className="p-4 bg-white rounded border border-gray-300">
+                                  <p className="font-bold text-base mb-3 text-gray-900 border-b border-gray-200 pb-2">
+                                    {s.label}
+                                  </p>
+                                  <div className="space-y-2 text-xs">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Base Price:</span>
+                                      <span className="font-bold text-gray-900">₹{sizeBasePrice.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Customer (B2C):</span>
+                                      <span className="font-bold text-green-600">₹{sizeCustomerPrice.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Retailer (B2B):</span>
+                                      <span className="font-bold text-blue-600">₹{sizeRetailerPrice.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* COLORS LIST */}
+                      {hasColors && colors.length > 0 && (
+                        <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-200">
+                          <p className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">
+                            Colors & Prices
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {colors.map((c, idx) => {
+                              const colorBasePrice = c.price ?? 0;
+                              const colorCustomerPrice = Math.round(colorBasePrice - (colorBasePrice * (p.customerDiscount ?? 0)) / 100);
+                              const colorRetailerPrice = Math.round(colorBasePrice - (colorBasePrice * (p.distributorDiscount ?? 0)) / 100);
+                              
+                              return (
+                                <div key={idx} className="p-4 bg-white rounded border border-gray-300">
+                                  <p className="font-bold text-base mb-3 text-gray-900 border-b border-gray-200 pb-2">
+                                    {c.label}
+                                  </p>
+                                  <div className="space-y-2 text-xs">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Base Price:</span>
+                                      <span className="font-bold text-gray-900">₹{colorBasePrice.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Customer (B2C):</span>
+                                      <span className="font-bold text-green-600">₹{colorCustomerPrice.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500 font-medium">Retailer (B2B):</span>
+                                      <span className="font-bold text-blue-600">₹{colorRetailerPrice.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-4 text-sm ml-4">

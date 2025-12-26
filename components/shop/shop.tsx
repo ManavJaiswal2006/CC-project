@@ -146,7 +146,7 @@ export default function ShopPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900 font-sans">
 
       {/* ================= HEADER ================= */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-md backdrop-blur-sm bg-white/95">
+      <header className="border-b border-gray-200 sticky top-0 z-30 shadow-md backdrop-blur-sm bg-white/95">
         <div className="w-full px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div>

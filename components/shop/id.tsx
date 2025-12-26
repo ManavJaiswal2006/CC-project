@@ -36,7 +36,7 @@ export default function ProductPage() {
   /* ================= PARAM (SAFE) ================= */
   const params = useParams();
   const id =
-    typeof params?.id === "string" ? params.id : null;
+    typeof params?.id === "string" && params.id.length > 0 ? params.id : null;
 
   /* ================= AUTH & ROLE ================= */
   const { user } = useAuth();
@@ -110,32 +110,6 @@ export default function ProductPage() {
     (!hasSubproducts || selectedSubproduct !== null) &&
     (!hasColors || selectedColor !== null);
 
-  /* ================= LOADING ================= */
-  if (product === undefined) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-medium text-gray-600">Loading product…</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-gray-200 w-full max-w-md mx-auto">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-            <ShoppingBag size={32} className="text-gray-400" />
-          </div>
-          <h2 className="text-xl font-bold text-gray-900">Product not found</h2>
-          <p className="text-sm text-gray-500">The product you're looking for doesn't exist</p>
-        </div>
-      </div>
-    );
-  }
-
   /* ================= IMAGES ================= */
   // Get all image URLs (support both new imageUrls array and legacy imageUrl)
   const imageUrls = useMemo(() => {
@@ -164,6 +138,46 @@ export default function ProductPage() {
   useEffect(() => {
     setSelectedImageIndex(0);
   }, [product?._id]);
+
+  /* ================= LOADING ================= */
+  if (product === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm font-medium text-gray-600">Loading product…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-gray-200 w-full max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+            <ShoppingBag size={32} className="text-gray-400" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Invalid Product ID</h2>
+          <p className="text-sm text-gray-500">The product ID in the URL is invalid</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-gray-200 w-full max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+            <ShoppingBag size={32} className="text-gray-400" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Product not found</h2>
+          <p className="text-sm text-gray-500">The product you're looking for doesn't exist</p>
+        </div>
+      </div>
+    );
+  }
 
   /* ================= ADD TO CART ================= */
   const handleAddToCart = () => {

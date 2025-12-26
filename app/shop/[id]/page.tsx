@@ -1,7 +1,7 @@
-import ProductPage from '@/components/shop/id'
+import ProductPageWrapper from '@/components/shop/ProductPageWrapper'
 import { productPageDescription, productPageTitle } from '@/constants/metadata'
 import { Metadata } from 'next';
-import { generateSEO, generateStructuredData } from '@/lib/seo';
+import { generateSEO } from '@/lib/seo';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   // In a real app, you'd fetch product data here
@@ -14,9 +14,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 function page() {
-  return (
-    <div><ProductPage /></div>
-  )
+  return <ProductPageWrapper />
 }
 
 export default page
