@@ -68,6 +68,17 @@ export default defineSchema({
         })
       )
     ),
+
+    /* -------- COLOR-BASED PRODUCT -------- */
+    colors: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(), // Base price for this color (customer and retailer prices calculated from discounts)
+        })
+      )
+    ),
   })
     /* 🔥 SEARCH INDEX (FIXES YOUR ERROR) 🔥 */
     .searchIndex("search_products", {

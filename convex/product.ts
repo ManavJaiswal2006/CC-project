@@ -72,6 +72,17 @@ export const createProduct = mutation({
         })
       )
     ),
+
+    // color-based product
+    colors: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     await checkAdmin(ctx);
@@ -88,13 +99,17 @@ export const createProduct = mutation({
       throw new Error("Product already exists");
     }
 
-    // normalize sizes
+    // normalize sizes and colors
     const product = {
       ...args,
       name,
       sizes:
         Array.isArray(args.sizes) && args.sizes.length > 0
           ? args.sizes
+          : undefined,
+      colors:
+        Array.isArray(args.colors) && args.colors.length > 0
+          ? args.colors
           : undefined,
     };
 
@@ -130,6 +145,16 @@ export const updateProduct = mutation({
         })
       )
     ),
+
+    colors: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
+        })
+      )
+    ),
   },
   handler: async (ctx, { id, ...updates }) => {
     await checkAdmin(ctx);
@@ -140,6 +165,10 @@ export const updateProduct = mutation({
       sizes:
         Array.isArray(updates.sizes) && updates.sizes.length > 0
           ? updates.sizes
+          : undefined,
+      colors:
+        Array.isArray(updates.colors) && updates.colors.length > 0
+          ? updates.colors
           : undefined,
     };
 
@@ -238,6 +267,15 @@ export const getScopedProduct = query({
                 basePrice: sizeBasePrice,
               };
             }) ?? [],
+          colors:
+            product.colors?.map((c) => {
+              const colorBasePrice = c.price ?? 0;
+              return {
+                ...c,
+                price: calculatePrice(colorBasePrice, product.customerDiscount ?? 0),
+                basePrice: colorBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -266,6 +304,15 @@ export const getScopedProduct = query({
                 basePrice: sizeBasePrice,
               };
             }) ?? [],
+          colors:
+            product.colors?.map((c) => {
+              const colorBasePrice = c.price ?? 0;
+              return {
+                ...c,
+                price: calculatePrice(colorBasePrice, product.customerDiscount ?? 0),
+                basePrice: colorBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -291,6 +338,15 @@ export const getScopedProduct = query({
                 basePrice: sizeBasePrice,
               };
             }) ?? [],
+          colors:
+            product.colors?.map((c) => {
+              const colorBasePrice = c.price ?? 0;
+              return {
+                ...c,
+                price: calculatePrice(colorBasePrice, product.customerDiscount ?? 0),
+                basePrice: colorBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -311,6 +367,15 @@ export const getScopedProduct = query({
               ...s,
               price: calculatePrice(sizeBasePrice, product.distributorDiscount ?? 0),
               basePrice: sizeBasePrice,
+            };
+          }) ?? [],
+        colors:
+          product.colors?.map((c) => {
+            const colorBasePrice = c.price ?? 0;
+            return {
+              ...c,
+              price: calculatePrice(colorBasePrice, product.distributorDiscount ?? 0),
+              basePrice: colorBasePrice,
             };
           }) ?? [],
       },

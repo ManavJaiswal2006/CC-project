@@ -240,7 +240,7 @@ export default function ShopPage() {
                 )}
 
                 {/* IMAGE */}
-                <div className="relative h-64 sm:h-72 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6 sm:p-8 overflow-hidden">
+                <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6 sm:p-8 overflow-hidden">
                   {product.image ? (
                     <Image
                       src={product.image}

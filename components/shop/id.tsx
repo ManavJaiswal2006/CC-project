@@ -146,7 +146,7 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-16">
 
           {/* IMAGE */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-xl border-2 border-gray-200 flex items-center justify-center p-6 sm:p-8 md:p-12 aspect-square overflow-hidden group/image">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden group/image">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}

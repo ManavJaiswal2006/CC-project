@@ -12,6 +12,12 @@ type Size = {
   price: number;
 };
 
+type Color = {
+  label: string;
+  value: string;
+  price: number;
+};
+
 export default function AdminPage() {
   /* ================= CONVEX ================= */
   const products = useQuery(api.product.getAllProducts);
@@ -22,7 +28,7 @@ export default function AdminPage() {
 
   /* ================= STATE ================= */
   const [editingId, setEditingId] = useState<Id<"products"> | null>(null);
-  const [mode, setMode] = useState<"single" | "sizes">("single");
+  const [mode, setMode] = useState<"single" | "sizes" | "colors">("single");
 
   const imageRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +43,9 @@ export default function AdminPage() {
     soldOut: false,
     price: 0,
     sizes: [] as Size[],
+    colors: [] as Color[],
     image: null as File | null,
+    existingStorageId: null as Id<"_storage"> | null, // Store existing image ID when editing
   });
 
   /* ================= LOADING ================= */
@@ -92,12 +100,90 @@ export default function AdminPage() {
       soldOut: false,
       price: 0,
       sizes: [],
+      colors: [],
       image: null,
+      existingStorageId: null,
     });
   };
 
   const saveProduct = async () => {
-    const storageId = await uploadImage();
+    // Validate required fields
+    if (!form.name.trim()) {
+      alert("Please enter a product name.");
+      return;
+    }
+
+    if (!form.category.trim()) {
+      alert("Please enter a category.");
+      return;
+    }
+
+    if (!form.description.trim()) {
+      alert("Please enter a short description.");
+      return;
+    }
+
+    // Validate pricing based on mode
+    if (mode === "single") {
+      if (!form.price || form.price <= 0) {
+        alert("Please enter a valid base price for single price mode.");
+        return;
+      }
+    } else if (mode === "sizes") {
+      if (!form.sizes || form.sizes.length === 0) {
+        alert("Please add at least one size.");
+        return;
+      }
+      
+      // Validate each size has all required fields
+      for (let i = 0; i < form.sizes.length; i++) {
+        const size = form.sizes[i];
+        if (!size.label.trim()) {
+          alert(`Please enter a label for size ${i + 1}.`);
+          return;
+        }
+        if (!size.value.trim()) {
+          alert(`Please enter a value for size ${i + 1}.`);
+          return;
+        }
+        if (!size.price || size.price <= 0) {
+          alert(`Please enter a valid price for size ${i + 1}.`);
+          return;
+        }
+      }
+    } else if (mode === "colors") {
+      if (!form.colors || form.colors.length === 0) {
+        alert("Please add at least one color.");
+        return;
+      }
+      
+      // Validate each color has all required fields
+      for (let i = 0; i < form.colors.length; i++) {
+        const color = form.colors[i];
+        if (!color.label.trim()) {
+          alert(`Please enter a label for color ${i + 1}.`);
+          return;
+        }
+        if (!color.value.trim()) {
+          alert(`Please enter a value for color ${i + 1}.`);
+          return;
+        }
+        if (!color.price || color.price <= 0) {
+          alert(`Please enter a valid price for color ${i + 1}.`);
+          return;
+        }
+      }
+    }
+
+    // Validate image for new products
+    if (!editingId && !form.image) {
+      alert("Please upload a product image.");
+      return;
+    }
+
+    // Upload new image if provided, otherwise use existing one
+    const newStorageId = await uploadImage();
+    const storageId = newStorageId || form.existingStorageId;
 
     // Explicitly construct payload to avoid any accidental field inclusion
     const payload: {
@@ -112,6 +198,7 @@ export default function AdminPage() {
       storageId?: any;
       price?: number;
       sizes?: Size[];
+      colors?: Color[];
     } = {
       name: form.name,
       category: form.category,
@@ -121,11 +208,16 @@ export default function AdminPage() {
       distributorDiscount: form.distributorDiscount,
       stock: form.stock,
       soldOut: form.soldOut,
-      storageId,
 
       price: mode === "single" ? form.price : undefined,
       sizes: mode === "sizes" ? form.sizes : undefined,
+      colors: mode === "colors" ? form.colors : undefined,
     };
+
+    // Only include storageId if we have one (new or existing)
+    if (storageId) {
+      payload.storageId = storageId;
+    }
 
     if (editingId) {
       await updateProduct({ id: editingId, ...payload });
@@ -283,6 +375,16 @@ export default function AdminPage() {
               >
                 Size Based
               </button>
+              <button
+                onClick={() => setMode("colors")}
+                className={`px-4 py-2 cursor-pointer border ${
+                  mode === "colors"
+                    ? "bg-black text-white"
+                    : "border-black text-black"
+                }`}
+              >
+                Color Based
+              </button>
             </div>
           </div>
 
@@ -416,6 +518,83 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* COLOR BASED */}
+          {mode === "colors" && (
+            <div className="space-y-4">
+              <div>
+                <label className="label">Colors</label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Enter base price for each color. Customer and retailer prices will be calculated from discounts above.
+                </p>
+              </div>
+
+              {form.colors.map((c, i) => {
+                const basePrice = c.price || 0;
+                const customerPrice = Math.round(basePrice - (basePrice * form.customerDiscount) / 100);
+                const retailerPrice = Math.round(basePrice - (basePrice * form.distributorDiscount) / 100);
+                
+                return (
+                  <div
+                    key={i}
+                    className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded"
+                  >
+                    <input
+                      className="input"
+                      placeholder="Label (Red)"
+                      value={c.label}
+                      onChange={(e) => {
+                        const colors = [...form.colors];
+                        colors[i].label = e.target.value;
+                        setForm({ ...form, colors });
+                      }}
+                    />
+                    <input
+                      className="input"
+                      placeholder="Value (#FF0000)"
+                      value={c.value}
+                      onChange={(e) => {
+                        const colors = [...form.colors];
+                        colors[i].value = e.target.value;
+                        setForm({ ...form, colors });
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="Base Price"
+                      value={c.price}
+                      onChange={(e) => {
+                        const colors = [...form.colors];
+                        colors[i].price = Number(e.target.value);
+                        setForm({ ...form, colors });
+                      }}
+                    />
+                    <div className="text-xs text-gray-500 flex flex-col justify-center">
+                      <span>Customer: ₹{customerPrice}</span>
+                      <span>Retailer: ₹{retailerPrice}</span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    colors: [
+                      ...form.colors,
+                      { label: "", value: "", price: 0 },
+                    ],
+                  })
+                }
+                className="text-sm underline text-black"
+              >
+                + Add Color
+              </button>
+            </div>
+          )}
+
           {/* IMAGE */}
           <div>
             <label className="label">Product Image</label>
@@ -462,6 +641,8 @@ export default function AdminPage() {
                       <p className="text-xs text-gray-500 mb-4">
                         {p.sizes?.length
                           ? `${p.sizes.length} sizes`
+                          : p.colors?.length
+                          ? `${p.colors.length} colors`
                           : `Single price`}{" "}
                         • Customer: {p.customerDiscount ?? 0}% off • Distributor: {p.distributorDiscount ?? 0}% off • In stock: {p.stock ?? 0}
                       </p>
@@ -509,7 +690,14 @@ export default function AdminPage() {
                       <button
                         onClick={() => {
                           setEditingId(p._id);
-                          setMode(p.sizes?.length ? "sizes" : "single");
+                          // Determine mode based on what fields exist
+                          let productMode: "single" | "sizes" | "colors" = "single";
+                          if (p.sizes?.length) {
+                            productMode = "sizes";
+                          } else if (p.colors?.length) {
+                            productMode = "colors";
+                          }
+                          setMode(productMode);
                           setForm({
                             name: p.name,
                             category: p.category,
@@ -525,7 +713,13 @@ export default function AdminPage() {
                               value: s.value,
                               price: s.price ?? 0,
                             })),
+                            colors: (p.colors ?? []).map((c: any) => ({
+                              label: c.label,
+                              value: c.value,
+                              price: c.price ?? 0,
+                            })),
                             image: null,
+                            existingStorageId: p.storageId ?? null, // Preserve existing image ID
                           });
                         }}
                         className="px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors uppercase text-xs font-bold tracking-wider"
