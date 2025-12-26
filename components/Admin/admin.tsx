@@ -18,6 +18,12 @@ type Color = {
   price: number;
 };
 
+type Subproduct = {
+  label: string;
+  value: string;
+  price: number;
+};
+
 export default function AdminPage() {
   /* ================= CONVEX ================= */
   const products = useQuery(api.product.getAllProducts);
@@ -28,7 +34,7 @@ export default function AdminPage() {
 
   /* ================= STATE ================= */
   const [editingId, setEditingId] = useState<Id<"products"> | null>(null);
-  const [mode, setMode] = useState<"single" | "sizes" | "colors">("single");
+  const [mode, setMode] = useState<"single" | "sizes" | "colors" | "subproducts">("single");
 
   const imageRef = useRef<HTMLInputElement>(null);
 
@@ -40,10 +46,12 @@ export default function AdminPage() {
     customerDiscount: 0,
     distributorDiscount: 0,
     stock: 0,
+    quantity: 1, // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
     soldOut: false,
     price: 0,
     sizes: [] as Size[],
     colors: [] as Color[],
+    subproducts: [] as Subproduct[],
     image: null as File | null,
     existingStorageId: null as Id<"_storage"> | null, // Store existing image ID when editing
   });
@@ -97,10 +105,12 @@ export default function AdminPage() {
       customerDiscount: 0,
       distributorDiscount: 0,
       stock: 0,
+      quantity: 1,
       soldOut: false,
       price: 0,
       sizes: [],
       colors: [],
+      subproducts: [],
       image: null,
       existingStorageId: null,
     });
@@ -173,6 +183,28 @@ export default function AdminPage() {
           return;
         }
       }
+    } else if (mode === "subproducts") {
+      if (!form.subproducts || form.subproducts.length === 0) {
+        alert("Please add at least one subproduct.");
+        return;
+      }
+      
+      // Validate each subproduct has all required fields
+      for (let i = 0; i < form.subproducts.length; i++) {
+        const subproduct = form.subproducts[i];
+        if (!subproduct.label.trim()) {
+          alert(`Please enter a label for subproduct ${i + 1}.`);
+          return;
+        }
+        if (!subproduct.value.trim()) {
+          alert(`Please enter a value for subproduct ${i + 1}.`);
+          return;
+        }
+        if (!subproduct.price || subproduct.price <= 0) {
+          alert(`Please enter a valid price for subproduct ${i + 1}.`);
+          return;
+        }
+      }
     }
 
     // Validate image for new products
@@ -194,11 +226,13 @@ export default function AdminPage() {
       customerDiscount: number;
       distributorDiscount: number;
       stock: number;
+      quantity?: number;
       soldOut: boolean;
       storageId?: any;
       price?: number;
       sizes?: Size[];
       colors?: Color[];
+      subproducts?: Subproduct[];
     } = {
       name: form.name,
       category: form.category,
@@ -207,11 +241,13 @@ export default function AdminPage() {
       customerDiscount: form.customerDiscount,
       distributorDiscount: form.distributorDiscount,
       stock: form.stock,
+      quantity: form.quantity > 1 ? form.quantity : undefined, // Only include if > 1
       soldOut: form.soldOut,
 
       price: mode === "single" ? form.price : undefined,
       sizes: mode === "sizes" ? form.sizes : undefined,
       colors: mode === "colors" ? form.colors : undefined,
+      subproducts: mode === "subproducts" ? form.subproducts : undefined,
     };
 
     // Only include storageId if we have one (new or existing)
@@ -299,7 +335,7 @@ export default function AdminPage() {
           </div>
 
           {/* STOCK & DISCOUNTS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <label className="label">In Stock (qty)</label>
               <input
@@ -314,6 +350,26 @@ export default function AdminPage() {
                   })
                 }
               />
+            </div>
+
+            <div>
+              <label className="label">Pack Quantity</label>
+              <input
+                type="number"
+                min={1}
+                className="input"
+                value={form.quantity}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    quantity: Math.max(1, Number(e.target.value)),
+                  })
+                }
+                placeholder="1 for solo, 6 for pack of 6, etc."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {form.quantity === 1 ? "Solo item" : `Pack of ${form.quantity}`}
+              </p>
             </div>
 
             <div>
@@ -384,6 +440,16 @@ export default function AdminPage() {
                 }`}
               >
                 Color Based
+              </button>
+              <button
+                onClick={() => setMode("subproducts")}
+                className={`px-4 py-2 cursor-pointer border ${
+                  mode === "subproducts"
+                    ? "bg-black text-white"
+                    : "border-black text-black"
+                }`}
+              >
+                Subproducts
               </button>
             </div>
           </div>
@@ -459,7 +525,7 @@ export default function AdminPage() {
                 return (
                   <div
                     key={i}
-                    className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded"
+                    className="grid grid-cols-5 gap-3 p-3 bg-gray-50 rounded items-center"
                   >
                     <input
                       className="input"
@@ -496,6 +562,17 @@ export default function AdminPage() {
                       <span>Customer: ₹{customerPrice}</span>
                       <span>Retailer: ₹{retailerPrice}</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sizes = form.sizes.filter((_, index) => index !== i);
+                        setForm({ ...form, sizes });
+                      }}
+                      className="px-3 py-2 bg-red-600 text-white text-xs font-bold uppercase hover:bg-red-700 transition-colors"
+                      title="Remove size"
+                    >
+                      Remove
+                    </button>
                   </div>
                 );
               })}
@@ -536,7 +613,7 @@ export default function AdminPage() {
                 return (
                   <div
                     key={i}
-                    className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded"
+                    className="grid grid-cols-5 gap-3 p-3 bg-gray-50 rounded items-center"
                   >
                     <input
                       className="input"
@@ -573,6 +650,17 @@ export default function AdminPage() {
                       <span>Customer: ₹{customerPrice}</span>
                       <span>Retailer: ₹{retailerPrice}</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const colors = form.colors.filter((_, index) => index !== i);
+                        setForm({ ...form, colors });
+                      }}
+                      className="px-3 py-2 bg-red-600 text-white text-xs font-bold uppercase hover:bg-red-700 transition-colors"
+                      title="Remove color"
+                    >
+                      Remove
+                    </button>
                   </div>
                 );
               })}
@@ -591,6 +679,94 @@ export default function AdminPage() {
                 className="text-sm underline text-black"
               >
                 + Add Color
+              </button>
+            </div>
+          )}
+
+          {/* SUBPRODUCTS BASED */}
+          {mode === "subproducts" && (
+            <div className="space-y-4">
+              <div>
+                <label className="label">Subproducts</label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Enter base price for each subproduct (e.g., Baby Fork, Baby Soup). Customer and retailer prices will be calculated from discounts above.
+                </p>
+              </div>
+
+              {form.subproducts.map((sp, i) => {
+                const basePrice = sp.price || 0;
+                const customerPrice = Math.round(basePrice - (basePrice * form.customerDiscount) / 100);
+                const retailerPrice = Math.round(basePrice - (basePrice * form.distributorDiscount) / 100);
+                
+                return (
+                  <div
+                    key={i}
+                    className="grid grid-cols-5 gap-3 p-3 bg-gray-50 rounded items-center"
+                  >
+                    <input
+                      className="input"
+                      placeholder="Label (Baby Fork)"
+                      value={sp.label}
+                      onChange={(e) => {
+                        const subproducts = [...form.subproducts];
+                        subproducts[i].label = e.target.value;
+                        setForm({ ...form, subproducts });
+                      }}
+                    />
+                    <input
+                      className="input"
+                      placeholder="Value (baby-fork)"
+                      value={sp.value}
+                      onChange={(e) => {
+                        const subproducts = [...form.subproducts];
+                        subproducts[i].value = e.target.value;
+                        setForm({ ...form, subproducts });
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="Base Price"
+                      value={sp.price}
+                      onChange={(e) => {
+                        const subproducts = [...form.subproducts];
+                        subproducts[i].price = Number(e.target.value);
+                        setForm({ ...form, subproducts });
+                      }}
+                    />
+                    <div className="text-xs text-gray-500 flex flex-col justify-center">
+                      <span>Customer: ₹{customerPrice}</span>
+                      <span>Retailer: ₹{retailerPrice}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const subproducts = form.subproducts.filter((_, index) => index !== i);
+                        setForm({ ...form, subproducts });
+                      }}
+                      className="px-3 py-2 bg-red-600 text-white text-xs font-bold uppercase hover:bg-red-700 transition-colors"
+                      title="Remove subproduct"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    subproducts: [
+                      ...form.subproducts,
+                      { label: "", value: "", price: 0 },
+                    ],
+                  })
+                }
+                className="text-sm underline text-black"
+              >
+                + Add Subproduct
               </button>
             </div>
           )}
@@ -643,7 +819,10 @@ export default function AdminPage() {
                           ? `${p.sizes.length} sizes`
                           : p.colors?.length
                           ? `${p.colors.length} colors`
+                          : p.subproducts?.length
+                          ? `${p.subproducts.length} subproducts`
                           : `Single price`}{" "}
+                        • {p.quantity && p.quantity > 1 ? `Pack of ${p.quantity}` : "Solo"}{" "}
                         • Customer: {p.customerDiscount ?? 0}% off • Distributor: {p.distributorDiscount ?? 0}% off • In stock: {p.stock ?? 0}
                       </p>
 
@@ -691,11 +870,13 @@ export default function AdminPage() {
                         onClick={() => {
                           setEditingId(p._id);
                           // Determine mode based on what fields exist
-                          let productMode: "single" | "sizes" | "colors" = "single";
+                          let productMode: "single" | "sizes" | "colors" | "subproducts" = "single";
                           if (p.sizes?.length) {
                             productMode = "sizes";
                           } else if (p.colors?.length) {
                             productMode = "colors";
+                          } else if (p.subproducts?.length) {
+                            productMode = "subproducts";
                           }
                           setMode(productMode);
                           setForm({
@@ -706,6 +887,7 @@ export default function AdminPage() {
                             customerDiscount: p.customerDiscount ?? 0,
                             distributorDiscount: p.distributorDiscount ?? 0,
                             stock: p.stock ?? 0,
+                            quantity: p.quantity ?? 1,
                             soldOut: p.soldOut,
                             price: p.price ?? 0,
                             sizes: (p.sizes ?? []).map((s: any) => ({
@@ -717,6 +899,11 @@ export default function AdminPage() {
                               label: c.label,
                               value: c.value,
                               price: c.price ?? 0,
+                            })),
+                            subproducts: (p.subproducts ?? []).map((sp: any) => ({
+                              label: sp.label,
+                              value: sp.value,
+                              price: sp.price ?? 0,
                             })),
                             image: null,
                             existingStorageId: p.storageId ?? null, // Preserve existing image ID

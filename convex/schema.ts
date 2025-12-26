@@ -52,6 +52,7 @@ export default defineSchema({
     customerDiscount: v.number(), // Discount percentage for customers (0-100)
     distributorDiscount: v.number(), // Discount percentage for distributors (0-100)
     stock: v.optional(v.number()),
+    quantity: v.optional(v.number()), // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
 
     storageId: v.optional(v.id("_storage")),
 
@@ -76,6 +77,17 @@ export default defineSchema({
           label: v.string(),
           value: v.string(),
           price: v.number(), // Base price for this color (customer and retailer prices calculated from discounts)
+        })
+      )
+    ),
+
+    /* -------- SUBPRODUCTS-BASED PRODUCT -------- */
+    subproducts: v.optional(
+      v.array(
+        v.object({
+          label: v.string(), // Display name (e.g., "Baby Fork")
+          value: v.string(), // Unique identifier (e.g., "baby-fork")
+          price: v.number(), // Base price for this subproduct (customer and retailer prices calculated from discounts)
         })
       )
     ),

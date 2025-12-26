@@ -20,6 +20,18 @@ type Size = {
   price: number;
 };
 
+type Subproduct = {
+  label: string;
+  value: string;
+  price: number;
+};
+
+type Color = {
+  label: string;
+  value: string;
+  price: number;
+};
+
 export default function ProductPage() {
   /* ================= PARAM (SAFE) ================= */
   const params = useParams();
@@ -51,17 +63,25 @@ export default function ProductPage() {
 
   /* ================= STATE ================= */
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+  const [selectedSubproduct, setSelectedSubproduct] = useState<Subproduct | null>(null);
+  const [selectedColor, setSelectedColor] = useState<Color | null>(null);
 
   /* ================= NORMALIZATION ================= */
   const sizes = product?.sizes ?? [];
   const hasSizes = sizes.length > 0;
+  const subproducts = product?.subproducts ?? [];
+  const hasSubproducts = subproducts.length > 0;
+  const colors = product?.colors ?? [];
+  const hasColors = colors.length > 0;
 
   /* ================= PRICE ================= */
   const basePrice = useMemo(() => {
     if (!product) return null;
     if (hasSizes) return selectedSize?.price ?? null;
+    if (hasSubproducts) return selectedSubproduct?.price ?? null;
+    if (hasColors) return selectedColor?.price ?? null;
     return product.price ?? null;
-  }, [product, hasSizes, selectedSize]);
+  }, [product, hasSizes, hasSubproducts, hasColors, selectedSize, selectedSubproduct, selectedColor]);
 
   const finalPrice = useMemo(() => {
     if (!product || basePrice == null) return null;
@@ -85,7 +105,9 @@ export default function ProductPage() {
     !product.soldOut &&
     stock > 0 &&
     basePrice !== null &&
-    (!hasSizes || selectedSize !== null);
+    (!hasSizes || selectedSize !== null) &&
+    (!hasSubproducts || selectedSubproduct !== null) &&
+    (!hasColors || selectedColor !== null);
 
   /* ================= LOADING ================= */
   if (product === undefined) {
@@ -130,9 +152,12 @@ export default function ProductPage() {
         image: product.imageUrl ?? "",
         category: product.category,
         size: selectedSize?.label ?? null,
+        subproduct: selectedSubproduct?.label ?? null,
+        color: selectedColor?.label ?? null,
         basePrice,
         price: finalPrice,
         discount,
+        packQuantity: product.quantity && product.quantity > 1 ? product.quantity : undefined,
       },
       1
     );
@@ -182,7 +207,7 @@ export default function ProductPage() {
             {/* PRICE & STOCK */}
             <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-md">
               <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-                {hasSizes ? "Price (selected size)" : "Price"}
+                {hasSizes ? "Price (selected size)" : hasSubproducts ? "Price (selected subproduct)" : hasColors ? "Price (selected color)" : "Price"}
               </p>
 
               <div className="flex items-baseline gap-4 mb-3">
@@ -213,7 +238,7 @@ export default function ProductPage() {
                 })()}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-3">
                 {stock > 0 ? (
                   <>
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -230,6 +255,17 @@ export default function ProductPage() {
                   </>
                 )}
               </div>
+
+              {product.quantity && product.quantity > 1 && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                    Pack Size
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Pack of {product.quantity}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* SIZE SELECTOR */}
@@ -240,19 +276,114 @@ export default function ProductPage() {
                 </p>
 
                 <div className="flex flex-wrap gap-3 sm:gap-4">
-                  {sizes.map((s) => (
-                    <button
-                      key={s.value}
-                      onClick={() => setSelectedSize({ label: s.label, value: s.value, price: s.price })}
-                      className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
-                        selectedSize?.value === s.value
-                          ? "border-black bg-black text-white shadow-lg transform scale-105"
-                          : "border-gray-300 hover:border-black hover:shadow-md bg-white"
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
+                  {sizes.map((s) => {
+                    const sizeBasePrice = s.price ?? 0;
+                    const discount = useDistributorDiscount 
+                      ? (product.distributorDiscount ?? 0)
+                      : (product.customerDiscount ?? 0);
+                    const sizeFinalPrice = discount > 0
+                      ? Math.round(sizeBasePrice - (sizeBasePrice * discount) / 100)
+                      : sizeBasePrice;
+
+                    return (
+                      <button
+                        key={s.value}
+                        onClick={() => setSelectedSize({ label: s.label, value: s.value, price: s.price })}
+                        className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
+                          selectedSize?.value === s.value
+                            ? "border-black bg-black text-white shadow-lg transform scale-105"
+                            : "border-gray-300 hover:border-black hover:shadow-md bg-white"
+                        }`}
+                      >
+                        <div className="text-left">
+                          <div>{s.label}</div>
+                          <div className="text-xs font-normal mt-1">
+                            ₹{sizeFinalPrice}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* SUBPRODUCT SELECTOR */}
+            {hasSubproducts && (
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
+                <p className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-4">
+                  Select Subproduct
+                </p>
+
+                <div className="flex flex-wrap gap-3 sm:gap-4">
+                  {subproducts.map((sp) => {
+                    const subproductBasePrice = sp.price ?? 0;
+                    const discount = useDistributorDiscount 
+                      ? (product.distributorDiscount ?? 0)
+                      : (product.customerDiscount ?? 0);
+                    const subproductFinalPrice = discount > 0
+                      ? Math.round(subproductBasePrice - (subproductBasePrice * discount) / 100)
+                      : subproductBasePrice;
+
+                    return (
+                      <button
+                        key={sp.value}
+                        onClick={() => setSelectedSubproduct({ label: sp.label, value: sp.value, price: sp.price })}
+                        className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
+                          selectedSubproduct?.value === sp.value
+                            ? "border-black bg-black text-white shadow-lg transform scale-105"
+                            : "border-gray-300 hover:border-black hover:shadow-md bg-white"
+                        }`}
+                      >
+                        <div className="text-left">
+                          <div>{sp.label}</div>
+                          <div className="text-xs font-normal mt-1">
+                            ₹{subproductFinalPrice}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* COLOR SELECTOR */}
+            {hasColors && (
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
+                <p className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-4">
+                  Select Color
+                </p>
+
+                <div className="flex flex-wrap gap-3 sm:gap-4">
+                  {colors.map((c) => {
+                    const colorBasePrice = c.price ?? 0;
+                    const discount = useDistributorDiscount 
+                      ? (product.distributorDiscount ?? 0)
+                      : (product.customerDiscount ?? 0);
+                    const colorFinalPrice = discount > 0
+                      ? Math.round(colorBasePrice - (colorBasePrice * discount) / 100)
+                      : colorBasePrice;
+
+                    return (
+                      <button
+                        key={c.value}
+                        onClick={() => setSelectedColor({ label: c.label, value: c.value, price: c.price })}
+                        className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
+                          selectedColor?.value === c.value
+                            ? "border-black bg-black text-white shadow-lg transform scale-105"
+                            : "border-gray-300 hover:border-black hover:shadow-md bg-white"
+                        }`}
+                      >
+                        <div className="text-left">
+                          <div>{c.label}</div>
+                          <div className="text-xs font-normal mt-1">
+                            ₹{colorFinalPrice}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -270,6 +401,10 @@ export default function ProductPage() {
                     ? "Out of Stock"
                     : hasSizes && !selectedSize
                     ? "Select Size First"
+                    : hasSubproducts && !selectedSubproduct
+                    ? "Select Subproduct First"
+                    : hasColors && !selectedColor
+                    ? "Select Color First"
                     : "Add to Cart"}
                 </span>
               </button>

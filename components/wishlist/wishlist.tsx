@@ -77,6 +77,7 @@ export default function WishlistPage() {
         basePrice,
         price: finalPrice,
         discount,
+        packQuantity: product.quantity && product.quantity > 1 ? product.quantity : undefined,
       },
       1
     );

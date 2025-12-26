@@ -43,10 +43,18 @@ export default function ShopPage() {
     return rawProducts.map((p) => {
       const sizes = p.sizes ?? [];
       const hasSizes = sizes.length > 0;
+      const subproducts = p.subproducts ?? [];
+      const hasSubproducts = subproducts.length > 0;
+      const colors = p.colors ?? [];
+      const hasColors = colors.length > 0;
 
-      // Base price = min size OR single price
+      // Base price = min of sizes, subproducts, colors, or single price
       const basePrice: number = hasSizes
         ? Math.min(...sizes.map((s) => s.price ?? 0))
+        : hasSubproducts
+        ? Math.min(...subproducts.map((sp) => sp.price ?? 0))
+        : hasColors
+        ? Math.min(...colors.map((c) => c.price ?? 0))
         : p.price ?? 0;
 
       // Get appropriate discount based on user role
@@ -77,6 +85,7 @@ export default function ShopPage() {
 
         hasSizes,
         sizesCount: sizes.length,
+        quantity: p.quantity ?? 1, // Pack quantity
       };
     });
   }, [rawProducts, useDistributorDiscount]);
@@ -290,6 +299,11 @@ export default function ShopPage() {
                       {product.hasSizes && (
                         <p className="text-[10px] text-gray-500 mt-1.5 font-medium">
                           Available in {product.sizesCount} sizes
+                        </p>
+                      )}
+                      {product.quantity > 1 && (
+                        <p className="text-[10px] text-red-600 mt-1.5 font-bold uppercase">
+                          Pack of {product.quantity}
                         </p>
                       )}
                     </div>

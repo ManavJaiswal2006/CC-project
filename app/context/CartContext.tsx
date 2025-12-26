@@ -25,22 +25,27 @@ export interface CartItem {
 
   // Variant
   size?: string | null;
+  subproduct?: string | null;
+  color?: string | null;
 
   // Pricing (⚠️ UI ONLY — server recalculates)
   basePrice: number;
   price: number;
   discount: number;
 
-  quantity: number;
+  quantity: number; // Number of packs/items in cart
+  packQuantity?: number; // Pack size (1 for solo, 6 for pack of 6, etc.)
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
-  removeFromCart: (id: string, size?: string | null) => void;
+  removeFromCart: (id: string, size?: string | null, subproduct?: string | null, color?: string | null) => void;
   updateQuantity: (
     id: string,
     size: string | null | undefined,
+    subproduct: string | null | undefined,
+    color: string | null | undefined,
     quantity: number
   ) => void;
   clearCart: () => void;
@@ -57,6 +62,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const hydratedRef = useRef(false);
+  const lastToastRef = useRef<{ itemId: string; timestamp: number } | null>(null);
 
   /* ---------- Load from localStorage (SAFE) ---------- */
   useEffect(() => {
@@ -102,7 +108,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     setCart((prev) => {
       const existing = prev.find(
-        (p) => p.id === item.id && p.size === item.size
+        (p) => p.id === item.id && p.size === item.size && p.subproduct === item.subproduct && p.color === item.color
       );
 
       if (existing) {
@@ -110,17 +116,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           existing.quantity + safeQty,
           MAX_QTY_PER_ITEM
         );
-        
-        // Show toast notification
-        showToast(
-          newQuantity > existing.quantity
-            ? `${item.name} added to cart (${newQuantity} total)`
-            : `${item.name} quantity updated (max ${MAX_QTY_PER_ITEM} per item)`,
-          "success"
-        );
+
+        // Prevent duplicate toasts (React Strict Mode can cause double renders)
+        const now = Date.now();
+        const itemKey = `${item.id}-${item.size}-${item.subproduct}-${item.color}`;
+        const shouldShowToast = !lastToastRef.current || 
+          lastToastRef.current.itemId !== itemKey || 
+          (now - lastToastRef.current.timestamp) > 100;
+
+        if (shouldShowToast) {
+          lastToastRef.current = { itemId: itemKey, timestamp: now };
+          setTimeout(() => {
+            showToast(
+              newQuantity > existing.quantity
+                ? `${item.name} added to cart (${newQuantity} total)`
+                : `${item.name} quantity updated (max ${MAX_QTY_PER_ITEM} per item)`,
+              "success"
+            );
+          }, 0);
+        }
 
         return prev.map((p) =>
-          p.id === item.id && p.size === item.size
+          p.id === item.id && p.size === item.size && p.subproduct === item.subproduct && p.color === item.color
             ? {
                 ...p,
                 quantity: newQuantity,
@@ -129,8 +146,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      // Show toast notification for new item
-      showToast(`${item.name} added to cart`, "success");
+      // Prevent duplicate toasts (React Strict Mode can cause double renders)
+      const now = Date.now();
+      const itemKey = `${item.id}-${item.size}-${item.subproduct}-${item.color}`;
+      const shouldShowToast = !lastToastRef.current || 
+        lastToastRef.current.itemId !== itemKey || 
+        (now - lastToastRef.current.timestamp) > 100;
+
+      if (shouldShowToast) {
+        lastToastRef.current = { itemId: itemKey, timestamp: now };
+        setTimeout(() => {
+          showToast(`${item.name} added to cart`, "success");
+        }, 0);
+      }
 
       return [
         ...prev,
@@ -142,22 +170,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeFromCart = (id: string, size?: string | null) => {
+  const removeFromCart = (id: string, size?: string | null, subproduct?: string | null, color?: string | null) => {
     setCart((prev) =>
-      prev.filter((p) => !(p.id === id && p.size === size))
+      prev.filter((p) => !(p.id === id && p.size === size && p.subproduct === subproduct && p.color === color))
     );
   };
 
   const updateQuantity = (
     id: string,
     size: string | null | undefined,
+    subproduct: string | null | undefined,
+    color: string | null | undefined,
     quantity: number
   ) => {
     const safeQty = Math.min(Math.max(quantity, 1), MAX_QTY_PER_ITEM);
 
     setCart((prev) =>
       prev.map((p) =>
-        p.id === id && p.size === size
+        p.id === id && p.size === size && p.subproduct === subproduct && p.color === color
           ? { ...p, quantity: safeQty }
           : p
       )

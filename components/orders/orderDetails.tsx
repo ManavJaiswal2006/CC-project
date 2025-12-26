@@ -257,7 +257,7 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
           <div className="border divide-y">
             {items.map((item, idx) => (
               <div
-                key={`${item.id ?? idx}-${item.size ?? "default"}`}
+                key={`${item.id ?? idx}-${item.size ?? "default"}-${(item as any).subproduct ?? "default"}-${(item as any).color ?? "default"}`}
                 className="flex justify-between p-4 text-sm"
               >
                 <div>
@@ -267,6 +267,21 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
                   {item.size && (
                     <p className="text-xs text-gray-500">
                       Size: {item.size}
+                    </p>
+                  )}
+                  {(item as any).subproduct && (
+                    <p className="text-xs text-gray-500">
+                      Subproduct: {(item as any).subproduct}
+                    </p>
+                  )}
+                  {(item as any).color && (
+                    <p className="text-xs text-gray-500">
+                      Color: {(item as any).color}
+                    </p>
+                  )}
+                  {(item as any).packQuantity && (item as any).packQuantity > 1 && (
+                    <p className="text-xs text-red-600 font-semibold">
+                      Pack of {(item as any).packQuantity}
                     </p>
                   )}
                   <p className="text-xs text-gray-500">

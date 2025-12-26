@@ -98,7 +98,7 @@ export default function CartPage() {
           <div className="lg:col-span-8 divide-y divide-gray-200 min-w-0">
             {cart.map((item) => (
               <div
-                key={`${item.id}-${item.size}`}
+                key={`${item.id}-${item.size}-${item.subproduct}-${item.color}`}
                 className="py-6 sm:py-8 flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8 items-start group bg-white rounded-xl p-4 sm:p-6 mb-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* IMAGE */}
@@ -135,11 +135,26 @@ export default function CartPage() {
                           Size: {item.size}
                         </p>
                       )}
+                      {item.subproduct && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Subproduct: {item.subproduct}
+                        </p>
+                      )}
+                      {item.color && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Color: {item.color}
+                        </p>
+                      )}
+                      {item.packQuantity && item.packQuantity > 1 && (
+                        <p className="text-xs text-red-600 font-semibold mt-1">
+                          Pack of {item.packQuantity}
+                        </p>
+                      )}
                     </div>
 
                     <button
                       onClick={() =>
-                        removeFromCart(item.id, item.size)
+                        removeFromCart(item.id, item.size, item.subproduct, item.color)
                       }
                       className="text-gray-300 hover:text-red-600 shrink-0"
                       aria-label="Remove item"
@@ -168,6 +183,8 @@ export default function CartPage() {
                           updateQuantity(
                             item.id,
                             item.size,
+                            item.subproduct,
+                            item.color,
                             item.quantity - 1
                           )
                         }
@@ -186,6 +203,8 @@ export default function CartPage() {
                           updateQuantity(
                             item.id,
                             item.size,
+                            item.subproduct,
+                            item.color,
                             item.quantity + 1
                           )
                         }

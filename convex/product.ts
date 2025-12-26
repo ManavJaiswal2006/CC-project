@@ -56,6 +56,7 @@ export const createProduct = mutation({
     customerDiscount: v.number(),
     distributorDiscount: v.number(),
     stock: v.optional(v.number()),
+    quantity: v.optional(v.number()), // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
 
     storageId: v.optional(v.id("_storage")),
 
@@ -83,6 +84,17 @@ export const createProduct = mutation({
         })
       )
     ),
+
+    // subproducts-based product
+    subproducts: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     await checkAdmin(ctx);
@@ -99,7 +111,7 @@ export const createProduct = mutation({
       throw new Error("Product already exists");
     }
 
-    // normalize sizes and colors
+    // normalize sizes, colors, and subproducts
     const product = {
       ...args,
       name,
@@ -110,6 +122,10 @@ export const createProduct = mutation({
       colors:
         Array.isArray(args.colors) && args.colors.length > 0
           ? args.colors
+          : undefined,
+      subproducts:
+        Array.isArray(args.subproducts) && args.subproducts.length > 0
+          ? args.subproducts
           : undefined,
     };
 
@@ -132,6 +148,7 @@ export const updateProduct = mutation({
     customerDiscount: v.number(),
     distributorDiscount: v.number(),
     stock: v.optional(v.number()),
+    quantity: v.optional(v.number()), // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
 
     storageId: v.optional(v.id("_storage")),
     price: v.optional(v.number()),
@@ -155,6 +172,16 @@ export const updateProduct = mutation({
         })
       )
     ),
+
+    subproducts: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          value: v.string(),
+          price: v.number(),
+        })
+      )
+    ),
   },
   handler: async (ctx, { id, ...updates }) => {
     await checkAdmin(ctx);
@@ -169,6 +196,10 @@ export const updateProduct = mutation({
       colors:
         Array.isArray(updates.colors) && updates.colors.length > 0
           ? updates.colors
+          : undefined,
+      subproducts:
+        Array.isArray(updates.subproducts) && updates.subproducts.length > 0
+          ? updates.subproducts
           : undefined,
     };
 
@@ -276,6 +307,15 @@ export const getScopedProduct = query({
                 basePrice: colorBasePrice,
               };
             }) ?? [],
+          subproducts:
+            product.subproducts?.map((sp) => {
+              const subproductBasePrice = sp.price ?? 0;
+              return {
+                ...sp,
+                price: calculatePrice(subproductBasePrice, product.customerDiscount ?? 0),
+                basePrice: subproductBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -313,6 +353,15 @@ export const getScopedProduct = query({
                 basePrice: colorBasePrice,
               };
             }) ?? [],
+          subproducts:
+            product.subproducts?.map((sp) => {
+              const subproductBasePrice = sp.price ?? 0;
+              return {
+                ...sp,
+                price: calculatePrice(subproductBasePrice, product.customerDiscount ?? 0),
+                basePrice: subproductBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -347,6 +396,15 @@ export const getScopedProduct = query({
                 basePrice: colorBasePrice,
               };
             }) ?? [],
+          subproducts:
+            product.subproducts?.map((sp) => {
+              const subproductBasePrice = sp.price ?? 0;
+              return {
+                ...sp,
+                price: calculatePrice(subproductBasePrice, product.customerDiscount ?? 0),
+                basePrice: subproductBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -376,6 +434,15 @@ export const getScopedProduct = query({
               ...c,
               price: calculatePrice(colorBasePrice, product.distributorDiscount ?? 0),
               basePrice: colorBasePrice,
+            };
+          }) ?? [],
+        subproducts:
+          product.subproducts?.map((sp) => {
+            const subproductBasePrice = sp.price ?? 0;
+            return {
+              ...sp,
+              price: calculatePrice(subproductBasePrice, product.distributorDiscount ?? 0),
+              basePrice: subproductBasePrice,
             };
           }) ?? [],
       },

@@ -443,13 +443,22 @@ export default function CheckoutPage() {
             <ul className="space-y-3 mb-6 max-h-64 overflow-y-auto">
               {cart.map((item) => (
                 <li
-                  key={`${item.id}-${item.size}`}
+                  key={`${item.id}-${item.size}-${item.subproduct}-${item.color}`}
                   className="flex justify-between items-start text-sm pb-3 border-b border-gray-100 last:border-0"
                 >
                   <div className="flex-1 min-w-0 pr-2">
                     <span className="font-medium text-gray-900">{item.name}</span>
                     {item.size && (
                       <span className="text-gray-500 text-xs block">Size: {item.size}</span>
+                    )}
+                    {item.subproduct && (
+                      <span className="text-gray-500 text-xs block">Subproduct: {item.subproduct}</span>
+                    )}
+                    {item.color && (
+                      <span className="text-gray-500 text-xs block">Color: {item.color}</span>
+                    )}
+                    {item.packQuantity && item.packQuantity > 1 && (
+                      <span className="text-red-600 text-xs font-semibold block">Pack of {item.packQuantity}</span>
                     )}
                     <span className="text-gray-500 text-xs">Qty: {item.quantity}</span>
                   </div>
