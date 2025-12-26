@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { ShoppingBag, Check } from "lucide-react";
+import { ShoppingBag, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
 import Image from "next/image";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -65,6 +65,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [selectedSubproduct, setSelectedSubproduct] = useState<Subproduct | null>(null);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   /* ================= NORMALIZATION ================= */
   const sizes = product?.sizes ?? [];
@@ -135,6 +136,35 @@ export default function ProductPage() {
     );
   }
 
+  /* ================= IMAGES ================= */
+  // Get all image URLs (support both new imageUrls array and legacy imageUrl)
+  const imageUrls = useMemo(() => {
+    if (!product) return [];
+    const urls = (product as any).imageUrls;
+    if (Array.isArray(urls) && urls.length > 0) {
+      return urls;
+    }
+    if (product.imageUrl) {
+      return [product.imageUrl];
+    }
+    return [];
+  }, [product]);
+
+  const currentImage = imageUrls[selectedImageIndex] || null;
+
+  const nextImage = () => {
+    setSelectedImageIndex((prev) => (prev + 1) % imageUrls.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImageIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length);
+  };
+
+  // Reset image index when product changes
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [product?._id]);
+
   /* ================= ADD TO CART ================= */
   const handleAddToCart = () => {
     if (!canAddToCart || finalPrice == null || basePrice == null)
@@ -149,7 +179,7 @@ export default function ProductPage() {
       {
         id: product._id,
         name: product.name,
-        image: product.imageUrl ?? "",
+        image: currentImage || product.imageUrl || "",
         category: product.category,
         size: selectedSize?.label ?? null,
         subproduct: selectedSubproduct?.label ?? null,
@@ -170,20 +200,92 @@ export default function ProductPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-16">
 
-          {/* IMAGE */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden group/image">
-            {product.imageUrl ? (
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                width={600}
-                height={600}
-                className="object-contain w-full h-full transition-transform duration-500 group-hover/image:scale-105"
-                priority
-              />
-            ) : (
-              <div className="text-6xl sm:text-7xl md:text-8xl text-gray-300 font-bold">
-                {product.name.charAt(0)}
+          {/* IMAGE GALLERY */}
+          <div className="space-y-4">
+            {/* MAIN IMAGE */}
+            <div 
+              className="relative bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl border-2 border-gray-200 rounded-lg overflow-hidden group/image aspect-square"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (imageUrls.length > 1) {
+                  if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevImage();
+                  } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextImage();
+                  }
+                }
+              }}
+            >
+              {currentImage ? (
+                <>
+                  <Image
+                    src={currentImage}
+                    alt={`${product.name} - Image ${selectedImageIndex + 1}`}
+                    width={600}
+                    height={600}
+                    className="object-contain w-full h-full transition-transform duration-500 group-hover/image:scale-105"
+                    priority={selectedImageIndex === 0}
+                  />
+                  
+                  {/* NAVIGATION ARROWS */}
+                  {imageUrls.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black text-white p-2 rounded-full transition-all opacity-0 group-hover/image:opacity-100 z-10 cursor-pointer"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft size={24} />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black text-white p-2 rounded-full transition-all opacity-0 group-hover/image:opacity-100 z-10 cursor-pointer"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight size={24} />
+                      </button>
+                      
+                      {/* IMAGE COUNTER */}
+                      <div className="absolute top-4 right-4 bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full z-10">
+                        {selectedImageIndex + 1} / {imageUrls.length}
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-6xl sm:text-7xl md:text-8xl text-gray-300 font-bold">
+                    {product.name.charAt(0)}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* THUMBNAIL GALLERY */}
+            {imageUrls.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {imageUrls.map((url, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === index
+                        ? "border-black shadow-lg scale-105"
+                        : "border-gray-300 hover:border-gray-500"
+                    }`}
+                    aria-label={`View image ${index + 1}`}
+                  >
+                    <Image
+                      src={url}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             )}
           </div>

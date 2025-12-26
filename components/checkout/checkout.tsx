@@ -462,7 +462,14 @@ export default function CheckoutPage() {
                     )}
                     <span className="text-gray-500 text-xs">Qty: {item.quantity}</span>
                   </div>
-                  <span className="font-semibold text-gray-900 whitespace-nowrap">₹{item.price * item.quantity}</span>
+                  <div className="flex flex-col items-end whitespace-nowrap">
+                    {item.basePrice && item.basePrice > item.price && (
+                      <span className="text-xs text-gray-400 line-through">
+                        ₹{(item.basePrice * item.quantity).toFixed(2)}
+                      </span>
+                    )}
+                    <span className="font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</span>
+                  </div>
                 </li>
               ))}
             </ul>

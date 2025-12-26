@@ -52,8 +52,8 @@ export default function AdminPage() {
     sizes: [] as Size[],
     colors: [] as Color[],
     subproducts: [] as Subproduct[],
-    image: null as File | null,
-    existingStorageId: null as Id<"_storage"> | null, // Store existing image ID when editing
+    images: [] as File[], // Multiple images
+    existingStorageIds: [] as Id<"_storage">[], // Store existing image IDs when editing
   });
 
   /* ================= LOADING ================= */
@@ -66,32 +66,37 @@ export default function AdminPage() {
   }
 
   /* ================= HELPERS ================= */
-  const uploadImage = async () => {
-    if (!form.image) return undefined;
+  const uploadImages = async (): Promise<Id<"_storage">[]> => {
+    if (form.images.length === 0) return [];
 
-    // Validate file type
     const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!ALLOWED_TYPES.includes(form.image.type)) {
-      alert('Invalid file type. Please upload a JPEG, PNG, or WebP image.');
-      return undefined;
-    }
-
-    // Validate file size (5MB max)
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    if (form.image.size > MAX_FILE_SIZE) {
-      alert('File too large. Maximum size is 5MB.');
-      return undefined;
+
+    // Validate all files
+    for (const image of form.images) {
+      if (!ALLOWED_TYPES.includes(image.type)) {
+        alert(`Invalid file type: ${image.name}. Please upload JPEG, PNG, or WebP images.`);
+        return [];
+      }
+      if (image.size > MAX_FILE_SIZE) {
+        alert(`File too large: ${image.name}. Maximum size is 5MB.`);
+        return [];
+      }
     }
 
-    const uploadUrl = await generateUploadUrl();
-    const res = await fetch(uploadUrl, {
-      method: "POST",
-      headers: { "Content-Type": form.image.type },
-      body: form.image,
+    // Upload all images
+    const uploadPromises = form.images.map(async (image) => {
+      const uploadUrl = await generateUploadUrl();
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": image.type },
+        body: image,
+      });
+      const { storageId } = await res.json();
+      return storageId;
     });
 
-    const { storageId } = await res.json();
-    return storageId;
+    return await Promise.all(uploadPromises);
   };
 
   const resetForm = () => {
@@ -111,8 +116,8 @@ export default function AdminPage() {
       sizes: [],
       colors: [],
       subproducts: [],
-      image: null,
-      existingStorageId: null,
+      images: [],
+      existingStorageIds: [],
     });
   };
 
@@ -207,15 +212,16 @@ export default function AdminPage() {
       }
     }
 
-    // Validate image for new products
-    if (!editingId && !form.image) {
-      alert("Please upload a product image.");
+    // Validate images for new products
+    if (!editingId && form.images.length === 0) {
+      alert("Please upload at least one product image.");
       return;
     }
 
-    // Upload new image if provided, otherwise use existing one
-    const newStorageId = await uploadImage();
-    const storageId = newStorageId || form.existingStorageId;
+    // Upload new images if provided
+    const newStorageIds = await uploadImages();
+    // Combine new and existing images
+    const allStorageIds = [...form.existingStorageIds, ...newStorageIds];
 
     // Explicitly construct payload to avoid any accidental field inclusion
     const payload: {
@@ -228,7 +234,7 @@ export default function AdminPage() {
       stock: number;
       quantity?: number;
       soldOut: boolean;
-      storageId?: any;
+      storageIds?: Id<"_storage">[];
       price?: number;
       sizes?: Size[];
       colors?: Color[];
@@ -250,9 +256,9 @@ export default function AdminPage() {
       subproducts: mode === "subproducts" ? form.subproducts : undefined,
     };
 
-    // Only include storageId if we have one (new or existing)
-    if (storageId) {
-      payload.storageId = storageId;
+    // Only include storageIds if we have any
+    if (allStorageIds.length > 0) {
+      payload.storageIds = allStorageIds;
     }
 
     if (editingId) {
@@ -771,20 +777,76 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* IMAGE */}
+          {/* IMAGES */}
           <div>
-            <label className="label">Product Image</label>
+            <label className="label">Product Images</label>
             <input
               type="file"
+              multiple
+              accept="image/jpeg,image/jpg,image/png,image/webp"
               className="border-black border px-3 py-1"
               ref={imageRef}
-              onChange={(e) =>
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
                 setForm({
                   ...form,
-                  image: e.target.files?.[0] || null,
-                })
-              }
+                  images: files,
+                });
+              }}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              You can select multiple images (JPEG, PNG, or WebP, max 5MB each)
+            </p>
+            {form.images.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                {form.images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-32 object-cover border border-gray-300 rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newImages = form.images.filter((_, i) => i !== index);
+                        setForm({ ...form, images: newImages });
+                      }}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1 truncate">{image.name}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {form.existingStorageIds.length > 0 && editingId && (
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2">Existing images (will be preserved): {form.existingStorageIds.length}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {(products.find(p => p._id === editingId) as any)?.imageUrls?.map((url: string, idx: number) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Existing ${idx + 1}`}
+                        className="w-full h-32 object-cover border border-gray-300 rounded"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Image {idx + 1}</p>
+                    </div>
+                  )) || (products.find(p => p._id === editingId)?.imageUrl && (
+                    <div className="relative group">
+                      <img
+                        src={products.find(p => p._id === editingId)?.imageUrl || ''}
+                        alt="Existing"
+                        className="w-full h-32 object-cover border border-gray-300 rounded"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Current image</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* SAVE */}
@@ -905,8 +967,13 @@ export default function AdminPage() {
                               value: sp.value,
                               price: sp.price ?? 0,
                             })),
-                            image: null,
-                            existingStorageId: p.storageId ?? null, // Preserve existing image ID
+                            images: [],
+                            // Preserve existing image IDs (support both storageIds array and legacy storageId)
+                            existingStorageIds: (p as any).storageIds && Array.isArray((p as any).storageIds) 
+                              ? (p as any).storageIds 
+                              : p.storageId 
+                              ? [p.storageId] 
+                              : [],
                           });
                         }}
                         className="px-4 py-2 bg-black text-white hover:bg-gray-800 transition-colors uppercase text-xs font-bold tracking-wider"

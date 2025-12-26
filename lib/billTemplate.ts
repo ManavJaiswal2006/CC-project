@@ -5,6 +5,8 @@ interface CartItem {
   name: string;
   image?: string;
   size?: string | null;
+  subproduct?: string | null;
+  color?: string | null;
   price: number;
   basePrice?: number;
   discount?: number;
@@ -129,19 +131,30 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
               </tr>
             </thead>
             <tbody>
-              ${items.map((item) => `
+              ${items.map((item) => {
+                const hasDiscount = item.basePrice && item.basePrice > item.price;
+                const baseTotal = item.basePrice ? (item.basePrice * item.quantity) : 0;
+                const finalTotal = item.price * item.quantity;
+                
+                return `
                 <tr class="item-row">
                   <td>
                     <div class="item-name">${escapeHtml(item.name)}</div>
                     <div class="item-meta">
                       ${item.size ? `Size: ${escapeHtml(item.size)}` : ''}
+                      ${item.subproduct ? `${item.size ? ' • ' : ''}Subproduct: ${escapeHtml(item.subproduct)}` : ''}
+                      ${item.color ? `${item.size || item.subproduct ? ' • ' : ''}Color: ${escapeHtml(item.color)}` : ''}
                       ${item.discount ? ` <span style="color: #b91c1c; margin-left: 10px;">(${item.discount}% off)</span>` : ''}
                     </div>
                   </td>
                   <td align="center" class="price-col" style="color: #888;">${item.quantity}</td>
-                  <td align="right" class="price-col">₹${(item.price * item.quantity).toFixed(2)}</td>
+                  <td align="right" class="price-col">
+                    ${hasDiscount ? `<div style="font-size: 12px; color: #999; text-decoration: line-through; margin-bottom: 2px;">₹${baseTotal.toFixed(2)}</div>` : ''}
+                    <div>₹${finalTotal.toFixed(2)}</div>
+                  </td>
                 </tr>
-              `).join('')}
+              `;
+              }).join('')}
             </tbody>
           </table>
         </td>

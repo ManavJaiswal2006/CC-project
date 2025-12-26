@@ -54,7 +54,8 @@ export default defineSchema({
     stock: v.optional(v.number()),
     quantity: v.optional(v.number()), // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
 
-    storageId: v.optional(v.id("_storage")),
+    storageId: v.optional(v.id("_storage")), // Legacy: single image (for backward compatibility)
+    storageIds: v.optional(v.array(v.id("_storage"))), // Multiple images
 
     /* -------- SINGLE PRICE PRODUCT -------- */
     price: v.optional(v.number()), // Base price (customer and retailer prices calculated from discounts)

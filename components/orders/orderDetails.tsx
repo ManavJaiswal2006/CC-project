@@ -107,6 +107,8 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
     size?: string | null;
     quantity?: number;
     price?: number;
+    basePrice?: number;
+    discount?: number;
   };
 
   const items = (order.items ?? []) as OrderItem[];
@@ -288,10 +290,16 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
                     Qty: {item.quantity ?? 1}
                   </p>
                 </div>
-                <p className="font-semibold">
-                  ₹
-                  {(item.price ?? 0) * (item.quantity ?? 1)}
-                </p>
+                <div className="flex flex-col items-end">
+                  {item.basePrice && item.basePrice > (item.price ?? 0) && (
+                    <span className="text-xs text-gray-400 line-through">
+                      ₹{(item.basePrice * (item.quantity ?? 1)).toFixed(2)}
+                    </span>
+                  )}
+                  <p className="font-semibold">
+                    ₹{((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

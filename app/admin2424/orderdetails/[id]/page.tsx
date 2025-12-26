@@ -52,6 +52,8 @@ export default function AdminOrderDetailsPage() {
     size?: string | null;
     quantity?: number;
     price?: number;
+    basePrice?: number;
+    discount?: number;
   };
 
   const items = (order.items ?? []) as OrderItem[];
@@ -156,7 +158,7 @@ export default function AdminOrderDetailsPage() {
           </h2>
           <div className="border bg-white divide-y">
             {items.map((item, idx) => {
-              const key = `${item.id ?? idx}-${item.size ?? "default"}`;
+              const key = `${item.id ?? idx}-${item.size ?? "default"}-${(item as any).subproduct ?? "default"}-${(item as any).color ?? "default"}`;
               return (
                 <label
                   key={key}
@@ -171,16 +173,41 @@ export default function AdminOrderDetailsPage() {
                       <p className="font-semibold">
                         {item.name ?? "Item"}
                       </p>
+                      {item.size && (
+                        <p className="text-xs text-gray-500">
+                          Size: {item.size}
+                        </p>
+                      )}
+                      {(item as any).subproduct && (
+                        <p className="text-xs text-gray-500">
+                          Subproduct: {(item as any).subproduct}
+                        </p>
+                      )}
+                      {(item as any).color && (
+                        <p className="text-xs text-gray-500">
+                          Color: {(item as any).color}
+                        </p>
+                      )}
+                      {(item as any).packQuantity && (item as any).packQuantity > 1 && (
+                        <p className="text-xs text-red-600 font-semibold">
+                          Pack of {(item as any).packQuantity}
+                        </p>
+                      )}
                       <p className="text-xs text-gray-500">
                         Qty: {item.quantity ?? 1}
-                        {item.size ? ` • Size: ${item.size}` : ""}
                       </p>
                     </div>
                   </div>
-                  <p className="font-semibold whitespace-nowrap">
-                    ₹
-                    {(item.price ?? 0) * (item.quantity ?? 1)}
-                  </p>
+                  <div className="flex flex-col items-end whitespace-nowrap">
+                    {item.basePrice && item.basePrice > (item.price ?? 0) && (
+                      <span className="text-xs text-gray-400 line-through">
+                        ₹{(item.basePrice * (item.quantity ?? 1)).toFixed(2)}
+                      </span>
+                    )}
+                    <p className="font-semibold">
+                      ₹{((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+                    </p>
+                  </div>
                 </label>
               );
             })}

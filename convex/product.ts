@@ -58,7 +58,8 @@ export const createProduct = mutation({
     stock: v.optional(v.number()),
     quantity: v.optional(v.number()), // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
 
-    storageId: v.optional(v.id("_storage")),
+    storageId: v.optional(v.id("_storage")), // Legacy: single image (for backward compatibility)
+    storageIds: v.optional(v.array(v.id("_storage"))), // Multiple images
 
     // single-price product
     price: v.optional(v.number()),
@@ -150,7 +151,8 @@ export const updateProduct = mutation({
     stock: v.optional(v.number()),
     quantity: v.optional(v.number()), // Pack quantity (1 for solo, 6 for pack of 6, 8 for pack of 8, etc.)
 
-    storageId: v.optional(v.id("_storage")),
+    storageId: v.optional(v.id("_storage")), // Legacy: single image (for backward compatibility)
+    storageIds: v.optional(v.array(v.id("_storage"))), // Multiple images
     price: v.optional(v.number()),
 
     sizes: v.optional(
@@ -227,12 +229,20 @@ export const getAllProducts = query({
     const products = await ctx.db.query("products").collect();
 
     return await Promise.all(
-      products.map(async (p) => ({
-        ...p,
-        imageUrl: p.storageId
-          ? await ctx.storage.getUrl(p.storageId)
-          : null,
-      }))
+      products.map(async (p) => {
+        // Handle multiple images (new) or single image (legacy)
+        const imageUrls = p.storageIds && p.storageIds.length > 0
+          ? await Promise.all(p.storageIds.map(id => ctx.storage.getUrl(id)))
+          : p.storageId
+          ? [await ctx.storage.getUrl(p.storageId)]
+          : [];
+        
+        return {
+          ...p,
+          imageUrl: imageUrls[0] || null, // First image for backward compatibility
+          imageUrls, // All images
+        };
+      })
     );
   },
 });
@@ -246,11 +256,18 @@ export const getProduct = query({
     const product = await ctx.db.get(id);
     if (!product) return null;
 
-    const imageUrl = product.storageId
-      ? await ctx.storage.getUrl(product.storageId)
-      : null;
-
-    return { ...product, imageUrl };
+    // Handle multiple images (new) or single image (legacy)
+    const imageUrls = product.storageIds && product.storageIds.length > 0
+      ? await Promise.all(product.storageIds.map(id => ctx.storage.getUrl(id)))
+      : product.storageId
+      ? [await ctx.storage.getUrl(product.storageId)]
+      : [];
+    
+    return { 
+      ...product, 
+      imageUrl: imageUrls[0] || null, // First image for backward compatibility
+      imageUrls, // All images
+    };
   },
 });
 
@@ -266,9 +283,13 @@ export const getScopedProduct = query({
     const product = await ctx.db.get(productId);
     if (!product) return null;
 
-    const imageUrl = product.storageId
-      ? await ctx.storage.getUrl(product.storageId)
-      : null;
+    // Handle multiple images (new) or single image (legacy)
+    const imageUrls = product.storageIds && product.storageIds.length > 0
+      ? await Promise.all(product.storageIds.map(id => ctx.storage.getUrl(id)))
+      : product.storageId
+      ? [await ctx.storage.getUrl(product.storageId)]
+      : [];
+    const imageUrl = imageUrls[0] || null; // First image for backward compatibility
 
     // Helper function to calculate price from base price and discount
     const calculatePrice = (basePrice: number, discountPercent: number): number => {
@@ -284,7 +305,8 @@ export const getScopedProduct = query({
     if (!userId) {
       return {
         ...product,
-        imageUrl,
+        imageUrl, // First image for backward compatibility
+        imageUrls, // All images
         pricing: {
           type: "customer",
           price: customerPrice,
@@ -330,7 +352,8 @@ export const getScopedProduct = query({
       // User not found, return customer pricing
       return {
         ...product,
-        imageUrl,
+        imageUrl, // First image for backward compatibility
+        imageUrls, // All images
         pricing: {
           type: "customer",
           price: customerPrice,
@@ -373,7 +396,8 @@ export const getScopedProduct = query({
     if (role !== "distributor") {
       return {
         ...product,
-        imageUrl,
+        imageUrl, // First image for backward compatibility
+        imageUrls, // All images
         pricing: {
           type: "customer",
           price: customerPrice,
@@ -412,7 +436,8 @@ export const getScopedProduct = query({
     // User is a distributor - return retailer pricing
     return {
       ...product,
-      imageUrl,
+      imageUrl, // First image for backward compatibility
+      imageUrls, // All images
       pricing: {
         type: "retailer",
         price: retailerPrice,
@@ -507,11 +532,18 @@ export const getProductsByIds = query({
         const product = await ctx.db.get(id);
         if (!product) return null;
 
-        const imageUrl = product.storageId
-          ? await ctx.storage.getUrl(product.storageId)
-          : null;
-
-        return { ...product, imageUrl };
+        // Handle multiple images (new) or single image (legacy)
+        const imageUrls = product.storageIds && product.storageIds.length > 0
+          ? await Promise.all(product.storageIds.map(id => ctx.storage.getUrl(id)))
+          : product.storageId
+          ? [await ctx.storage.getUrl(product.storageId)]
+          : [];
+        
+        return { 
+          ...product, 
+          imageUrl: imageUrls[0] || null, // First image for backward compatibility
+          imageUrls, // All images
+        };
       })
     );
 

@@ -71,11 +71,20 @@ export default function ShopPage() {
       const stock = p.stock ?? 0;
       const inStock = !p.soldOut && stock > 0;
 
+      // Get all image URLs (support both new imageUrls array and legacy imageUrl)
+      const imageUrls = (p as any).imageUrls;
+      const allImages = Array.isArray(imageUrls) && imageUrls.length > 0
+        ? imageUrls
+        : p.imageUrl
+        ? [p.imageUrl]
+        : [];
+
       return {
         id: p._id,
         name: p.name,
         category: p.category,
-        image: p.imageUrl,
+        image: allImages[0] || null, // First image for display
+        imageUrls: allImages, // All images
         inStock,
         stock,
 
@@ -86,6 +95,7 @@ export default function ShopPage() {
         hasSizes,
         sizesCount: sizes.length,
         quantity: p.quantity ?? 1, // Pack quantity
+        subproducts: subproducts.map((sp) => sp.label), // For search
       };
     });
   }, [rawProducts, useDistributorDiscount]);
@@ -97,9 +107,12 @@ export default function ShopPage() {
     
     return products
       .filter((p) => {
-        const matchesSearch = p.name
-          .toLowerCase()
-          .includes(search.toLowerCase());
+        const searchLower = search.toLowerCase();
+        const matchesSearch = 
+          p.name.toLowerCase().includes(searchLower) ||
+          (p.subproducts && p.subproducts.some((subproductLabel: string) =>
+            subproductLabel.toLowerCase().includes(searchLower)
+          ));
         const matchesCategory =
           category === "All" || p.category === category;
         const matchesPrice =
@@ -264,6 +277,14 @@ export default function ShopPage() {
                       {product.name.charAt(0)}
                     </div>
                   )}
+                  
+                  {/* MULTIPLE IMAGES INDICATOR */}
+                  {(product as any).imageUrls && (product as any).imageUrls.length > 1 && (
+                    <div className="absolute top-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">
+                      {(product as any).imageUrls.length} photos
+                    </div>
+                  )}
+                  
                   {!product.inStock && (
                     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
                       <div className="bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg">
