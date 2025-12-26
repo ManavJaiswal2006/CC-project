@@ -56,8 +56,7 @@ export default defineSchema({
     storageId: v.optional(v.id("_storage")),
 
     /* -------- SINGLE PRICE PRODUCT -------- */
-    customerPrice: v.optional(v.number()), // Price for customers (B2C)
-    retailerPrice: v.optional(v.number()), // Price for retailers/distributors (B2B)
+    price: v.optional(v.number()), // Base price (customer and retailer prices calculated from discounts)
 
     /* -------- SIZE-BASED PRODUCT -------- */
     sizes: v.optional(
@@ -65,8 +64,7 @@ export default defineSchema({
         v.object({
           label: v.string(),
           value: v.string(),
-          customerPrice: v.number(), // Customer price for this size
-          retailerPrice: v.number(), // Retailer price for this size
+          price: v.number(), // Base price for this size (customer and retailer prices calculated from discounts)
         })
       )
     ),

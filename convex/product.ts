@@ -60,8 +60,7 @@ export const createProduct = mutation({
     storageId: v.optional(v.id("_storage")),
 
     // single-price product
-    customerPrice: v.optional(v.number()),
-    retailerPrice: v.optional(v.number()),
+    price: v.optional(v.number()),
 
     // size-based product
     sizes: v.optional(
@@ -69,8 +68,7 @@ export const createProduct = mutation({
         v.object({
           label: v.string(),
           value: v.string(),
-          customerPrice: v.number(),
-          retailerPrice: v.number(),
+          price: v.number(),
         })
       )
     ),
@@ -121,16 +119,14 @@ export const updateProduct = mutation({
     stock: v.optional(v.number()),
 
     storageId: v.optional(v.id("_storage")),
-    customerPrice: v.optional(v.number()),
-    retailerPrice: v.optional(v.number()),
+    price: v.optional(v.number()),
 
     sizes: v.optional(
       v.array(
         v.object({
           label: v.string(),
           value: v.string(),
-          customerPrice: v.number(),
-          retailerPrice: v.number(),
+          price: v.number(),
         })
       )
     ),
@@ -214,6 +210,16 @@ export const getScopedProduct = query({
       ? await ctx.storage.getUrl(product.storageId)
       : null;
 
+    // Helper function to calculate price from base price and discount
+    const calculatePrice = (basePrice: number, discountPercent: number): number => {
+      if (discountPercent <= 0) return basePrice;
+      return Math.round(basePrice - (basePrice * discountPercent) / 100);
+    };
+
+    const basePrice = product.price ?? 0;
+    const customerPrice = calculatePrice(basePrice, product.customerDiscount ?? 0);
+    const retailerPrice = calculatePrice(basePrice, product.distributorDiscount ?? 0);
+
     // If no user ID provided, return customer pricing
     if (!userId) {
       return {
@@ -221,13 +227,17 @@ export const getScopedProduct = query({
         imageUrl,
         pricing: {
           type: "customer",
-          price: product.customerPrice ?? 0,
+          price: customerPrice,
+          basePrice,
           sizes:
-            product.sizes?.map((s) => ({
-              ...s,
-              customerPrice: s.customerPrice,
-              retailerPrice: s.retailerPrice,
-            })) ?? [],
+            product.sizes?.map((s) => {
+              const sizeBasePrice = s.price ?? 0;
+              return {
+                ...s,
+                price: calculatePrice(sizeBasePrice, product.customerDiscount ?? 0),
+                basePrice: sizeBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -245,13 +255,17 @@ export const getScopedProduct = query({
         imageUrl,
         pricing: {
           type: "customer",
-          price: product.customerPrice ?? 0,
+          price: customerPrice,
+          basePrice,
           sizes:
-            product.sizes?.map((s) => ({
-              ...s,
-              customerPrice: s.customerPrice,
-              retailerPrice: s.retailerPrice,
-            })) ?? [],
+            product.sizes?.map((s) => {
+              const sizeBasePrice = s.price ?? 0;
+              return {
+                ...s,
+                price: calculatePrice(sizeBasePrice, product.customerDiscount ?? 0),
+                basePrice: sizeBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -266,13 +280,17 @@ export const getScopedProduct = query({
         imageUrl,
         pricing: {
           type: "customer",
-          price: product.customerPrice ?? 0,
+          price: customerPrice,
+          basePrice,
           sizes:
-            product.sizes?.map((s) => ({
-              ...s,
-              customerPrice: s.customerPrice,
-              retailerPrice: s.retailerPrice,
-            })) ?? [],
+            product.sizes?.map((s) => {
+              const sizeBasePrice = s.price ?? 0;
+              return {
+                ...s,
+                price: calculatePrice(sizeBasePrice, product.customerDiscount ?? 0),
+                basePrice: sizeBasePrice,
+              };
+            }) ?? [],
         },
       };
     }
@@ -283,14 +301,18 @@ export const getScopedProduct = query({
       imageUrl,
       pricing: {
         type: "retailer",
-        price: product.retailerPrice ?? 0,
-        customerPrice: product.customerPrice ?? 0, // Include for reference
+        price: retailerPrice,
+        basePrice,
+        customerPrice, // Include for reference
         sizes:
-          product.sizes?.map((s) => ({
-            ...s,
-            customerPrice: s.customerPrice,
-            retailerPrice: s.retailerPrice,
-          })) ?? [],
+          product.sizes?.map((s) => {
+            const sizeBasePrice = s.price ?? 0;
+            return {
+              ...s,
+              price: calculatePrice(sizeBasePrice, product.distributorDiscount ?? 0),
+              basePrice: sizeBasePrice,
+            };
+          }) ?? [],
       },
     };
   },
@@ -320,8 +342,7 @@ export const search = query({
       id: p._id,
       name: p.name,
       category: p.category,
-      customerPrice: p.customerPrice ?? null,
-      retailerPrice: p.retailerPrice ?? null,
+      price: p.price ?? null,
       hasSizes: Boolean(p.sizes?.length),
     }));
   },

@@ -73,8 +73,8 @@ export default function RecentlyViewed({
           const sizes = product.sizes ?? [];
           const hasSizes = sizes.length > 0;
           const basePrice = hasSizes
-            ? Math.min(...sizes.map((s) => s.customerPrice))
-            : product.customerPrice ?? 0;
+            ? Math.min(...sizes.map((s) => s.price ?? 0))
+            : product.price ?? 0;
           
           // Get appropriate discount based on user role
           const discount = useDistributorDiscount 

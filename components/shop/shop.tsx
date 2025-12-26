@@ -46,15 +46,15 @@ export default function ShopPage() {
 
       // Base price = min size OR single price
       const basePrice: number = hasSizes
-        ? Math.min(...sizes.map((s) => s.customerPrice))
-        : p.customerPrice ?? 0;
+        ? Math.min(...sizes.map((s) => s.price ?? 0))
+        : p.price ?? 0;
 
       // Get appropriate discount based on user role
       const discount = useDistributorDiscount 
         ? (p.distributorDiscount ?? 0)
         : (p.customerDiscount ?? 0);
 
-      // Discounted price
+      // Calculate final price from base price and discount
       const finalPrice =
         discount > 0
           ? Math.round(basePrice - (basePrice * discount) / 100)

@@ -9,8 +9,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 type Size = {
   label: string;
   value: string;
-  customerPrice: number;
-  retailerPrice: number;
+  price: number;
 };
 
 export default function AdminPage() {
@@ -24,7 +23,6 @@ export default function AdminPage() {
   /* ================= STATE ================= */
   const [editingId, setEditingId] = useState<Id<"products"> | null>(null);
   const [mode, setMode] = useState<"single" | "sizes">("single");
-  const [pricingView, setPricingView] = useState<"customer" | "retailer">("customer");
 
   const imageRef = useRef<HTMLInputElement>(null);
 
@@ -37,8 +35,7 @@ export default function AdminPage() {
     distributorDiscount: 0,
     stock: 0,
     soldOut: false,
-    customerPrice: 0,
-    retailerPrice: 0,
+    price: 0,
     sizes: [] as Size[],
     image: null as File | null,
   });
@@ -84,7 +81,6 @@ export default function AdminPage() {
   const resetForm = () => {
     setEditingId(null);
     setMode("single");
-    setPricingView("customer");
     setForm({
       name: "",
       category: "",
@@ -94,8 +90,7 @@ export default function AdminPage() {
       distributorDiscount: 0,
       stock: 0,
       soldOut: false,
-      customerPrice: 0,
-      retailerPrice: 0,
+      price: 0,
       sizes: [],
       image: null,
     });
@@ -104,7 +99,20 @@ export default function AdminPage() {
   const saveProduct = async () => {
     const storageId = await uploadImage();
 
-    const payload = {
+    // Explicitly construct payload to avoid any accidental field inclusion
+    const payload: {
+      name: string;
+      category: string;
+      description: string;
+      details?: string;
+      customerDiscount: number;
+      distributorDiscount: number;
+      stock: number;
+      soldOut: boolean;
+      storageId?: any;
+      price?: number;
+      sizes?: Size[];
+    } = {
       name: form.name,
       category: form.category,
       description: form.description,
@@ -115,8 +123,7 @@ export default function AdminPage() {
       soldOut: form.soldOut,
       storageId,
 
-      customerPrice: mode === "single" ? form.customerPrice : undefined,
-      retailerPrice: mode === "single" ? form.retailerPrice : undefined,
+      price: mode === "single" ? form.price : undefined,
       sizes: mode === "sizes" ? form.sizes : undefined,
     };
 
@@ -283,69 +290,49 @@ export default function AdminPage() {
           {mode === "single" && (
             <div className="space-y-4">
               <div>
-                <label className="label">Pricing</label>
-                <div className="flex gap-4 border-b border-gray-200 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setPricingView("customer")}
-                    className={`px-4 py-2 border-b-2 transition-colors ${
-                      pricingView === "customer"
-                        ? "border-black text-black font-bold"
-                        : "border-transparent text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    Customer Price
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPricingView("retailer")}
-                    className={`px-4 py-2 border-b-2 transition-colors ${
-                      pricingView === "retailer"
-                        ? "border-black text-black font-bold"
-                        : "border-transparent text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    Retailer Price
-                  </button>
-                </div>
-
-                {pricingView === "customer" && (
-                  <div>
-                    <input
-                      type="number"
-                      className="input"
-                      value={form.customerPrice}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          customerPrice: Number(e.target.value),
-                        })
-                      }
-                      placeholder="Enter customer price (B2C)"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Price shown to customers (B2C)
-                    </p>
-                  </div>
-                )}
-
-                {pricingView === "retailer" && (
-                  <div>
-                    <input
-                      type="number"
-                      className="input"
-                      value={form.retailerPrice}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          retailerPrice: Number(e.target.value),
-                        })
-                      }
-                      placeholder="Enter retailer price (B2B)"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Price shown to retailers/distributors (B2B)
-                    </p>
+                <label className="label">Base Price</label>
+                <input
+                  type="number"
+                  className="input"
+                  value={form.price}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      price: Number(e.target.value),
+                    })
+                  }
+                  placeholder="Enter base price"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Base price (customer and retailer prices calculated from discounts above)
+                </p>
+                {form.price > 0 && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
+                    <p className="font-semibold mb-2">Calculated Prices:</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500">Customer Price:</p>
+                        <p className="font-bold">
+                          ₹{Math.round(form.price - (form.price * form.customerDiscount) / 100)}
+                        </p>
+                        {form.customerDiscount > 0 && (
+                          <p className="text-xs text-gray-400">
+                            ({form.customerDiscount}% off from ₹{form.price})
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Retailer Price:</p>
+                        <p className="font-bold">
+                          ₹{Math.round(form.price - (form.price * form.distributorDiscount) / 100)}
+                        </p>
+                        {form.distributorDiscount > 0 && (
+                          <p className="text-xs text-gray-400">
+                            ({form.distributorDiscount}% off from ₹{form.price})
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -357,81 +344,59 @@ export default function AdminPage() {
             <div className="space-y-4">
               <div>
                 <label className="label">Sizes</label>
-                <div className="flex gap-4 border-b border-gray-200 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setPricingView("customer")}
-                    className={`px-4 py-2 border-b-2 transition-colors ${
-                      pricingView === "customer"
-                        ? "border-black text-black font-bold"
-                        : "border-transparent text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    Customer Prices
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPricingView("retailer")}
-                    className={`px-4 py-2 border-b-2 transition-colors ${
-                      pricingView === "retailer"
-                        ? "border-black text-black font-bold"
-                        : "border-transparent text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    Retailer Prices
-                  </button>
-                </div>
+                <p className="text-xs text-gray-500 mb-3">
+                  Enter base price for each size. Customer and retailer prices will be calculated from discounts above.
+                </p>
               </div>
 
-              {form.sizes.map((s, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded"
-                >
-                  <input
-                    className="input"
-                    placeholder="Label (22 CM)"
-                    value={s.label}
-                    onChange={(e) => {
-                      const sizes = [...form.sizes];
-                      sizes[i].label = e.target.value;
-                      setForm({ ...form, sizes });
-                    }}
-                  />
-                  <input
-                    className="input"
-                    placeholder="Value (22)"
-                    value={s.value}
-                    onChange={(e) => {
-                      const sizes = [...form.sizes];
-                      sizes[i].value = e.target.value;
-                      setForm({ ...form, sizes });
-                    }}
-                  />
-                  <input
-                    type="number"
-                    className="input"
-                    placeholder={pricingView === "customer" ? "Customer Price" : "Retailer Price"}
-                    value={pricingView === "customer" ? s.customerPrice : s.retailerPrice}
-                    onChange={(e) => {
-                      const sizes = [...form.sizes];
-                      if (pricingView === "customer") {
-                        sizes[i].customerPrice = Number(e.target.value);
-                      } else {
-                        sizes[i].retailerPrice = Number(e.target.value);
-                      }
-                      setForm({ ...form, sizes });
-                    }}
-                  />
-                  <div className="text-xs text-gray-500 flex items-center">
-                    {pricingView === "customer" ? (
-                      <span>Retailer: ₹{s.retailerPrice || 0}</span>
-                    ) : (
-                      <span>Customer: ₹{s.customerPrice || 0}</span>
-                    )}
+              {form.sizes.map((s, i) => {
+                const basePrice = s.price || 0;
+                const customerPrice = Math.round(basePrice - (basePrice * form.customerDiscount) / 100);
+                const retailerPrice = Math.round(basePrice - (basePrice * form.distributorDiscount) / 100);
+                
+                return (
+                  <div
+                    key={i}
+                    className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded"
+                  >
+                    <input
+                      className="input"
+                      placeholder="Label (22 CM)"
+                      value={s.label}
+                      onChange={(e) => {
+                        const sizes = [...form.sizes];
+                        sizes[i].label = e.target.value;
+                        setForm({ ...form, sizes });
+                      }}
+                    />
+                    <input
+                      className="input"
+                      placeholder="Value (22)"
+                      value={s.value}
+                      onChange={(e) => {
+                        const sizes = [...form.sizes];
+                        sizes[i].value = e.target.value;
+                        setForm({ ...form, sizes });
+                      }}
+                    />
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="Base Price"
+                      value={s.price}
+                      onChange={(e) => {
+                        const sizes = [...form.sizes];
+                        sizes[i].price = Number(e.target.value);
+                        setForm({ ...form, sizes });
+                      }}
+                    />
+                    <div className="text-xs text-gray-500 flex flex-col justify-center">
+                      <span>Customer: ₹{customerPrice}</span>
+                      <span>Retailer: ₹{retailerPrice}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               <button
                 type="button"
@@ -440,7 +405,7 @@ export default function AdminPage() {
                     ...form,
                     sizes: [
                       ...form.sizes,
-                      { label: "", value: "", customerPrice: 0, retailerPrice: 0 },
+                      { label: "", value: "", price: 0 },
                     ],
                   })
                 }
@@ -478,37 +443,13 @@ export default function AdminPage() {
 
         {/* ================= PRODUCT LIST ================= */}
         <div className="space-y-6 text-black">
-          {/* Pricing View Tabs */}
-          <div className="flex gap-4 border-b border-gray-300">
-            <button
-              onClick={() => setPricingView("customer")}
-              className={`px-6 py-3 border-b-2 transition-colors font-bold uppercase text-sm tracking-wider ${
-                pricingView === "customer"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              Customer Pricing
-            </button>
-            <button
-              onClick={() => setPricingView("retailer")}
-              className={`px-6 py-3 border-b-2 transition-colors font-bold uppercase text-sm tracking-wider ${
-                pricingView === "retailer"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              Retailer Pricing
-            </button>
-          </div>
 
           {/* Products List */}
           <div className="space-y-4">
             {products.map((p) => {
-              const customerPrice = p.customerPrice ?? 0;
-              const retailerPrice = p.retailerPrice ?? 0;
-              const displayPrice = pricingView === "customer" ? customerPrice : retailerPrice;
-              const otherPrice = pricingView === "customer" ? retailerPrice : customerPrice;
+              const basePrice = p.price ?? 0;
+              const customerPrice = Math.round(basePrice - (basePrice * (p.customerDiscount ?? 0)) / 100);
+              const retailerPrice = Math.round(basePrice - (basePrice * (p.distributorDiscount ?? 0)) / 100);
 
               return (
                 <div
@@ -526,22 +467,40 @@ export default function AdminPage() {
                       </p>
 
                       {/* PRICING DISPLAY */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className={`p-4 rounded ${pricingView === "customer" ? "bg-gray-50 border-2 border-gray-900" : "bg-gray-50 border border-gray-200"}`}>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-4 rounded bg-gray-50 border border-gray-200">
                           <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
-                            {pricingView === "customer" ? "Customer Price (B2C)" : "Retailer Price (B2B)"}
+                            Base Price
                           </p>
                           <p className="text-2xl font-bold text-gray-900">
-                            ₹{displayPrice.toLocaleString()}
+                            ₹{basePrice.toLocaleString()}
                           </p>
                         </div>
                         <div className="p-4 rounded bg-gray-50 border border-gray-200">
                           <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
-                            {pricingView === "customer" ? "Retailer Price (B2B)" : "Customer Price (B2C)"}
+                            Customer Price (B2C)
                           </p>
-                          <p className="text-xl font-semibold text-gray-600">
-                            ₹{otherPrice.toLocaleString()}
+                          <p className="text-xl font-semibold text-gray-900">
+                            ₹{customerPrice.toLocaleString()}
                           </p>
+                          {p.customerDiscount > 0 && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {p.customerDiscount}% off
+                            </p>
+                          )}
+                        </div>
+                        <div className="p-4 rounded bg-gray-50 border border-gray-200">
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
+                            Retailer Price (B2B)
+                          </p>
+                          <p className="text-xl font-semibold text-gray-900">
+                            ₹{retailerPrice.toLocaleString()}
+                          </p>
+                          {p.distributorDiscount > 0 && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {p.distributorDiscount}% off
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -551,7 +510,6 @@ export default function AdminPage() {
                         onClick={() => {
                           setEditingId(p._id);
                           setMode(p.sizes?.length ? "sizes" : "single");
-                          setPricingView("customer");
                           setForm({
                             name: p.name,
                             category: p.category,
@@ -561,13 +519,11 @@ export default function AdminPage() {
                             distributorDiscount: p.distributorDiscount ?? 0,
                             stock: p.stock ?? 0,
                             soldOut: p.soldOut,
-                            customerPrice: p.customerPrice ?? 0,
-                            retailerPrice: p.retailerPrice ?? 0,
+                            price: p.price ?? 0,
                             sizes: (p.sizes ?? []).map((s: any) => ({
                               label: s.label,
                               value: s.value,
-                              customerPrice: s.customerPrice ?? 0,
-                              retailerPrice: s.retailerPrice ?? 0,
+                              price: s.price ?? 0,
                             })),
                             image: null,
                           });

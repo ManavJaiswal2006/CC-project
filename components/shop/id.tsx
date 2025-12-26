@@ -17,8 +17,7 @@ import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
 type Size = {
   label: string;
   value: string;
-  customerPrice: number;
-  retailerPrice: number;
+  price: number;
 };
 
 export default function ProductPage() {
@@ -60,8 +59,8 @@ export default function ProductPage() {
   /* ================= PRICE ================= */
   const basePrice = useMemo(() => {
     if (!product) return null;
-    if (hasSizes) return selectedSize?.customerPrice ?? null;
-    return product.customerPrice ?? null;
+    if (hasSizes) return selectedSize?.price ?? null;
+    return product.price ?? null;
   }, [product, hasSizes, selectedSize]);
 
   const finalPrice = useMemo(() => {
@@ -244,7 +243,7 @@ export default function ProductPage() {
                   {sizes.map((s) => (
                     <button
                       key={s.value}
-                      onClick={() => setSelectedSize({ label: s.label, value: s.value, customerPrice: s.customerPrice, retailerPrice: s.retailerPrice })}
+                      onClick={() => setSelectedSize({ label: s.label, value: s.value, price: s.price })}
                       className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
                         selectedSize?.value === s.value
                           ? "border-black bg-black text-white shadow-lg transform scale-105"
