@@ -367,91 +367,113 @@ export default function AdminOrderDetailsPage() {
               </label>
             )}
 
-            {/* Order Confirmed */}
-            <label className="flex items-center gap-3 p-4 border border-gray-200 hover:bg-gray-50 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={order.status === "Confirmed" || order.status === "Processing"}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    // For COD, allow processing without payment. For online, require payment.
-                    const isCOD = order.paymentMethod?.toLowerCase() === "cod";
-                    if (isCOD || order.paymentStatus === "Paid") {
-                      handleStatusChange("Processing");
-                    }
-                  }
-                }}
-                disabled={
-                  order.status === "Cancelled" ||
-                  (order.paymentMethod?.toLowerCase() !== "cod" && order.paymentStatus !== "Paid")
-                }
-                className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <div className="flex-1">
-                <p className="font-semibold text-sm">Order Processing</p>
-                <p className="text-xs text-gray-500">
-                  {order.paymentMethod?.toLowerCase() === "cod" 
-                    ? "Mark order as processing (COD - payment on delivery)" 
-                    : "Mark order as processing (requires payment received)"}
-                </p>
-              </div>
-            </label>
+            {/* Order Processing */}
+            {(() => {
+              const isProcessingChecked = order.status === "Confirmed" || order.status === "Processing" || order.status === "Shipped" || order.status === "Out for Delivery" || order.status === "Delivered";
+              const canCheckProcessing = !order.status || order.status === "Awaiting Admin Confirmation" || order.status === "Confirmed";
+              const isProcessingDisabled = order.status === "Cancelled" || isProcessingChecked || (order.paymentMethod?.toLowerCase() !== "cod" && order.paymentStatus !== "Paid");
+              
+              return (
+                <label className={`flex items-center gap-3 p-4 border border-gray-200 ${isProcessingChecked ? "bg-gray-50" : "hover:bg-gray-50"} ${isProcessingDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isProcessingChecked}
+                    onChange={(e) => {
+                      // Only allow checking, not unchecking
+                      if (e.target.checked && canCheckProcessing) {
+                        const isCOD = order.paymentMethod?.toLowerCase() === "cod";
+                        if (isCOD || order.paymentStatus === "Paid") {
+                          handleStatusChange("Processing");
+                        }
+                      }
+                    }}
+                    disabled={isProcessingDisabled}
+                    className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">Order Processing</p>
+                    <p className="text-xs text-gray-500">
+                      {order.paymentMethod?.toLowerCase() === "cod" 
+                        ? "Mark order as processing (COD - payment on delivery)" 
+                        : "Mark order as processing (requires payment received)"}
+                    </p>
+                  </div>
+                </label>
+              );
+            })()}
 
             {/* Order Shipped */}
-            <label className="flex items-center gap-3 p-4 border border-gray-200 hover:bg-gray-50 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={order.status === "Shipped" || order.status === "Out for Delivery"}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    handleStatusChange("Shipped", undefined, true);
-                  }
-                }}
-                disabled={
-                  order.status === "Cancelled" ||
-                  order.status === "Awaiting Admin Confirmation" || 
-                  (order.paymentMethod?.toLowerCase() !== "cod" && order.paymentStatus !== "Paid")
-                }
-                className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <div className="flex-1">
-                <p className="font-semibold text-sm">Order Shipped</p>
-                <p className="text-xs text-gray-500">Mark order as shipped (requires tracking details)</p>
-              </div>
-            </label>
+            {(() => {
+              const isShippedChecked = order.status === "Shipped" || order.status === "Out for Delivery" || order.status === "Delivered";
+              const canCheckShipped = order.status === "Processing" || order.status === "Confirmed";
+              const isShippedDisabled = order.status === "Cancelled" || 
+                order.status === "Awaiting Admin Confirmation" || 
+                isShippedChecked || 
+                !canCheckShipped ||
+                (order.paymentMethod?.toLowerCase() !== "cod" && order.paymentStatus !== "Paid");
+              
+              return (
+                <label className={`flex items-center gap-3 p-4 border border-gray-200 ${isShippedChecked ? "bg-gray-50" : "hover:bg-gray-50"} ${isShippedDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isShippedChecked}
+                    onChange={(e) => {
+                      // Only allow checking, not unchecking
+                      if (e.target.checked && canCheckShipped) {
+                        handleStatusChange("Shipped", undefined, true);
+                      }
+                    }}
+                    disabled={isShippedDisabled}
+                    className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">Order Shipped</p>
+                    <p className="text-xs text-gray-500">Mark order as shipped (requires tracking details)</p>
+                  </div>
+                </label>
+              );
+            })()}
 
             {/* Order Delivered */}
-            <label className="flex items-center gap-3 p-4 border border-gray-200 hover:bg-gray-50 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={order.status === "Delivered"}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    // For COD orders, mark payment as Paid when delivered
-                    const isCOD = order.paymentMethod?.toLowerCase() === "cod";
-                    if (isCOD && order.paymentStatus !== "Paid") {
-                      handleStatusChange("Delivered", "Paid");
-                    } else {
-                      handleStatusChange("Delivered");
-                    }
-                  }
-                }}
-                disabled={
-                  order.status === "Cancelled" ||
-                  !order.trackingNumber || 
-                  order.status === "Awaiting Admin Confirmation"
-                }
-                className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <div className="flex-1">
-                <p className="font-semibold text-sm">Order Delivered</p>
-                <p className="text-xs text-gray-500">
-                  {order.paymentMethod?.toLowerCase() === "cod" 
-                    ? "Mark order as delivered (will mark payment as received)" 
-                    : "Mark order as delivered"}
-                </p>
-              </div>
-            </label>
+            {(() => {
+              const isDeliveredChecked = order.status === "Delivered";
+              const canCheckDelivered = order.status === "Shipped" || order.status === "Out for Delivery";
+              const isDeliveredDisabled = order.status === "Cancelled" || 
+                order.status === "Awaiting Admin Confirmation" || 
+                isDeliveredChecked || 
+                !canCheckDelivered ||
+                !order.trackingNumber;
+              
+              return (
+                <label className={`flex items-center gap-3 p-4 border border-gray-200 ${isDeliveredChecked ? "bg-gray-50" : "hover:bg-gray-50"} ${isDeliveredDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isDeliveredChecked}
+                    onChange={(e) => {
+                      // Only allow checking, not unchecking
+                      if (e.target.checked && canCheckDelivered) {
+                        const isCOD = order.paymentMethod?.toLowerCase() === "cod";
+                        if (isCOD && order.paymentStatus !== "Paid") {
+                          handleStatusChange("Delivered", "Paid");
+                        } else {
+                          handleStatusChange("Delivered");
+                        }
+                      }
+                    }}
+                    disabled={isDeliveredDisabled}
+                    className="h-5 w-5 rounded border-gray-300 text-black focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">Order Delivered</p>
+                    <p className="text-xs text-gray-500">
+                      {order.paymentMethod?.toLowerCase() === "cod" 
+                        ? "Mark order as delivered (will mark payment as received)" 
+                        : "Mark order as delivered"}
+                    </p>
+                  </div>
+                </label>
+              );
+            })()}
           </div>
         </section>
 

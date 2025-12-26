@@ -66,8 +66,8 @@ function LoginContent() {
             type="email"
             required
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
-            placeholder="member@bourgon.com"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="member@bourgon.in"
           />
         </div>
         <div className="space-y-2">
@@ -86,7 +86,7 @@ function LoginContent() {
             type="password"
             required
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="••••••••"
           />
         </div>
@@ -106,7 +106,11 @@ function LoginContent() {
                         try {
                           // Re-authenticate to get user and send verification
                           const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                          await sendEmailVerification(userCredential.user);
+                          const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
+                          await sendEmailVerification(userCredential.user, {
+                            url: `${siteUrl}/verify-email`,
+                            handleCodeInApp: false,
+                          });
                           await auth.signOut();
                           setVerificationResent(true);
                           setError("Verification email sent! Please check your inbox.");

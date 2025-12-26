@@ -77,8 +77,8 @@ function ForgotPasswordContent() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
-              placeholder="member@bourgon.com"
+              className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+              placeholder="member@bourgon.in"
             />
             <p className="text-slate-400 text-[10px] font-light mt-2">
               Enter your email address and we'll send you a link to reset your password.

@@ -7,6 +7,7 @@ import { ProfessionalModeProvider } from "./context/ProfessionalModeContext";
 import ErrorBoundary from "@/components/UI/ErrorBoundary";
 import GoogleAnalytics from "@/components/Analytics/GoogleAnalytics";
 import ConditionalLayout from "@/components/ConditionalLayout";
+import { ToastContainer } from "@/components/UI/Toast";
 
 export const metadata: Metadata = {
   title: {
@@ -23,11 +24,11 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"),
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in",
     siteName: "Bourgon Industries",
     title: "Bourgon Industries | Beyond Quality. Beyond Design.",
     description: "Premium stainless steel products by Bourgon Industries. Setting new benchmarks in industrial excellence.",
@@ -92,6 +93,7 @@ export default function RootLayout({
                   <ConditionalLayout>
                     {children}
                   </ConditionalLayout>
+                  <ToastContainer />
                 </ProfessionalModeProvider>
               </AuthProvider>
             </CartProvider>

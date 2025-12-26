@@ -73,7 +73,7 @@ export default function ConciergePage() {
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <Mail className="text-slate-900 mb-4" size={24} />
           <h3 className=" italic text-xl mb-2">Email Inquiries</h3>
-          <a href="mailto:care@bourgon.com" className="font-bold text-lg">care@bourgon.com</a>
+          <a href="mailto:care@bourgon.in" className="font-bold text-lg">care@bourgon.in</a>
         </div>
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <Clock className="text-red-600 mb-4" size={24} />

@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Loader2, Mail } from "lucide-react";
+import { ShieldCheck, Loader2, Mail, AlertCircle } from "lucide-react";
 import AuthLayout from "@/components/auth/Authlayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthbutton";
 import { auth } from "@/app/lib/firebase";
@@ -21,6 +21,7 @@ function SignUpContent() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [emailAlreadyRegistered, setEmailAlreadyRegistered] = useState(false);
   const router = useRouter();
   const updateUser = useMutation(api.user.updateUser);
 
@@ -28,6 +29,7 @@ function SignUpContent() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setEmailAlreadyRegistered(false);
     
     // Validation
     if (!name.trim()) {
@@ -72,20 +74,27 @@ function SignUpContent() {
         // Don't fail signup if Convex save fails, but log it
       }
       
-      // Send email verification
-      await sendEmailVerification(user);
+      // Send email verification with custom redirect URL
+      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
+      await sendEmailVerification(user, {
+        url: `${siteUrl}/verify-email`,
+        handleCodeInApp: false,
+      });
       setVerificationSent(true);
       setSuccess("Verification email sent! Please check your inbox and verify your email before logging in.");
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(
-          err.message.includes("email-already-in-use")
-            ? "This email is already registered."
-            : err.message.includes("invalid-email")
-            ? "Invalid email address."
-            : "Could not create account. Please try again."
-        );
+    } catch (err: any) {
+      if (err?.code === "auth/email-already-in-use" || (err instanceof Error && err.message.includes("email-already-in-use"))) {
+        // Email is already registered - guide user to login
+        setEmailAlreadyRegistered(true);
+        setError("This email is already registered. Please log in instead.");
+      } else if (err?.code === "auth/invalid-email" || (err instanceof Error && err.message.includes("invalid-email"))) {
+        setEmailAlreadyRegistered(false);
+        setError("Invalid email address.");
+      } else if (err?.code === "auth/weak-password" || (err instanceof Error && err.message.includes("weak-password"))) {
+        setEmailAlreadyRegistered(false);
+        setError("Password is too weak. Please choose a stronger password.");
       } else {
+        setEmailAlreadyRegistered(false);
         setError("Could not create account. Please try again.");
       }
     } finally {
@@ -105,7 +114,7 @@ function SignUpContent() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="John Doe"
           />
         </div>
@@ -122,7 +131,7 @@ function SignUpContent() {
               const value = e.target.value.replace(/\D/g, "").slice(0, 10);
               setPhone(value);
             }}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="9876543210"
           />
           <p className="text-slate-400 text-[9px] font-light mt-1">
@@ -138,8 +147,8 @@ function SignUpContent() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
-            placeholder="newmember@bourgon.com"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            placeholder="newmember@bourgon.in"
           />
         </div>
         <div className="space-y-2">
@@ -151,7 +160,7 @@ function SignUpContent() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="••••••••"
           />
         </div>
@@ -164,14 +173,26 @@ function SignUpContent() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
+            className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
             placeholder="••••••••"
           />
         </div>
         {error && (
-          <p className="text-red-600 text-[10px] font-bold tracking-widest uppercase">
-            {error}
-          </p>
+          <div className="bg-red-50 border border-red-200 p-4 rounded">
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-red-800 text-[11px] font-bold tracking-wider uppercase mb-1">
+                  {error}
+                </p>
+                {emailAlreadyRegistered && (
+                  <p className="text-red-700 text-xs font-light mt-2">
+                    If you haven't verified your email yet, you'll be prompted to do so after logging in.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         )}
         {success && (
           <div className="bg-green-50 border border-green-200 p-4 rounded">
@@ -182,6 +203,15 @@ function SignUpContent() {
               {success}
             </p>
           </div>
+        )}
+        {emailAlreadyRegistered && !verificationSent && (
+          <button 
+            type="button"
+            onClick={() => router.push("/login")}
+            className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all"
+          >
+            GO TO LOGIN <ShieldCheck size={14} />
+          </button>
         )}
         {verificationSent ? (
           <div className="space-y-4">
@@ -197,7 +227,11 @@ function SignUpContent() {
               onClick={async () => {
                 if (auth.currentUser) {
                   try {
-                    await sendEmailVerification(auth.currentUser);
+                    const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
+                    await sendEmailVerification(auth.currentUser, {
+                      url: `${siteUrl}/verify-email`,
+                      handleCodeInApp: false,
+                    });
                     setSuccess("Verification email sent again! Please check your inbox.");
                   } catch (err) {
                     setError("Could not resend verification email. Please try again later.");

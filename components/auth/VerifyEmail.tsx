@@ -41,7 +41,11 @@ function VerifyEmailContent() {
     setVerifying(true);
 
     try {
-      await sendEmailVerification(user);
+      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
+      await sendEmailVerification(user, {
+        url: `${siteUrl}/verify-email`,
+        handleCodeInApp: false,
+      });
       setSuccess("Verification email sent! Please check your inbox.");
     } catch (err: any) {
       if (err?.code === "auth/too-many-requests") {
@@ -86,8 +90,11 @@ function VerifyEmailContent() {
   if (loading) {
     return (
       <AuthLayout title="Verifying..." subtitle="Email Verification">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-slate-900" size={32} />
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <Loader2 className="animate-spin text-white" size={32} />
+          </div>
+          <p className="text-slate-600 text-sm font-light">Loading...</p>
         </div>
       </AuthLayout>
     );
@@ -97,14 +104,24 @@ function VerifyEmailContent() {
     return (
       <AuthLayout title="Not logged in." subtitle="Email Verification">
         <div className="space-y-6">
-          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded">
-            <p className="text-yellow-800 text-sm font-light">
-              You need to be logged in to verify your email.
-            </p>
+          <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-lg p-8">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full -mr-16 -mt-16 opacity-50"></div>
+            <div className="relative flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-amber-200">
+                <AlertCircle size={28} className="text-white" strokeWidth={2.5} />
+              </div>
+              <h3 className="text-xl font-serif italic text-slate-900 mb-3">
+                Login Required
+              </h3>
+              <p className="text-slate-700 text-sm font-light leading-relaxed max-w-sm">
+                You need to be logged in to verify your email address.
+              </p>
+            </div>
           </div>
+          
           <button
             onClick={() => router.push("/login")}
-            className="w-full bg-slate-900 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-red-700 transition-all"
+            className="w-full bg-slate-900 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-red-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             GO TO LOGIN <ArrowRight size={14} />
           </button>
@@ -117,22 +134,24 @@ function VerifyEmailContent() {
     return (
       <AuthLayout title="Email verified!" subtitle="Email Verification">
         <div className="space-y-6">
-          <div className="bg-green-50 border border-green-200 p-6 rounded">
-            <div className="flex items-start gap-3">
-              <CheckCircle size={20} className="text-green-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-green-800 text-sm font-bold mb-2">
-                  Your email has been verified!
-                </p>
-                <p className="text-green-700 text-xs font-light">
-                  You can now access all features of your account.
-                </p>
+          <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-8">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full -mr-16 -mt-16 opacity-50"></div>
+            <div className="relative flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-green-200">
+                <CheckCircle size={40} className="text-white" strokeWidth={2.5} />
               </div>
+              <h3 className="text-2xl font-serif italic text-slate-900 mb-3">
+                Email Verified!
+              </h3>
+              <p className="text-slate-600 text-sm font-light leading-relaxed max-w-sm">
+                Your email address has been successfully verified. You now have full access to all features of your Bourgon account.
+              </p>
             </div>
           </div>
+          
           <button
             onClick={() => router.push("/shop")}
-            className="w-full bg-slate-900 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-red-700 transition-all"
+            className="w-full bg-slate-900 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-red-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             CONTINUE TO SHOP <ArrowRight size={14} />
           </button>
@@ -144,18 +163,36 @@ function VerifyEmailContent() {
   return (
     <AuthLayout title="Verify your email." subtitle="Email Verification">
       <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 p-6 rounded">
-          <div className="flex items-start gap-3">
-            <Mail size={20} className="text-blue-600 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-blue-800 text-sm font-bold mb-2">
-                Verification email sent!
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 rounded-lg p-8">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100 rounded-full -mr-20 -mt-20 opacity-50"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-100 rounded-full -ml-16 -mb-16 opacity-50"></div>
+          
+          <div className="relative flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-200">
+              <Mail size={36} className="text-white" strokeWidth={2} />
+            </div>
+            
+            <h3 className="text-2xl font-serif italic text-slate-900 mb-3">
+              Check Your Email
+            </h3>
+            
+            <p className="text-slate-700 text-sm font-light leading-relaxed mb-4 max-w-sm">
+              We've sent a verification email to
+            </p>
+            
+            <div className="bg-white border border-blue-200 rounded-lg px-5 py-3 mb-4 shadow-sm">
+              <p className="text-blue-700 font-semibold text-sm">
+                {user.email}
               </p>
-              <p className="text-blue-700 text-xs font-light leading-relaxed mb-2">
-                We've sent a verification email to <strong>{user.email}</strong>. 
-                Please check your inbox and click the verification link to verify your email address.
-              </p>
-              <p className="text-blue-600 text-[10px] font-bold tracking-wider uppercase mt-3">
+            </div>
+            
+            <p className="text-slate-600 text-xs font-light leading-relaxed max-w-sm mb-2">
+              Please check your inbox and click the verification link to verify your email address.
+            </p>
+            
+            <div className="mt-4 flex items-center gap-2 text-blue-600">
+              <AlertCircle size={14} />
+              <p className="text-[10px] font-bold tracking-wider uppercase">
                 Don't see the email? Check your spam folder.
               </p>
             </div>
@@ -163,29 +200,39 @@ function VerifyEmailContent() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 p-4 rounded">
-            <div className="flex items-start gap-2">
-              <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
-              <p className="text-red-700 text-[11px] font-bold tracking-wider uppercase">
-                {error}
-              </p>
+          <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <AlertCircle size={16} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-red-800 text-sm font-bold mb-1">Error</p>
+                <p className="text-red-700 text-xs font-light">
+                  {error}
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 p-4 rounded">
-            <p className="text-green-700 text-[11px] font-bold tracking-wider uppercase">
-              {success}
-            </p>
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center shrink-0">
+                <CheckCircle size={16} className="text-white" />
+              </div>
+              <p className="text-green-800 text-sm font-semibold">
+                {success}
+              </p>
+            </div>
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           <button
             onClick={handleResendVerification}
             disabled={verifying}
-            className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-red-700 to-red-600 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:from-slate-900 hover:to-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
           >
             {verifying ? (
               <>
@@ -202,7 +249,7 @@ function VerifyEmailContent() {
           <button
             onClick={handleCheckVerification}
             disabled={loading}
-            className="w-full border border-slate-200 text-slate-700 py-3 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-50 transition-all disabled:opacity-50"
+            className="w-full border-2 border-slate-300 text-slate-700 py-3.5 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

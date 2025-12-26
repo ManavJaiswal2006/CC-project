@@ -84,7 +84,7 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
           <div style="margin-top: 30px; display: inline-block; padding: 8px 15px; border: 1px solid #444; color: #fff; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;">
             Official Invoice
           </div>

@@ -230,7 +230,7 @@ const Navbar = () => {
 
           {/* Logo */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 sm:w-32 md:w-48">
-            <Link href="/" className="flex flex-col items-center">
+            <Link href="/" className="flex pt-5 flex-col items-center">
               <Image
                 src={logoImg}
                 alt="Bourgon Logo"

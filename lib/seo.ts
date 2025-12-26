@@ -19,7 +19,7 @@ export function generateSEO({
   price,
   availability,
 }: SEOProps): Metadata {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
   const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
   const fullImage = image.startsWith("http") ? image : `${siteUrl}${image}`;
 
@@ -82,7 +82,7 @@ export function generateStructuredData({
   rating?: number;
   reviewCount?: number;
 }) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
 
   if (type === "Organization") {
     return {

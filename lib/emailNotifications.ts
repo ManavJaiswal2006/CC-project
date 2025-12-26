@@ -63,7 +63,7 @@ export async function sendOrderStatusEmail(
   // Use provided tracking URL or generate default one
   const trackingUrl = orderData.trackingUrl || 
     (orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" && orderData.trackingNumber !== "Processing"
-      ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/track-order`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/track-order`
       : "#");
 
   const html = `
@@ -94,7 +94,7 @@ export async function sendOrderStatusEmail(
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
         </td>
       </tr>
 
@@ -130,7 +130,7 @@ export async function sendOrderStatusEmail(
           ` : ''}
 
           <div style="text-align: center; margin-top: 40px;">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/orders/${escapeHtml(orderData.orderId)}" class="btn">View Collection Details</a>
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/orders/${escapeHtml(orderData.orderId)}" class="btn">View Collection Details</a>
           </div>
         </td>
       </tr>
@@ -195,7 +195,7 @@ export async function sendOTPEmail(
           
           <tr>
             <td style="background-color: #000000; padding: 40px; text-align: center;">
-              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.com"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 15px auto; display: block;" />
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 15px auto; display: block;" />
               <p style="color: #a1a1a1; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;">
                 Secure Access Portal
               </p>

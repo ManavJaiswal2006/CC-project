@@ -8,11 +8,12 @@ import React, {
   useMemo,
   useRef,
 } from "react";
+import { showToast } from "@/components/UI/Toast";
 
 /* ================= CONSTANTS ================= */
 
 const STORAGE_KEY = "bourgon_cart";
-const MAX_QTY_PER_ITEM = 10;
+const MAX_QTY_PER_ITEM = 50;
 
 /* ================= TYPES ================= */
 
@@ -105,18 +106,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (existing) {
+        const newQuantity = Math.min(
+          existing.quantity + safeQty,
+          MAX_QTY_PER_ITEM
+        );
+        
+        // Show toast notification
+        showToast(
+          newQuantity > existing.quantity
+            ? `${item.name} added to cart (${newQuantity} total)`
+            : `${item.name} quantity updated (max ${MAX_QTY_PER_ITEM} per item)`,
+          "success"
+        );
+
         return prev.map((p) =>
           p.id === item.id && p.size === item.size
             ? {
                 ...p,
-                quantity: Math.min(
-                  p.quantity + safeQty,
-                  MAX_QTY_PER_ITEM
-                ),
+                quantity: newQuantity,
               }
             : p
         );
       }
+
+      // Show toast notification for new item
+      showToast(`${item.name} added to cart`, "success");
 
       return [
         ...prev,
