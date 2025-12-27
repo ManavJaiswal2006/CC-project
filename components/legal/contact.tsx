@@ -17,8 +17,8 @@ export default function ContactUs() {
             <div className="bg-gray-50 p-6 border border-gray-200 mb-6">
               <p className="font-semibold text-lg mb-4">Bourgon Industries Pvt. Ltd.</p>
               <p className="mb-2">
-                <strong>Address:</strong> B - 30, Ambedkar Colony, Chhatarpur<br />
-                New Delhi - 110074, India
+                <strong>Address:</strong> 22  R VANI VIHAR UTTAM NAGAR<br />
+                NEW DELHI  110059, India
               </p>
               <p className="mb-2">
                 <strong>Email:</strong>{" "}
@@ -29,7 +29,7 @@ export default function ContactUs() {
               <p className="mb-2">
                 <strong>Phone:</strong>{" "}
                 <a href="tel:+918800830465" className="text-red-600 hover:underline">
-                  +91 88008 30465
+                  +91 88008 30465 & +91 88008 30467
                 </a>
               </p>
             </div>
@@ -63,7 +63,7 @@ export default function ContactUs() {
               <p>
                 <strong>Phone:</strong>{" "}
                 <a href="tel:+918800830465" className="text-red-600 hover:underline">
-                  +91 88008 30465
+                  +91 88008 30465 & +91 88008 30467
                 </a>
               </p>
             </div>
@@ -79,13 +79,13 @@ export default function ContactUs() {
             <div className="bg-gray-50 p-6 border border-gray-200">
               <p className="font-semibold mb-4">Eminence Support Numbers</p>
               <p className="mb-2">
-                <a href="tel:+919312614905" className="text-red-600 hover:underline text-lg font-semibold">
-                  +91 93126 14905
+                <a href="tel:+918800830465" className="text-red-600 hover:underline text-lg font-semibold">
+                  +91 88008 30465
                 </a>
               </p>
               <p>
-                <a href="tel:+919911075315" className="text-red-600 hover:underline text-lg font-semibold">
-                  +91 99110 75315
+                <a href="tel:+918800830467" className="text-red-600 hover:underline text-lg font-semibold">
+                  +91 88008 30467
                 </a>
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function ContactUs() {
               <p className="mb-2">
                 <strong>Phone:</strong>{" "}
                 <a href="tel:+918800830465" className="text-red-600 hover:underline">
-                  +91 88008 30465
+                  +91 88008 30465 & +91 88008 30467
                 </a>
               </p>
               <p className="mt-4">

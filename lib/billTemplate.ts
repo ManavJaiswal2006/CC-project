@@ -193,8 +193,8 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
           </div>
           <div style="font-size: 11px; color: #999; line-height: 1.8; letter-spacing: 0.5px;">
             BOURGON INDUSTRIES PVT. LTD.<br>
-            B - 30, Ambedkar Colony, Chhatarpur, New Delhi - 110074<br>
-            Phone: +91 88008 30465 | Email: bourgonindustries@gmail.com
+            22  R VANI VIHAR UTTAM NAGAR NEW DELHI  110059<br>
+            Phone: +91 88008 30465 & +91 88008 30467 | Email: bourgonindustries@gmail.com
           </div>
           <div style="margin-top: 30px; font-size: 10px; color: #ddd; text-transform: uppercase; letter-spacing: 2px;">
             © ${new Date().getFullYear()} All Rights Reserved.

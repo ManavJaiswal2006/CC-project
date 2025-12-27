@@ -68,7 +68,7 @@ export default function ConciergePage() {
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <Phone className="text-red-600 mb-4" size={24} />
           <h3 className=" italic text-xl mb-2">Speak with Us</h3>
-          <a href="tel:8800830465" className="font-bold text-lg">+91 8800830465</a>
+          <a href="tel:8800830465" className="font-bold text-lg">+91 8800830465 & +91 8800830467</a>
         </div>
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <Mail className="text-slate-900 mb-4" size={24} />
@@ -82,7 +82,7 @@ export default function ConciergePage() {
         </div>
         <div className="reveal md:col-span-3 bg-[#1e2433] text-white p-12 md:p-16 flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
           <div className="z-10">
-            <h4 className="text-3xl md:text-5xl italic mb-4">B-30, Ambedkar Colony, <br/> Chhatarpur, New Delhi</h4>
+            <h4 className="text-3xl md:text-5xl italic mb-4">22  R VANI VIHAR <br/> UTTAM NAGAR NEW DELHI  110059</h4>
             <button className="text-xs font-bold border-b border-red-500 pb-1 flex items-center gap-2">FIND ON MAPS <Globe size={12}/></button>
           </div>
           <ShieldCheck size={200} className="absolute -right-10 opacity-10 rotate-12" />

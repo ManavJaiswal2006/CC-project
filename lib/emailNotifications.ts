@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { escapeHtml } from "./validation";
 import { generateBillHTML } from "./billTemplate";
+import { getEmailFromField, getEmailTransporterConfig, isEmailConfigured } from "./emailConfig";
 
 interface OrderData {
   orderId: string;
@@ -32,17 +33,11 @@ export async function sendOrderStatusEmail(
   orderData: OrderData,
   previousStatus?: string
 ) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !orderData.customerEmail) {
+  if (!isEmailConfigured("orders") || !orderData.customerEmail) {
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  const transporter = nodemailer.createTransport(getEmailTransporterConfig("orders"));
 
   const statusMessages: Record<string, string> = {
     "Order Placed": "Your order has been successfully placed! We're preparing it for you.",
@@ -138,7 +133,7 @@ export async function sendOrderStatusEmail(
       <tr>
         <td class="footer">
           <p style="font-size: 12px; color: #888888; margin-bottom: 20px;">
-            Questions? Concierge is available at <strong>+91 88008 30465</strong>
+            Questions? Concierge is available at <strong>+91 88008 30465 & +91 88008 30467</strong>
           </p>
           <div style="height: 1px; background-color: #eeeeee; width: 50px; margin: 0 auto 20px;"></div>
           <p style="font-size: 10px; color: #bbbbbb; text-transform: uppercase; letter-spacing: 2px;">
@@ -153,7 +148,7 @@ export async function sendOrderStatusEmail(
   `.trim();
 
   await transporter.sendMail({
-    from: `"Bourgon Orders" <${process.env.EMAIL_USER}>`,
+    from: getEmailFromField("orders"),
     to: orderData.customerEmail,
     subject,
     html,
@@ -165,17 +160,11 @@ export async function sendOTPEmail(
   otp: string,
   purpose: "signup" | "login" | "reset" = "signup"
 ) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !email) {
+  if (!isEmailConfigured("security") || !email) {
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  const transporter = nodemailer.createTransport(getEmailTransporterConfig("security"));
 
   const subject = `Security Verification Code | Bourgon Industries`;
 
@@ -241,7 +230,7 @@ export async function sendOTPEmail(
 `.trim();
 
   await transporter.sendMail({
-    from: `"Bourgon Security" <${process.env.EMAIL_USER}>`,
+    from: getEmailFromField("security"),
     to: email,
     subject,
     html,

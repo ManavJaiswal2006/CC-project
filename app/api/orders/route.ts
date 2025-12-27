@@ -13,6 +13,7 @@ import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import { generateBillHTML } from "@/lib/billTemplate";
 import { sendOrderStatusEmail } from "@/lib/emailNotifications";
 import { logger } from "@/lib/logger";
+import { getEmailFromField, getAdminEmail, getEmailTransporterConfig, isEmailConfigured } from "@/lib/emailConfig";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -130,14 +131,8 @@ export async function POST(req: Request) {
     });
 
     // 2) Send confirmation emails with bill (if SMTP configured)
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS && customerEmail) {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
+    if (isEmailConfigured("orders") && customerEmail) {
+      const transporter = nodemailer.createTransport(getEmailTransporterConfig("orders"));
 
       // Calculate subtotal (total before promo discount)
       const subtotal = promoDiscount && promoDiscount > 0 
@@ -178,7 +173,7 @@ export async function POST(req: Request) {
       }, false);
 
       const mailOptions = {
-        from: `"Bourgon Orders" <${process.env.EMAIL_USER}>`,
+        from: getEmailFromField("orders"),
         to: customerEmail,
         subject: `Your Order Invoice - ${orderId} | Bourgon Industries`,
         html: billHTML,
@@ -232,18 +227,8 @@ export async function POST(req: Request) {
     }
 
     // Email to admin with full bill
-    if (
-      process.env.EMAIL_USER &&
-      process.env.EMAIL_PASS &&
-      process.env.ADMIN_EMAIL
-    ) {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
+    if (isEmailConfigured("orders") && getAdminEmail()) {
+      const transporter = nodemailer.createTransport(getEmailTransporterConfig("orders"));
 
       // Calculate subtotal (total before promo discount)
       const subtotal = promoDiscount && promoDiscount > 0 
@@ -284,8 +269,8 @@ export async function POST(req: Request) {
       }, true);
 
       await transporter.sendMail({
-        from: `"Bourgon Orders" <${process.env.EMAIL_USER}>`,
-        to: process.env.ADMIN_EMAIL,
+        from: getEmailFromField("orders"),
+        to: getAdminEmail(),
         subject: `New Order - ${orderId} | Bourgon Industries`,
         html: billHTML,
       });

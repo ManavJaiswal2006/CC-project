@@ -21,9 +21,49 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 NEXT_PUBLIC_CONVEX_URL=https://your_deployment.convex.cloud
 
 # Email Configuration (REQUIRED for emails to work)
+# Base email configuration - used as fallback if specific emails are not configured
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
+
+# Email Accounts for Different Purposes (OPTIONAL - falls back to EMAIL_USER/EMAIL_PASS if not set)
+# You can use different Gmail accounts with different passwords for each purpose
+# Format: EMAIL_[TYPE]_USER and EMAIL_[TYPE]_PASS
+
+# Orders Email (for order-related emails to customers)
+EMAIL_ORDERS_USER=orders@gmail.com
+EMAIL_ORDERS_PASS=orders_app_password
+# OR use the old format (still supported):
+# EMAIL_ORDERS=orders@gmail.com (will use EMAIL_PASS)
+
+# Refunds Email (for refund-related emails to customers)
+EMAIL_REFUNDS_USER=refunds@gmail.com
+EMAIL_REFUNDS_PASS=refunds_app_password
+# OR use the old format (still supported):
+# EMAIL_REFUNDS=refunds@gmail.com (will use EMAIL_PASS)
+
+# Contact Email (for contact form emails)
+EMAIL_CONTACT_USER=contact@gmail.com
+EMAIL_CONTACT_PASS=contact_app_password
+# OR use the old format (still supported):
+# EMAIL_CONTACT=contact@gmail.com (will use EMAIL_PASS)
+
+# Distributor Email (for distributor application emails)
+EMAIL_DISTRIBUTOR_USER=partnerships@gmail.com
+EMAIL_DISTRIBUTOR_PASS=partnerships_app_password
+# OR use the old format (still supported):
+# EMAIL_DISTRIBUTOR=partnerships@gmail.com (will use EMAIL_PASS)
+
+# Security Email (for OTP/security verification emails)
+EMAIL_SECURITY_USER=security@gmail.com
+EMAIL_SECURITY_PASS=security_app_password
+# OR use the old format (still supported):
+# EMAIL_SECURITY=security@gmail.com (will use EMAIL_PASS)
+
+# Admin Email (for admin notifications - recipient address)
 ADMIN_EMAIL=admin@yourdomain.com
+# OR use separate credentials for sending admin emails:
+# ADMIN_EMAIL_USER=admin@gmail.com
+# ADMIN_EMAIL_PASS=admin_app_password
 
 # Razorpay Configuration (REQUIRED for Card/UPI payments)
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx

@@ -7,6 +7,8 @@ import { useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
+import { useAuth } from "@/app/context/AuthContext";
+import RefundManagement from "@/components/Admin/RefundManagement";
 
 export default function AdminOrderDetailsPage() {
   const params = useParams();
@@ -23,6 +25,7 @@ export default function AdminOrderDetailsPage() {
   );
   const updateStatus = useMutation(api.order.updateStatus);
   const processOrderRequest = useMutation(api.order.processOrderRequest);
+  const { user } = useAuth();
   
   // Get cancellation requests for this order
   const cancellationRequests = useQuery(
@@ -503,6 +506,11 @@ export default function AdminOrderDetailsPage() {
             })()}
           </div>
         </section>
+
+        {/* Refund Management */}
+        {order.orderId && user?.uid && (
+          <RefundManagement orderId={order.orderId} adminUserId={user.uid} />
+        )}
 
         {/* Tracking Dialog */}
         {showTrackingDialog && (

@@ -215,14 +215,14 @@ export default function RedesignedAboutPage() {
                 Get in touch with Bourgon
               </h4>
               <p className="text-slate-400 font-sans text-sm">
-                B-30, Ambedkar Colony, Chhatarpur, New Delhi
+                22  R VANI VIHAR UTTAM NAGAR NEW DELHI  110059
               </p>
             </div>
             <a
               href="tel:8800830465"
               className="mt-6 md:mt-0 flex items-center gap-4 bg-slate-900 text-white px-8 py-4 rounded-full font-sans font-bold hover:bg-red-600 transition-colors"
             >
-              CUSTOMER CARE: 8800830465
+              CUSTOMER CARE: 8800830465 & 8800830467
               <ChevronRight size={18} />
             </a>
           </div>

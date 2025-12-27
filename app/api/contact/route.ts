@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { sanitizeString, validateEmail, escapeHtml } from "@/lib/validation";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import { logger } from "@/lib/logger";
+import { getEmailFrom, getAdminEmail, getEmailTransporterConfig, isEmailConfigured } from "@/lib/emailConfig";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -56,17 +57,18 @@ export async function POST(req: Request) {
     sanitizedEmail = email.toLowerCase().trim();
     const sanitizedMessage = sanitizeString(message, 5000);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    if (!isEmailConfigured("contact")) {
+      return NextResponse.json(
+        { success: false, message: "Email service not configured" },
+        { status: 500 }
+      );
+    }
+
+    const transporter = nodemailer.createTransport(getEmailTransporterConfig("contact"));
 
     const mailOptions = {
-      from: `"${escapeHtml(sanitizedName)}" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_USER,
+      from: `"${escapeHtml(sanitizedName)}" <${getEmailFrom("contact")}>`,
+      to: getAdminEmail(),
       replyTo: sanitizedEmail!,
       subject: `New Bourgon Inquiry: ${escapeHtml(sanitizedName)}`,
       html: `

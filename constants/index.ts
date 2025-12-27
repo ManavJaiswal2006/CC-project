@@ -25,17 +25,17 @@ export const footerData = {
     {
       title: "Corporate Headquarters",
       items: [
-        { icon: MapPin, text: "B - 30, Ambedkar Colony, Chhatarpur, New Delhi - 110074", href: "https://maps.google.com" },
+        { icon: MapPin, text: "22  R VANI VIHAR UTTAM NAGAR NEW DELHI  110059", href: "https://maps.google.com" },
         { icon: Mail, text: "bourgonindustries@gmail.com", href: "mailto:bourgonindustries@gmail.com" },
-        { icon: Phone, text: "+91 88008 30465", href: "tel:+918800830465" },
+        { icon: Phone, text: "+91 88008 30465 & +91 88008 30467", href: "tel:+918800830465" },
       ],
     },
     {
       title: "Eminence Support",
       type: "numbers", // Special type for larger text
       numbers: [
-        { label: "+91 93126 14905", href: "tel:+919312614905" },
-        { label: "+91 99110 75315", href: "tel:+919911075315" },
+        { label: "+91 88008 30465", href: "tel:+918800830465" },
+        { label: "+91 88008 30467", href: "tel:+918800830467" },
       ],
       socials: [
         { icon: Instagram, href: "#" },

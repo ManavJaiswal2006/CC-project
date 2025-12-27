@@ -5,6 +5,7 @@ import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import { logger } from "@/lib/logger";
 import { fetchMutation } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
+import { getEmailFrom, getEmailFromField, getAdminEmail, getEmailTransporterConfig, isEmailConfigured } from "@/lib/emailConfig";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -94,25 +95,19 @@ export async function POST(req: Request) {
       // Continue to send emails even if DB save fails
     }
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    if (!isEmailConfigured("distributor")) {
       return NextResponse.json(
         { success: false, message: "Email service not configured" },
         { status: 500 }
       );
     }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const transporter = nodemailer.createTransport(getEmailTransporterConfig("distributor"));
 
     // Email to admin
     const mailOptions = {
-      from: `"${escapeHtml(sanitizedName)}" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_USER,
+      from: `"${escapeHtml(sanitizedName)}" <${getEmailFrom("distributor")}>`,
+      to: getAdminEmail(),
       replyTo: sanitizedEmail!,
       subject: `New Distributor Application: ${escapeHtml(sanitizedName)}`,
       html: `
@@ -178,9 +173,9 @@ export async function POST(req: Request) {
     await transporter.sendMail(mailOptions);
 
     // Optional: Send confirmation email to applicant
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    if (isEmailConfigured("distributor")) {
       await transporter.sendMail({
-        from: `"Bourgon Industries" <${process.env.EMAIL_USER}>`,
+        from: getEmailFromField("distributor"),
         to: sanitizedEmail!,
         subject: "Thank you for your distributor application",
         html: `

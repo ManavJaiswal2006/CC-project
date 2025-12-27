@@ -99,9 +99,9 @@ export function generateStructuredData({
       },
       address: {
         "@type": "PostalAddress",
-        streetAddress: "B - 30, Ambedkar Colony, Chhatarpur",
+        streetAddress: "22  R VANI VIHAR UTTAM NAGAR",
         addressLocality: "New Delhi",
-        postalCode: "110074",
+        postalCode: "110059",
         addressCountry: "IN",
       },
     };

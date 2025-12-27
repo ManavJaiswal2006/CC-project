@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Download, CheckCircle2, Circle, Package, Truck, Home, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import CancelOrderButton from "@/components/orders/CancelOrderButton";
+import RefundRequestButton from "@/components/orders/RefundRequestButton";
 
 interface OrderDetailsProps {
   orderId: string;
@@ -337,6 +338,17 @@ export default function OrderDetailsPage({ orderId }: OrderDetailsProps) {
             <span>₹{order.totalAmount.toFixed(2)}</span>
           </div>
         </section>
+
+        {/* REFUND REQUEST */}
+        {order.status === "Delivered" && (
+          <section className="pt-6 border-t">
+            <RefundRequestButton
+              orderId={order.orderId}
+              orderStatus={order.status}
+              deliveredAt={order.deliveredAt}
+            />
+          </section>
+        )}
 
         {/* ACTIONS */}
         <div className="flex gap-4 pt-6">

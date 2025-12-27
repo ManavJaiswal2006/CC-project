@@ -132,7 +132,7 @@ export default function DistributorPage() {
               <Phone className="text-red-600 mb-3" size={24} />
               <h3 className="italic text-lg mb-2 font-semibold">Call Us</h3>
               <a href="tel:8800830465" className="font-bold text-lg text-slate-900 hover:text-red-600 transition-colors">
-                +91 88008 30465
+                +91 88008 30465 & +91 88008 30467
               </a>
             </div>
             
@@ -148,8 +148,8 @@ export default function DistributorPage() {
               <MapPin className="text-red-600 mb-3" size={24} />
               <h3 className="italic text-lg mb-2 font-semibold">Visit Us</h3>
               <p className="text-slate-600 font-light">
-                B - 30, Ambedkar Colony, Chhatarpur<br />
-                New Delhi - 110074, India
+                22  R VANI VIHAR UTTAM NAGAR<br />
+                NEW DELHI  110059, India
               </p>
             </div>
           </div>

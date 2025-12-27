@@ -70,6 +70,8 @@ export const createOrder = mutation({
     paymentMethod: v.string(),
     promoCode: v.optional(v.string()),
     promoDiscount: v.optional(v.number()),
+    razorpayPaymentId: v.optional(v.string()),
+    razorpayOrderId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -112,6 +114,8 @@ export const createOrder = mutation({
       paymentMethod: args.paymentMethod,
       promoCode: args.promoCode,
       promoDiscount: args.promoDiscount,
+      razorpayPaymentId: args.razorpayPaymentId,
+      razorpayOrderId: args.razorpayOrderId,
     });
 
     return { orderId, id: docId };
@@ -154,6 +158,13 @@ export const updateStatus = mutation({
           : `Status updated to: ${args.status}`,
         timestamp: Date.now(),
         updatedBy: args.updatedBy,
+      });
+    }
+
+    // If status is "Delivered", set deliveredAt timestamp (for refund window)
+    if (args.status === "Delivered" && existing.status !== "Delivered") {
+      await ctx.db.patch(args.id, {
+        deliveredAt: Date.now(),
       });
     }
 

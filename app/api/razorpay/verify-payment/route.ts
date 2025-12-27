@@ -51,10 +51,9 @@ export async function POST(req: Request) {
           paymentMethod: "online", // Online payment via Razorpay (Card/UPI/Net Banking)
           promoCode: orderData.promoCode,
           promoDiscount: orderData.promoDiscount,
+          razorpayPaymentId: razorpay_payment_id,
+          razorpayOrderId: razorpay_order_id,
         });
-
-        // Update order with payment details
-        // You can store razorpay_payment_id and razorpay_order_id in order if needed
 
         return NextResponse.json({
           success: true,

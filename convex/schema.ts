@@ -39,6 +39,9 @@ export default defineSchema({
     paymentStatus: v.optional(v.string()),
     promoCode: v.optional(v.string()), // Promo code used
     promoDiscount: v.optional(v.number()), // Discount amount applied from promo
+    razorpayPaymentId: v.optional(v.string()), // Razorpay payment ID for refunds
+    razorpayOrderId: v.optional(v.string()), // Razorpay order ID
+    deliveredAt: v.optional(v.number()), // Timestamp when order was delivered (for refund window)
   }).index("by_userId", ["userId"]),
 
   /* ================= PRODUCTS ================= */
@@ -157,6 +160,25 @@ export default defineSchema({
   })
     .index("by_orderId", ["orderId"])
     .index("by_userId", ["userId"]),
+
+  /* ================= REFUND REQUESTS ================= */
+  refundRequests: defineTable({
+    orderId: v.string(),
+    userId: v.string(),
+    reason: v.string(), // Customer's reason for refund
+    photoStorageId: v.optional(v.id("_storage")), // Photo of damaged product/reason
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"), v.literal("refunded")), // Request status
+    refundAmount: v.optional(v.number()), // Amount to refund (may be partial)
+    refundId: v.optional(v.string()), // Razorpay refund ID after processing
+    createdAt: v.number(), // When request was created
+    reviewedAt: v.optional(v.number()), // When admin reviewed
+    reviewedBy: v.optional(v.string()), // Admin userId who reviewed
+    adminNotes: v.optional(v.string()), // Admin notes/feedback
+    refundedAt: v.optional(v.number()), // When refund was processed
+  })
+    .index("by_orderId", ["orderId"])
+    .index("by_userId", ["userId"])
+    .index("by_status", ["status"]),
 
   /* ================= RECENTLY VIEWED ================= */
   recentlyViewed: defineTable({

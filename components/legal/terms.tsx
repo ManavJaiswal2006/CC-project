@@ -234,10 +234,10 @@ export default function TermsOfService() {
             </p>
             <div className="bg-gray-50 p-6 border border-gray-200">
               <p className="font-semibold mb-2">Bourgon Industries Pvt. Ltd.</p>
-              <p className="mb-1">B - 30, Ambedkar Colony, Chhatarpur</p>
-              <p className="mb-1">New Delhi - 110074, India</p>
+              <p className="mb-1">22  R VANI VIHAR UTTAM NAGAR</p>
+              <p className="mb-1">NEW DELHI  110059, India</p>
               <p className="mb-1">Email: bourgonindustries@gmail.com</p>
-              <p>Phone: +91 88008 30465</p>
+              <p>Phone: +91 88008 30465 & +91 88008 30467</p>
             </div>
           </section>
         </div>
