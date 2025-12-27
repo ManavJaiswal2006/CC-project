@@ -109,7 +109,7 @@ export default function RecentlyViewed({
                     alt={product.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 25vw"
-                    className="object-contain group-hover:scale-110 transition-transform"
+                    className="object-contain"
                   />
                 ) : (
                   <div className="text-gray-300 text-2xl font-bold">

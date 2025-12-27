@@ -273,14 +273,14 @@ export default function ShopPage() {
                 )}
 
                 {/* IMAGE */}
-                <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6 sm:p-8 overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6 sm:p-8 overflow-hidden" style={{ height: 'calc(var(--spacing) * 50)' }}>
                   {product.image ? (
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
-                      className={`object-contain transition-transform duration-500 ${product.inStock ? "group-hover:scale-110" : "opacity-40 grayscale"}`}
+                      className={`object-contain ${product.inStock ? "" : "opacity-40 grayscale"}`}
                       priority={false}
                     />
                   ) : (

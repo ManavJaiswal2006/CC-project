@@ -80,8 +80,8 @@ export default function ProductCard({
             alt={name}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
-            className={`object-contain transition-transform ${
-              inStock ? "group-hover:scale-110" : "opacity-40"
+            className={`object-contain ${
+              inStock ? "" : "opacity-40"
             }`}
             priority={false}
           />

@@ -239,7 +239,7 @@ export default function ProductPage() {
                     alt={`${product.name} - Image ${selectedImageIndex + 1}`}
                     width={600}
                     height={600}
-                    className="object-contain w-full h-full transition-transform duration-500 group-hover/image:scale-105"
+                    className="object-contain w-full h-full"
                     priority={selectedImageIndex === 0}
                   />
                   
