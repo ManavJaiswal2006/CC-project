@@ -326,6 +326,18 @@ export default function ProductPage() {
                 {hasSizes ? "Price (selected size)" : hasSubproducts ? "Price (selected subproduct)" : hasColors ? "Price (selected color)" : "Price"}
               </p>
 
+              {/* Show selected option name */}
+              {(selectedSize || selectedSubproduct || selectedColor) && (
+                <div className="mb-3 pb-3 border-b border-gray-200">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                    {hasSizes ? "Selected Size" : hasSubproducts ? "Selected Subproduct" : hasColors ? "Selected Color" : ""}
+                  </p>
+                  <p className="text-base font-bold text-gray-900">
+                    {selectedSize?.label || selectedSubproduct?.label || selectedColor?.label}
+                  </p>
+                </div>
+              )}
+
               <div className="flex items-baseline gap-4 mb-3">
                 {(() => {
                   const discount = useDistributorDiscount 
