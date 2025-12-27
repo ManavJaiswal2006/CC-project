@@ -72,8 +72,18 @@ export default function RecentlyViewed({
           if (!product) return null;
           const sizes = product.sizes ?? [];
           const hasSizes = sizes.length > 0;
+          const subproducts = product.subproducts ?? [];
+          const hasSubproducts = subproducts.length > 0;
+          const colors = product.colors ?? [];
+          const hasColors = colors.length > 0;
+          
+          // Base price = min of sizes, subproducts, colors, or single price
           const basePrice = hasSizes
             ? Math.min(...sizes.map((s) => s.price ?? 0))
+            : hasSubproducts
+            ? Math.min(...subproducts.map((sp) => sp.price ?? 0))
+            : hasColors
+            ? Math.min(...colors.map((c) => c.price ?? 0))
             : product.price ?? 0;
           
           // Get appropriate discount based on user role
@@ -82,7 +92,7 @@ export default function RecentlyViewed({
             : (product.customerDiscount ?? 0);
           
           const finalPrice =
-            discount > 0
+            discount > 0 && basePrice > 0
               ? Math.round(basePrice - (basePrice * discount) / 100)
               : basePrice;
 
