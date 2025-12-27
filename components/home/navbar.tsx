@@ -307,7 +307,7 @@ const Navbar = () => {
               <Link
                 href="/account"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block text-sm font-bold tracking-widest uppercase text-gray-700 hover:text-orange-600 py-2 ${
+                className={`block text-center text-sm font-bold tracking-widest uppercase text-gray-700 hover:text-orange-600 py-2 ${
                   pathname === "/account" ? "text-orange-600" : ""
                 }`}
               >
@@ -317,7 +317,7 @@ const Navbar = () => {
               <Link
                 href="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block text-sm font-bold tracking-widest uppercase text-gray-700 hover:text-orange-600 py-2 ${
+                className={`block text-center text-sm font-bold tracking-widest uppercase text-gray-700 hover:text-orange-600 py-2 ${
                   pathname === "/login" ? "text-orange-600" : ""
                 }`}
               >

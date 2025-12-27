@@ -403,7 +403,7 @@ export default function ProductPage() {
                   Select Size
                 </p>
 
-                <div className="flex flex-wrap gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {sizes.map((s) => {
                     const sizeBasePrice = s.price ?? 0;
                     const discount = useDistributorDiscount 
@@ -417,15 +417,17 @@ export default function ProductPage() {
                       <button
                         key={s.value}
                         onClick={() => setSelectedSize({ label: s.label, value: s.value, price: s.price })}
-                        className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
+                        className={`w-full px-4 py-3 border-2 text-sm font-bold transition-all duration-200 rounded-lg cursor-pointer min-h-[70px] flex flex-col items-center justify-center ${
                           selectedSize?.value === s.value
-                            ? "border-black bg-black text-white shadow-lg transform scale-105"
+                            ? "border-black bg-black text-white shadow-lg"
                             : "border-gray-300 hover:border-black hover:shadow-md bg-white"
                         }`}
                       >
-                        <div className="text-left">
-                          <div>{s.label}</div>
-                          <div className="text-xs font-normal mt-1">
+                        <div className="text-center">
+                          <div className="text-sm font-bold">{s.label}</div>
+                          <div className={`text-xs font-normal mt-1 ${
+                            selectedSize?.value === s.value ? "text-white/90" : "text-gray-600"
+                          }`}>
                             ₹{sizeFinalPrice}
                           </div>
                         </div>
@@ -443,7 +445,7 @@ export default function ProductPage() {
                   Select Subproduct
                 </p>
 
-                <div className="flex flex-wrap gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {subproducts.map((sp) => {
                     const subproductBasePrice = sp.price ?? 0;
                     const discount = useDistributorDiscount 
@@ -457,15 +459,17 @@ export default function ProductPage() {
                       <button
                         key={sp.value}
                         onClick={() => setSelectedSubproduct({ label: sp.label, value: sp.value, price: sp.price })}
-                        className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
+                        className={`w-full px-4 py-3 border-2 text-sm font-bold transition-all duration-200 rounded-lg cursor-pointer min-h-[70px] flex flex-col items-center justify-center ${
                           selectedSubproduct?.value === sp.value
-                            ? "border-black bg-black text-white shadow-lg transform scale-105"
+                            ? "border-black bg-black text-white shadow-lg"
                             : "border-gray-300 hover:border-black hover:shadow-md bg-white"
                         }`}
                       >
-                        <div className="text-left">
-                          <div>{sp.label}</div>
-                          <div className="text-xs font-normal mt-1">
+                        <div className="text-center">
+                          <div className="text-sm font-bold">{sp.label}</div>
+                          <div className={`text-xs font-normal mt-1 ${
+                            selectedSubproduct?.value === sp.value ? "text-white/90" : "text-gray-600"
+                          }`}>
                             ₹{subproductFinalPrice}
                           </div>
                         </div>
@@ -483,7 +487,7 @@ export default function ProductPage() {
                   Select Color
                 </p>
 
-                <div className="flex flex-wrap gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {colors.map((c) => {
                     const colorBasePrice = c.price ?? 0;
                     const discount = useDistributorDiscount 
@@ -497,15 +501,17 @@ export default function ProductPage() {
                       <button
                         key={c.value}
                         onClick={() => setSelectedColor({ label: c.label, value: c.value, price: c.price })}
-                        className={`px-6 py-3 border-2 text-sm font-bold transition-all duration-200 whitespace-nowrap rounded-lg cursor-pointer ${
+                        className={`w-full px-4 py-3 border-2 text-sm font-bold transition-all duration-200 rounded-lg cursor-pointer min-h-[70px] flex flex-col items-center justify-center ${
                           selectedColor?.value === c.value
-                            ? "border-black bg-black text-white shadow-lg transform scale-105"
+                            ? "border-black bg-black text-white shadow-lg"
                             : "border-gray-300 hover:border-black hover:shadow-md bg-white"
                         }`}
                       >
-                        <div className="text-left">
-                          <div>{c.label}</div>
-                          <div className="text-xs font-normal mt-1">
+                        <div className="text-center">
+                          <div className="text-sm font-bold">{c.label}</div>
+                          <div className={`text-xs font-normal mt-1 ${
+                            selectedColor?.value === c.value ? "text-white/90" : "text-gray-600"
+                          }`}>
                             ₹{colorFinalPrice}
                           </div>
                         </div>
