@@ -9,6 +9,8 @@ import { api } from "@/convex/_generated/api";
 import Dropdown from "@/components/UI/Dropdown";
 import { useAuth } from "@/app/context/AuthContext";
 import { useProfessionalMode } from "@/app/context/ProfessionalModeContext";
+import { useCart } from "@/app/context/CartContext";
+import { useRouter } from "next/navigation";
 
 export default function ShopPage() {
   /* ================= AUTH & ROLE ================= */
@@ -24,6 +26,10 @@ export default function ShopPage() {
   // Determine if user is a distributor and in professional mode
   const isDistributor = userData?.role === "distributor" || userData?.category === "distributor";
   const useDistributorDiscount = isDistributor && isProfessionalMode;
+
+  /* ================= CART ================= */
+  const { addToCart } = useCart();
+  const router = useRouter();
 
   /* ================= DATA ================= */
   const rawProducts = useQuery(api.product.getAllProducts);
@@ -84,6 +90,7 @@ export default function ShopPage() {
         name: p.name,
         category: p.category,
         image: allImages[0] || null, // First image for display
+        imageUrl: p.imageUrl || null, // Legacy image URL
         imageUrls: allImages, // All images
         inStock,
         stock,
@@ -93,9 +100,13 @@ export default function ShopPage() {
         discount,
 
         hasSizes,
+        hasSubproducts,
+        hasColors,
         sizesCount: sizes.length,
         quantity: p.quantity ?? 1, // Pack quantity
         subproducts: subproducts.map((sp) => sp.label), // For search
+        // Store full product data for cart
+        fullProduct: p,
       };
     });
   }, [rawProducts, useDistributorDiscount]);
@@ -335,7 +346,33 @@ export default function ShopPage() {
                       aria-label="Add to cart"
                       onClick={(e) => {
                         e.preventDefault();
-                        // Add to cart logic would go here
+                        e.stopPropagation(); // Prevent navigation to product page
+                        
+                        // If product has variants (sizes, subproducts, colors), navigate to product page
+                        if (product.hasSizes || product.hasSubproducts || product.hasColors) {
+                          router.push(`/shop/${product.id}`);
+                          return;
+                        }
+                        
+                        // For simple products without variants, add directly to cart
+                        if (product.inStock && product.basePrice !== null && product.finalPrice !== null) {
+                          addToCart(
+                            {
+                              id: product.id,
+                              name: product.name,
+                              image: product.image || product.imageUrl || "",
+                              category: product.category,
+                              size: null,
+                              subproduct: null,
+                              color: null,
+                              basePrice: product.basePrice,
+                              price: product.finalPrice,
+                              discount: product.discount,
+                              packQuantity: product.quantity > 1 ? product.quantity : undefined,
+                            },
+                            1
+                          );
+                        }
                       }}
                     >
                       <ShoppingBag size={20} />

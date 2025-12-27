@@ -218,7 +218,7 @@ export default function ProductPage() {
           <div className="space-y-4">
             {/* MAIN IMAGE */}
             <div 
-              className="relative bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl border-2 border-gray-200 rounded-lg overflow-hidden group/image aspect-square"
+              className="relative bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl border-2 border-gray-200 rounded-lg overflow-hidden group/image"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (imageUrls.length > 1) {

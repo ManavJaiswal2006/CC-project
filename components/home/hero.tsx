@@ -171,9 +171,9 @@ export default function RedesignedHero() {
               <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-[8vw] font-black uppercase tracking-tighter text-zinc-900 break-words">
                 {featureBanner.title}
               </h2>
-              <button className="px-6 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 bg-zinc-900 text-white font-bold uppercase tracking-[0.3em] text-[10px] hover:scale-105 hover:bg-orange-600 cursor-pointer transition-transform active:scale-95 whitespace-nowrap">
+              <Link href="/shop" className="px-6 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 bg-zinc-900 text-white font-bold uppercase tracking-[0.3em] text-[10px] hover:scale-105 hover:bg-orange-600 cursor-pointer transition-transform active:scale-95 whitespace-nowrap inline-block">
                 {featureBanner.buttonText}
-              </button>
+              </Link>
            </div>
         </section>
       </div>
