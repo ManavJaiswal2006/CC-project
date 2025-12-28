@@ -81,23 +81,26 @@ export const verifyOTP = mutation({
     const activeOTP = otps.find((o) => !o.verified && o.expiresAt > Date.now());
 
     if (!activeOTP) {
-      throw new Error("No valid OTP found. Please request a new one.");
+      throw new Error("This verification code has expired or is no longer valid. Please request a new code.");
     }
 
     // Check if OTP matches
     if (activeOTP.otp !== otp) {
+      const newAttempts = activeOTP.attempts + 1;
+      
       // Increment attempts
       await ctx.db.patch(activeOTP._id, {
-        attempts: activeOTP.attempts + 1,
+        attempts: newAttempts,
       });
 
       // If too many attempts, invalidate OTP
-      if (activeOTP.attempts + 1 >= 5) {
+      if (newAttempts >= 5) {
         await ctx.db.patch(activeOTP._id, { verified: true });
-        throw new Error("Too many failed attempts. Please request a new OTP.");
+        throw new Error("Too many incorrect attempts. This code has been disabled. Please request a new verification code.");
       }
 
-      throw new Error("Invalid OTP. Please try again.");
+      const remainingAttempts = 5 - newAttempts;
+      throw new Error(`The code you entered is incorrect. ${remainingAttempts} attempt${remainingAttempts !== 1 ? "s" : ""} remaining.`);
     }
 
     // Mark OTP as verified
