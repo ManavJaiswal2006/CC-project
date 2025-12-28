@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Loader2, Mail, AlertCircle } from "lucide-react";
+import { ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import AuthLayout from "@/components/auth/Authlayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthbutton";
+import OTPVerification from "@/components/auth/OTPVerification";
 import { auth } from "@/app/lib/firebase";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -18,9 +19,8 @@ function SignUpContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
   const [emailAlreadyRegistered, setEmailAlreadyRegistered] = useState(false);
   const router = useRouter();
   const updateUser = useMutation(api.user.updateUser);
@@ -28,7 +28,6 @@ function SignUpContent() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
     setEmailAlreadyRegistered(false);
     
     // Validation
@@ -57,6 +56,38 @@ function SignUpContent() {
     setLoading(true);
 
     try {
+      // Send OTP first
+      const res = await fetch("/api/otp/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase(),
+          purpose: "signup",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to send OTP. Please try again.");
+      }
+
+      // Show OTP verification screen
+      setShowOTP(true);
+    } catch (err: any) {
+      setError(err.message || "Could not send verification code. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPVerify = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      // Now create Firebase account (OTP already verified in component)
+      const phoneDigits = phone.replace(/\D/g, "");
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
@@ -74,33 +105,44 @@ function SignUpContent() {
         // Don't fail signup if Convex save fails, but log it
       }
       
-      // Send email verification with custom redirect URL
-      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
-      await sendEmailVerification(user, {
-        url: `${siteUrl}/verify-email`,
-        handleCodeInApp: false,
-      });
-      setVerificationSent(true);
-      setSuccess("Verification email sent! Please check your inbox and verify your email before logging in.");
+      // Redirect to shop
+      router.push("/shop");
     } catch (err: any) {
       if (err?.code === "auth/email-already-in-use" || (err instanceof Error && err.message.includes("email-already-in-use"))) {
-        // Email is already registered - guide user to login
         setEmailAlreadyRegistered(true);
         setError("This email is already registered. Please log in instead.");
+        setShowOTP(false);
       } else if (err?.code === "auth/invalid-email" || (err instanceof Error && err.message.includes("invalid-email"))) {
         setEmailAlreadyRegistered(false);
         setError("Invalid email address.");
+        setShowOTP(false);
       } else if (err?.code === "auth/weak-password" || (err instanceof Error && err.message.includes("weak-password"))) {
         setEmailAlreadyRegistered(false);
         setError("Password is too weak. Please choose a stronger password.");
+        setShowOTP(false);
       } else {
         setEmailAlreadyRegistered(false);
-        setError("Could not create account. Please try again.");
+        setError(err.message || "Could not create account. Please try again.");
+        setShowOTP(false);
       }
     } finally {
       setLoading(false);
     }
   };
+
+  // Show OTP verification screen
+  if (showOTP) {
+    return (
+      <AuthLayout title="Verify Your Email" subtitle="Enter the code sent to your email">
+        <OTPVerification
+          email={email}
+          purpose="signup"
+          onVerify={handleOTPVerify}
+          onCancel={() => setShowOTP(false)}
+        />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout title="Join the heritage." subtitle="Membership Registration">
@@ -194,17 +236,7 @@ function SignUpContent() {
             </div>
           </div>
         )}
-        {success && (
-          <div className="bg-green-50 border border-green-200 p-4 rounded">
-            <p className="text-green-700 text-[11px] font-bold tracking-wider uppercase mb-2">
-              Verification Email Sent!
-            </p>
-            <p className="text-green-600 text-xs font-light">
-              {success}
-            </p>
-          </div>
-        )}
-        {emailAlreadyRegistered && !verificationSent && (
+        {emailAlreadyRegistered && (
           <button 
             type="button"
             onClick={() => router.push("/login")}
@@ -213,54 +245,22 @@ function SignUpContent() {
             GO TO LOGIN <ShieldCheck size={14} />
           </button>
         )}
-        {verificationSent ? (
-          <div className="space-y-4">
-            <button 
-              type="button"
-              onClick={() => router.push("/login")}
-              className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all"
-            >
-              GO TO LOGIN <ShieldCheck size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                if (auth.currentUser) {
-                  try {
-                    const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
-                    await sendEmailVerification(auth.currentUser, {
-                      url: `${siteUrl}/verify-email`,
-                      handleCodeInApp: false,
-                    });
-                    setSuccess("Verification email sent again! Please check your inbox.");
-                  } catch (err) {
-                    setError("Could not resend verification email. Please try again later.");
-                  }
-                }
-              }}
-              className="w-full border border-slate-300 text-slate-700 py-3 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"
-            >
-              RESEND VERIFICATION EMAIL <Mail size={14} />
-            </button>
-          </div>
-        ) : (
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                CREATING ACCOUNT...
-              </>
-            ) : (
-              <>
-                CREATE ACCOUNT <ShieldCheck size={14} />
-              </>
-            )}
-          </button>
-        )}
+        <button 
+          type="submit"
+          disabled={loading || emailAlreadyRegistered}
+          className="w-full bg-red-700 text-white py-4 font-bold tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              SENDING CODE...
+            </>
+          ) : (
+            <>
+              SEND VERIFICATION CODE <ShieldCheck size={14} />
+            </>
+          )}
+        </button>
       </form>
 
       <div className="mt-8 pt-8 border-t border-slate-50 text-center">

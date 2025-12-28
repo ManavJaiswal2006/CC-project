@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Mail, AlertCircle } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import AuthLayout from "@/components/auth/Authlayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthbutton";
+import OTPVerification from "@/components/auth/OTPVerification";
 import { auth } from "@/app/lib/firebase";
 
 // 1. Create a sub-component for the logic
@@ -14,32 +15,38 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailNotVerified, setEmailNotVerified] = useState(false);
-  const [verificationResent, setVerificationResent] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setEmailNotVerified(false);
-    setVerificationResent(false);
     setLoading(true);
 
     try {
+      // First verify credentials by attempting to sign in
+      // We'll sign out immediately after to require OTP verification
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      // Check if email is verified
-      if (!user.emailVerified) {
-        setEmailNotVerified(true);
-        setError("Please verify your email address before logging in. Check your inbox for the verification email.");
-        // Sign out the user since email is not verified
-        await auth.signOut();
-        setLoading(false);
-        return;
+      await auth.signOut(); // Sign out immediately
+
+      // Send OTP
+      const res = await fetch("/api/otp/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase(),
+          purpose: "login",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to send OTP. Please try again.");
       }
-      
-      router.push("/shop");
+
+      // Show OTP verification screen
+      setShowOTP(true);
     } catch (err: any) {
       if (err?.code === "auth/user-not-found" || err?.code === "auth/wrong-password" || err?.code === "auth/invalid-credential") {
         setError("Invalid credentials. Please try again.");
@@ -48,12 +55,53 @@ function LoginContent() {
       } else if (err?.code === "auth/too-many-requests") {
         setError("Too many failed attempts. Please try again later.");
       } else {
-        setError("An error occurred. Please try again.");
+        setError(err.message || "An error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleOTPVerify = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      // Sign in with Firebase (OTP already verified in component)
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/shop");
+    } catch (err: any) {
+      if (err?.code === "auth/user-not-found" || err?.code === "auth/wrong-password" || err?.code === "auth/invalid-credential") {
+        setError("Invalid credentials. Please try again.");
+        setShowOTP(false);
+      } else if (err?.code === "auth/invalid-email") {
+        setError("Invalid email address.");
+        setShowOTP(false);
+      } else if (err?.code === "auth/too-many-requests") {
+        setError("Too many failed attempts. Please try again later.");
+        setShowOTP(false);
+      } else {
+        setError(err.message || "An error occurred. Please try again.");
+        setShowOTP(false);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show OTP verification screen
+  if (showOTP) {
+    return (
+      <AuthLayout title="Verify Your Email" subtitle="Enter the code sent to your email">
+        <OTPVerification
+          email={email}
+          purpose="login"
+          onVerify={handleOTPVerify}
+          onCancel={() => setShowOTP(false)}
+        />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout title="Welcome back." subtitle="Private Concierge Access">
@@ -94,46 +142,10 @@ function LoginContent() {
           <div className="bg-red-50 border border-red-200 p-4 rounded">
             <div className="flex items-start gap-2">
               <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-red-600 text-[10px] font-bold tracking-widest uppercase mb-1">
-                  {error}
-                </p>
-                {emailNotVerified && (
-                  <div className="mt-3 space-y-2">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          // Re-authenticate to get user and send verification
-                          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                          const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
-                          await sendEmailVerification(userCredential.user, {
-                            url: `${siteUrl}/verify-email`,
-                            handleCodeInApp: false,
-                          });
-                          await auth.signOut();
-                          setVerificationResent(true);
-                          setError("Verification email sent! Please check your inbox.");
-                        } catch (err) {
-                          setError("Could not resend verification email. Please try again.");
-                        }
-                      }}
-                      className="text-left text-red-700 text-[10px] font-bold tracking-wider uppercase hover:underline flex items-center gap-2"
-                    >
-                      <Mail size={12} />
-                      Resend Verification Email
-                    </button>
-                  </div>
-                )}
-              </div>
+              <p className="text-red-600 text-[10px] font-bold tracking-widest uppercase">
+                {error}
+              </p>
             </div>
-          </div>
-        )}
-        {verificationResent && (
-          <div className="bg-green-50 border border-green-200 p-3 rounded">
-            <p className="text-green-700 text-[10px] font-bold tracking-wider uppercase">
-              Verification email sent! Please check your inbox.
-            </p>
           </div>
         )}
         <button 
@@ -144,11 +156,11 @@ function LoginContent() {
           {loading ? (
             <>
               <Loader2 size={14} className="animate-spin" />
-              LOGGING IN...
+              SENDING CODE...
             </>
           ) : (
             <>
-              LOG IN <ArrowRight size={14} />
+              SEND VERIFICATION CODE <ArrowRight size={14} />
             </>
           )}
         </button>

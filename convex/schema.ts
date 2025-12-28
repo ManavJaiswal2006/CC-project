@@ -219,4 +219,17 @@ export default defineSchema({
     updatedAt: v.number(), // Timestamp
   })
     .index("by_userId", ["userId"]),
+
+  /* ================= OTP VERIFICATION ================= */
+  otps: defineTable({
+    email: v.string(),
+    otp: v.string(), // 6-digit OTP
+    purpose: v.union(v.literal("signup"), v.literal("login")), // Purpose of OTP
+    expiresAt: v.number(), // Timestamp when OTP expires (10 minutes)
+    verified: v.boolean(), // Whether OTP has been verified
+    attempts: v.number(), // Number of verification attempts
+    createdAt: v.number(), // Timestamp when OTP was created
+  })
+    .index("by_email", ["email"])
+    .index("by_email_purpose", ["email", "purpose"]),
 });
