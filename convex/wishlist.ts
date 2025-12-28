@@ -17,15 +17,36 @@ export const getWishlist = query({
         const product = await ctx.db.get(item.productId);
         if (!product) return null;
 
-        const imageUrl = product.storageId
-          ? await ctx.storage.getUrl(product.storageId)
-          : null;
+        // Get image URLs - support both new imageUrls array and legacy storageId/storageIds
+        let imageUrl: string | null = null;
+        let imageUrls: string[] = [];
+
+        // Check for new imageUrls array (if stored directly)
+        if ((product as any).imageUrls && Array.isArray((product as any).imageUrls)) {
+          imageUrls = (product as any).imageUrls.filter((url: any): url is string => typeof url === "string");
+          imageUrl = imageUrls[0] || null;
+        } else if (product.storageIds && product.storageIds.length > 0) {
+          // Multiple images from storageIds
+          const urls = await Promise.all(
+            product.storageIds.map((id) => ctx.storage.getUrl(id))
+          );
+          imageUrls = urls.filter((url): url is string => url !== null);
+          imageUrl = imageUrls[0] || null;
+        } else if (product.storageId) {
+          // Single image from storageId
+          const url = await ctx.storage.getUrl(product.storageId);
+          if (url) {
+            imageUrl = url;
+            imageUrls = [url];
+          }
+        }
 
         return {
           ...item,
           product: {
             ...product,
             imageUrl,
+            imageUrls,
           },
         };
       })

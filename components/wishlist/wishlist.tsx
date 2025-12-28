@@ -51,27 +51,44 @@ export default function WishlistPage() {
     const product = item.product;
     if (!product) return;
 
+    // Calculate base price from sizes, subproducts, colors, or single price
     const sizes = product.sizes ?? [];
+    const subproducts = product.subproducts ?? [];
+    const colors = product.colors ?? [];
+    
     const hasSizes = sizes.length > 0;
-    const basePrice = hasSizes
-      ? Math.min(...sizes.map((s: any) => s.price ?? 0))
-      : product.price ?? 0;
+    const hasSubproducts = subproducts.length > 0;
+    const hasColors = colors.length > 0;
+    
+    let basePrice = 0;
+    if (hasSizes) {
+      basePrice = Math.min(...sizes.map((s: any) => s.price ?? 0));
+    } else if (hasSubproducts) {
+      basePrice = Math.min(...subproducts.map((sp: any) => sp.price ?? 0));
+    } else if (hasColors) {
+      basePrice = Math.min(...colors.map((c: any) => c.price ?? 0));
+    } else {
+      basePrice = product.price ?? 0;
+    }
     
     // Get appropriate discount based on user role
     const discount = useDistributorDiscount 
       ? (product.distributorDiscount ?? 0)
       : (product.customerDiscount ?? 0);
     
-    const finalPrice =
-      discount > 0
-        ? Math.round(basePrice - (basePrice * discount) / 100)
-        : basePrice;
+    const finalPrice = discount > 0 && basePrice > 0
+      ? Math.round(basePrice - (basePrice * discount) / 100)
+      : basePrice;
+
+    // Get image URL
+    const imageUrls = (product as any).imageUrls || [];
+    const imageUrl = imageUrls[0] || product.imageUrl || "";
 
     addToCart(
       {
         id: product._id,
         name: product.name,
-        image: product.imageUrl ?? "",
+        image: imageUrl,
         category: product.category,
         size: null,
         basePrice,
@@ -151,20 +168,34 @@ export default function WishlistPage() {
               const product = item.product;
               if (!product) return null;
 
+              // Calculate base price from sizes, subproducts, colors, or single price
               const sizes = product.sizes ?? [];
+              const subproducts = product.subproducts ?? [];
+              const colors = product.colors ?? [];
+              
               const hasSizes = sizes.length > 0;
-              const basePrice = hasSizes
-                ? Math.min(...sizes.map((s: any) => s.price ?? 0))
-                : product.price ?? 0;
-              const finalPrice =
-                (() => {
-                  const discount = useDistributorDiscount 
-                    ? (product.distributorDiscount ?? 0)
-                    : (product.customerDiscount ?? 0);
-                  return discount > 0
-                    ? Math.round(basePrice - (basePrice * discount) / 100)
-                    : basePrice;
-                })();
+              const hasSubproducts = subproducts.length > 0;
+              const hasColors = colors.length > 0;
+              
+              let basePrice = 0;
+              if (hasSizes) {
+                basePrice = Math.min(...sizes.map((s: any) => s.price ?? 0));
+              } else if (hasSubproducts) {
+                basePrice = Math.min(...subproducts.map((sp: any) => sp.price ?? 0));
+              } else if (hasColors) {
+                basePrice = Math.min(...colors.map((c: any) => c.price ?? 0));
+              } else {
+                basePrice = product.price ?? 0;
+              }
+              
+              // Calculate final price with discount
+              const discount = useDistributorDiscount 
+                ? (product.distributorDiscount ?? 0)
+                : (product.customerDiscount ?? 0);
+              
+              const finalPrice = discount > 0 && basePrice > 0
+                ? Math.round(basePrice - (basePrice * discount) / 100)
+                : basePrice;
 
               return (
                 <div
@@ -173,19 +204,25 @@ export default function WishlistPage() {
                 >
                   <Link href={`/shop/${product._id}`}>
                     <div className="relative h-64 bg-gray-50 flex items-center justify-center overflow-hidden">
-                      {product.imageUrl ? (
-                        <Image
-                          src={product.imageUrl}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                          className="object-contain group-hover:scale-110 transition-transform"
-                        />
-                      ) : (
-                        <div className="text-gray-300 text-4xl font-bold">
-                          {product.name.charAt(0)}
-                        </div>
-                      )}
+                      {(() => {
+                        // Get first image from imageUrls array or fallback to imageUrl
+                        const imageUrls = (product as any).imageUrls || [];
+                        const displayImage = imageUrls[0] || product.imageUrl;
+                        
+                        return displayImage ? (
+                          <Image
+                            src={displayImage}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-contain group-hover:scale-110 transition-transform"
+                          />
+                        ) : (
+                          <div className="text-gray-300 text-4xl font-bold">
+                            {product.name.charAt(0)}
+                          </div>
+                        );
+                      })()}
                       {(() => {
                         const discount = useDistributorDiscount 
                           ? (product.distributorDiscount ?? 0)
