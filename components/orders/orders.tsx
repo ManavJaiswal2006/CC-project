@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { Package, Calendar, IndianRupee, Search, Filter } from "lucide-react";
 import { useState, useMemo } from "react";
+import Dropdown from "@/components/UI/Dropdown";
 
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
@@ -138,20 +139,20 @@ export default function OrdersPage() {
           </div>
 
           {/* STATUS FILTER */}
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            <select
+          <div className="flex items-center gap-2">
+            <Filter className="text-gray-400 shrink-0" size={18} />
+            <Dropdown
+              options={[
+                { value: "all", label: "All Status" },
+                ...uniqueStatuses.map((status) => ({
+                  value: status,
+                  label: status,
+                })),
+              ]}
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 pr-8 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent appearance-none bg-white shadow-sm hover:shadow-md transition-all cursor-pointer min-w-[180px]"
-            >
-              <option value="all">All Status</option>
-              {uniqueStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+              onChange={setStatusFilter}
+              className="min-w-[180px]"
+            />
           </div>
         </div>
 

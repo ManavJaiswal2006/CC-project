@@ -8,6 +8,7 @@ import { Loader2, ArrowRight, CreditCard, Wallet, MapPin, Tag, X, Check, Shoppin
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { loadRazorpayScript, openRazorpay, type RazorpayResponse } from "@/lib/razorpay";
+import Dropdown from "@/components/UI/Dropdown";
 
 const COD_HANDLING_FEE = 40;
 
@@ -356,30 +357,31 @@ export default function CheckoutPage() {
               
               {userData?.addresses && userData.addresses.length > 0 && (
                 <div className="mb-3">
-                  <select
+                  <Dropdown
+                    options={[
+                      { value: "", label: "Select a saved address or enter manually" },
+                      ...userData.addresses.map((addr) => {
+                        const label = addr.label === "Other" && addr.customLabel
+                          ? addr.customLabel
+                          : addr.label;
+                        return {
+                          value: addr.id,
+                          label: `${label} - ${addr.street}, ${addr.city}`,
+                        };
+                      }),
+                    ]}
                     value={selectedAddressId}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        handleAddressSelect(e.target.value);
+                    onChange={(value) => {
+                      if (value) {
+                        handleAddressSelect(value);
                       } else {
                         setSelectedAddressId("");
                         setAddress("");
                       }
                     }}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white hover:bg-gray-50 transition-all shadow-sm hover:shadow-md cursor-pointer"
-                  >
-                    <option value="">Select a saved address or enter manually</option>
-                    {userData.addresses.map((addr) => {
-                      const label = addr.label === "Other" && addr.customLabel
-                        ? addr.customLabel
-                        : addr.label;
-                      return (
-                        <option key={addr.id} value={addr.id}>
-                          {label} - {addr.street}, {addr.city}
-                        </option>
-                      );
-                    })}
-                  </select>
+                    placeholder="Select a saved address or enter manually"
+                    className="mb-3"
+                  />
                 </div>
               )}
 

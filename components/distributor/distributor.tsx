@@ -131,9 +131,14 @@ export default function DistributorPage() {
             <div className="bg-white p-8 border border-slate-100 shadow-sm">
               <Phone className="text-red-600 mb-3" size={24} />
               <h3 className="italic text-lg mb-2 font-semibold">Call Us</h3>
-              <a href="tel:8800830465" className="font-bold text-lg text-slate-900 hover:text-red-600 transition-colors">
-                +91 88008 30465 & +91 88008 30467
-              </a>
+              <div className="flex flex-col gap-2">
+                <a href="tel:+918800830465" className="font-bold text-lg text-slate-900 hover:text-red-600 transition-colors">
+                  +91 88008 30465
+                </a>
+                <a href="tel:+918800830467" className="font-bold text-lg text-slate-900 hover:text-red-600 transition-colors">
+                  +91 88008 30467
+                </a>
+              </div>
             </div>
             
             <div className="bg-white p-8 border border-slate-100 shadow-sm">
@@ -165,7 +170,7 @@ export default function DistributorPage() {
               <input 
                 name="name" 
                 required 
-                placeholder="Full Name *" 
+                placeholder="Your Name *" 
                 defaultValue={user.displayName || ""}
                 className="bg-transparent border-b border-slate-300 py-3 focus:border-red-600 outline-none transition-all font-light" 
               />
@@ -173,7 +178,7 @@ export default function DistributorPage() {
                 name="email" 
                 required 
                 type="email" 
-                placeholder="Email Address *" 
+                placeholder="Your Email *" 
                 defaultValue={user.email || ""}
                 readOnly
                 className="bg-slate-50 border-b border-slate-300 py-3 focus:border-red-600 outline-none transition-all font-light cursor-not-allowed" 

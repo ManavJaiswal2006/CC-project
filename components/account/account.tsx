@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/app/context/AuthContext";
+import Dropdown from "@/components/UI/Dropdown";
 
 /* ================= TYPES ================= */
 
@@ -413,17 +414,19 @@ export default function AccountPage() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pr-10 sm:pr-12">
-                    <select
-                      value={addr.label}
-                      onChange={(e) =>
-                        updateAddress(addr.id, "label", e.target.value)
-                      }
-                      className="flex-1 border-2 border-gray-200 rounded-lg px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white hover:bg-gray-50 transition-all shadow-sm hover:shadow-md cursor-pointer"
-                    >
-                      <option>Home</option>
-                      <option>Work</option>
-                      <option>Other</option>
-                    </select>
+                    <div className="flex-1">
+                      <Dropdown
+                        options={[
+                          { value: "Home", label: "Home" },
+                          { value: "Work", label: "Work" },
+                          { value: "Other", label: "Other" },
+                        ]}
+                        value={addr.label}
+                        onChange={(value) =>
+                          updateAddress(addr.id, "label", value as "Home" | "Work" | "Other")
+                        }
+                      />
+                    </div>
 
                     {addr.label === "Other" && (
                       <input
