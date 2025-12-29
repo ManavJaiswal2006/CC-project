@@ -6,6 +6,7 @@ import { fetchMutation } from "convex/nextjs";
 import { logger } from "@/lib/logger";
 import { sendPasswordResetEmail } from "@/lib/emailNotifications";
 import { getAdminAuth } from "@/lib/firebaseAdmin";
+import { isEmailConfigured } from "@/lib/emailConfig";
 
 export async function POST(req: Request) {
   // Rate limiting - 3 requests per 15 minutes per IP
@@ -36,7 +37,8 @@ export async function POST(req: Request) {
     }
 
     // Check if user exists in Firebase (if Admin SDK is available)
-    let userExists = true; // Default to true to prevent email enumeration
+    // But always send email to prevent information leakage and improve UX
+    let userExists = true; // Default to true
     const adminAuth = getAdminAuth();
     if (adminAuth) {
       try {
@@ -45,13 +47,20 @@ export async function POST(req: Request) {
       } catch (error: any) {
         if (error.code === "auth/user-not-found") {
           userExists = false;
+          // Still send email to prevent email enumeration
+          // The token will just be invalid if user doesn't exist
+        } else {
+          // For other errors, assume user exists
+          logger.error("Error checking user existence", error, {
+            email: email.toLowerCase(),
+          });
         }
-        // For other errors, assume user exists to prevent information leakage
       }
     }
 
-    // Only generate token and send email if user exists (or if we can't verify)
-    if (userExists) {
+    // Always generate token and attempt to send email
+    // This prevents email enumeration and improves UX
+    try {
       // Generate password reset token via Convex
       const passwordResetApi = api as any;
       const result: { tokenId: string; token: string } = await fetchMutation(
@@ -64,11 +73,31 @@ export async function POST(req: Request) {
       // Send password reset email with the token
       try {
         await sendPasswordResetEmail(email, result.token);
-      } catch (emailError) {
-        logger.error("Failed to send password reset email", emailError as Error, {
+        logger.info("Password reset email sent successfully", {
           email: email.toLowerCase(),
         });
+      } catch (emailError: any) {
+        // Log detailed error information
+        logger.error("Failed to send password reset email", emailError as Error, {
+          email: email.toLowerCase(),
+          errorCode: emailError.code,
+          errorMessage: emailError.message,
+          errorStack: emailError.stack,
+          emailConfigured: isEmailConfigured("security"),
+        });
+        
+        // If email is not configured, this is a critical error
+        // But we still return success to prevent email enumeration
+        if (emailError.message?.includes("not configured")) {
+          console.error("CRITICAL: Email service not configured. Set EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS in environment variables.");
+        }
+        // Don't throw - we still want to return success to prevent enumeration
       }
+    } catch (tokenError: any) {
+      logger.error("Failed to generate password reset token", tokenError as Error, {
+        email: email.toLowerCase(),
+      });
+      // Still return success to prevent email enumeration
     }
 
     // Always return success to prevent email enumeration

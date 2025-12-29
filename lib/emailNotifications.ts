@@ -321,8 +321,14 @@ export async function sendPasswordResetEmail(
   email: string,
   token: string
 ) {
-  if (!isEmailConfigured("security") || !email) {
-    return;
+  if (!email) {
+    throw new Error("Email address is required");
+  }
+
+  if (!isEmailConfigured("security")) {
+    const errorMsg = "Email service is not configured. Please set EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS environment variables.";
+    console.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   const transporter = nodemailer.createTransport(getEmailTransporterConfig("security"));
