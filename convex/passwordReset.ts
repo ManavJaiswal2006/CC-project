@@ -31,19 +31,32 @@ export const createPasswordResetToken = mutation({
       throw new Error("Invalid email format");
     }
 
-    // Generate token
-    const token = generateResetToken();
-    const now = Date.now();
-    const expiresAt = now + 60 * 60 * 1000; // 1 hour
-
-    // Invalidate any existing unused tokens for this email
-    const existingTokens = await ctx.db
+    // Check for recent token creation (prevent duplicate emails within 2 minutes)
+    const recentTokens = await ctx.db
       .query("passwordResetTokens")
       .withIndex("by_email", (q) => q.eq("email", email.toLowerCase()))
       .collect();
 
-    for (const existingToken of existingTokens) {
-      if (!existingToken.used) {
+    const now = Date.now();
+    const twoMinutesAgo = now - 2 * 60 * 1000; // 2 minutes ago
+    
+    // Check if there's a recent unused token (created within last 2 minutes)
+    const recentUnusedToken = recentTokens.find(
+      (t) => !t.used && t.createdAt > twoMinutesAgo
+    );
+
+    if (recentUnusedToken) {
+      // Return existing token instead of creating a new one
+      return { tokenId: recentUnusedToken._id, token: recentUnusedToken.token };
+    }
+
+    // Generate token
+    const token = generateResetToken();
+    const expiresAt = now + 60 * 60 * 1000; // 1 hour
+
+    // Invalidate any existing unused tokens for this email (older than 2 minutes)
+    for (const existingToken of recentTokens) {
+      if (!existingToken.used && existingToken.createdAt <= twoMinutesAgo) {
         await ctx.db.patch(existingToken._id, { used: true }); // Mark as used
       }
     }
@@ -63,7 +76,7 @@ export const createPasswordResetToken = mutation({
 
 /**
  * VERIFY PASSWORD RESET TOKEN
- * Verifies a password reset token and marks it as used
+ * Verifies a password reset token (does NOT mark as used - that happens after password is updated)
  */
 export const verifyPasswordResetToken = mutation({
   args: {
@@ -89,17 +102,31 @@ export const verifyPasswordResetToken = mutation({
 
     // Check if token has expired
     if (resetToken.expiresAt < Date.now()) {
-      await ctx.db.patch(resetToken._id, { used: true }); // Mark as used
+      await ctx.db.patch(resetToken._id, { used: true }); // Mark expired tokens as used
       throw new Error("This reset link has expired. Please request a new one.");
     }
 
-    // Mark token as used
-    await ctx.db.patch(resetToken._id, { used: true });
-
+    // DON'T mark as used here - only mark after password is successfully updated
+    // Return token info for verification
     return {
       email: resetToken.email,
       success: true,
+      tokenId: resetToken._id,
     };
+  },
+});
+
+/**
+ * MARK TOKEN AS USED
+ * Marks a password reset token as used after successful password update
+ */
+export const markTokenAsUsed = mutation({
+  args: {
+    tokenId: v.id("passwordResetTokens"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.tokenId, { used: true });
+    return { success: true };
   },
 });
 

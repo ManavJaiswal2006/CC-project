@@ -10,13 +10,21 @@ function ForgotPasswordContent() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent duplicate submissions
+    if (loading || submitted) {
+      return;
+    }
+    
     setError("");
     setSuccess(false);
     setLoading(true);
+    setSubmitted(true);
 
     try {
       const res = await fetch("/api/password-reset/request", {
@@ -34,6 +42,7 @@ function ForgotPasswordContent() {
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "An error occurred. Please try again.");
+      setSubmitted(false); // Allow retry on error
     } finally {
       setLoading(false);
     }

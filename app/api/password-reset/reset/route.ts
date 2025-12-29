@@ -40,16 +40,16 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify token via Convex
+    // Verify token via Convex (does NOT mark as used yet)
     const passwordResetApi = api as any;
-    const verifyResult: { email: string; success: boolean } = await fetchMutation(
+    const verifyResult: { email: string; success: boolean; tokenId: string } = await fetchMutation(
       passwordResetApi.passwordReset.verifyPasswordResetToken,
       {
         token,
       }
     );
 
-    if (!verifyResult.success || !verifyResult.email) {
+    if (!verifyResult.success || !verifyResult.email || !verifyResult.tokenId) {
       return NextResponse.json(
         { success: false, message: "Invalid or expired reset token" },
         { status: 400 }
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     }
 
     const email = verifyResult.email;
+    const tokenId = verifyResult.tokenId;
 
     // Update password using Firebase Admin SDK
     const adminAuth = getAdminAuth();
@@ -76,6 +77,19 @@ export async function POST(req: Request) {
       await adminAuth.updateUser(userRecord.uid, {
         password: newPassword,
       });
+
+      // Only mark token as used AFTER successful password update
+      try {
+        await fetchMutation(passwordResetApi.passwordReset.markTokenAsUsed, {
+          tokenId,
+        });
+      } catch (markError) {
+        // Log but don't fail - password is already updated
+        logger.error("Failed to mark token as used", markError as Error, {
+          tokenId,
+          email: email.toLowerCase(),
+        });
+      }
 
       return NextResponse.json({
         success: true,
