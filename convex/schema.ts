@@ -232,4 +232,15 @@ export default defineSchema({
   })
     .index("by_email", ["email"])
     .index("by_email_purpose", ["email", "purpose"]),
+
+  /* ================= PASSWORD RESET TOKENS ================= */
+  passwordResetTokens: defineTable({
+    email: v.string(),
+    token: v.string(), // Secure random token
+    expiresAt: v.number(), // Timestamp when token expires (1 hour)
+    used: v.boolean(), // Whether token has been used
+    createdAt: v.number(), // Timestamp when token was created
+  })
+    .index("by_email", ["email"])
+    .index("by_token", ["token"]),
 });

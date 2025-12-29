@@ -1,7 +1,43 @@
 import nodemailer from "nodemailer";
 import { escapeHtml } from "./validation";
 import { generateBillHTML } from "./billTemplate";
-import { getEmailFromField, getEmailTransporterConfig, isEmailConfigured } from "./emailConfig";
+import { getEmailFromField, getEmailTransporterConfig, isEmailConfigured, getReplyToEmail } from "./emailConfig";
+
+/**
+ * Get standard email headers to improve deliverability and prevent spam
+ */
+function getEmailHeaders(): Record<string, string> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+  const messageId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}@bourgon.in`;
+  return {
+    "Message-ID": `<${messageId}>`,
+    "X-Mailer": "Bourgon Industries Email System",
+    "X-Priority": "3",
+    "Importance": "normal",
+    "List-Unsubscribe": `<${siteUrl}/unsubscribe>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    "X-Auto-Response-Suppress": "All",
+    "X-Entity-Ref-ID": `bourgon-${Date.now()}`,
+    "X-Company": "Bourgon Industries Pvt. Ltd.",
+    "X-Contact": "+91 88008 30465",
+  };
+}
+
+/**
+ * Get logo HTML (text-based to avoid external image loading issues)
+ */
+function getLogoHTML(): string {
+  return `
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 42px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0; line-height: 1;">
+        BOURGON
+      </h1>
+      <p style="color: #a1a1a1; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-top: 10px;">
+        Industries
+      </p>
+    </div>
+  `;
+}
 
 interface OrderData {
   orderId: string;
@@ -55,10 +91,12 @@ export async function sendOrderStatusEmail(
 
   const subject = `Order ${orderData.orderId} - ${orderData.status} | Bourgon Industries`;
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+
   // Use provided tracking URL or generate default one
   const trackingUrl = orderData.trackingUrl || 
     (orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" && orderData.trackingNumber !== "Processing"
-      ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/track-order`
+      ? `${siteUrl}/track-order`
       : "#");
 
   const html = `
@@ -89,7 +127,7 @@ export async function sendOrderStatusEmail(
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+          ${getLogoHTML()}
         </td>
       </tr>
 
@@ -147,11 +185,34 @@ export async function sendOrderStatusEmail(
 </html>
   `.trim();
 
+  // Generate plain text version
+  const text = `Order ${orderData.orderId} - ${orderData.status} | Bourgon Industries
+
+Dear ${escapeHtml(orderData.customerName)},
+
+${statusMessage}
+
+Order Reference: #${escapeHtml(orderData.orderId)}
+Amount Processed: ₹${orderData.total.toFixed(2)}
+
+${orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" && orderData.trackingNumber !== "Processing" 
+  ? `Tracking Number: ${escapeHtml(orderData.trackingNumber)}\nTrack your order: ${escapeHtml(trackingUrl)}\n` 
+  : ""}View your order: ${siteUrl}/orders/${escapeHtml(orderData.orderId)}
+
+Questions? Contact us at +91 88008 30465 & +91 88008 30467
+
+© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
+
   await transporter.sendMail({
     from: getEmailFromField("orders"),
     to: orderData.customerEmail,
+    replyTo: getReplyToEmail("orders"),
     subject,
     html,
+    text,
+    headers: getEmailHeaders(),
+    priority: "normal",
+    date: new Date(),
   });
 }
 
@@ -184,7 +245,9 @@ export async function sendOTPEmail(
           
           <tr>
             <td style="background-color: #000000; padding: 40px; text-align: center;">
-              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 15px auto; display: block;" />
+              <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 36px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0 0 10px 0; line-height: 1;">
+                BOURGON
+              </h1>
               <p style="color: #a1a1a1; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;">
                 Secure Access Portal
               </p>
@@ -229,11 +292,140 @@ export async function sendOTPEmail(
 </html>
 `.trim();
 
+  // Generate plain text version
+  const text = `Security Verification Code | Bourgon Industries
+
+Your unique verification code for ${purpose === "signup" ? "creating an account" : purpose === "login" ? "accessing your profile" : "resetting your password"} is:
+
+${otp}
+
+This identification code is valid for 10 minutes.
+For your security, do not share this token with anyone.
+
+© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
+
   await transporter.sendMail({
     from: getEmailFromField("security"),
     to: email,
+    replyTo: getReplyToEmail("security"),
     subject,
     html,
+    text,
+    headers: getEmailHeaders(),
+    priority: "normal",
+    date: new Date(),
+  });
+}
+
+export async function sendPasswordResetEmail(
+  email: string,
+  token: string
+) {
+  if (!isEmailConfigured("security") || !email) {
+    return;
+  }
+
+  const transporter = nodemailer.createTransport(getEmailTransporterConfig("security"));
+
+  // Use NEXT_PUBLIC_SITE_URL if set, otherwise default to production
+  // For local development, you should set NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+  const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
+
+  const subject = `Password Reset Request | Bourgon Industries`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@300;400;600&display=swap');
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #fcfcfc; font-family: 'Inter', sans-serif;">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color: #fcfcfc; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width: 500px; background-color: #ffffff; border: 1px solid #eeeeee; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+          
+          <tr>
+            <td style="background-color: #000000; padding: 40px; text-align: center;">
+              <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 36px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0 0 10px 0; line-height: 1;">
+                BOURGON
+              </h1>
+              <p style="color: #a1a1a1; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;">
+                Password Recovery
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 50px 40px; text-align: center;">
+              <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: #111111; margin-bottom: 20px; font-style: italic;">
+                Reset Your Password
+              </h2>
+              <p style="font-size: 14px; color: #555555; line-height: 1.6; margin-bottom: 40px;">
+                We received a request to reset your password. Click the button below to create a new password.
+              </p>
+
+              <div style="margin-bottom: 30px;">
+                <a href="${escapeHtml(resetUrl)}" style="display: inline-block; padding: 18px 40px; background-color: #b91c1c; color: #ffffff !important; text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease;">
+                  Reset Password
+                </a>
+              </div>
+
+              <p style="font-size: 11px; color: #999999; line-height: 1.8; margin-bottom: 20px;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${escapeHtml(resetUrl)}" style="color: #b91c1c; word-break: break-all;">${escapeHtml(resetUrl)}</a>
+              </p>
+
+              <p style="font-size: 11px; color: #999999; line-height: 1.8;">
+                This link will expire in <strong>1 hour</strong>.<br>
+                If you didn't request this, please ignore this email.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 30px; background-color: #ffffff; border-top: 1px solid #f9f9f9; text-align: center;">
+              <p style="font-size: 10px; color: #cccccc; letter-spacing: 1px; text-transform: uppercase;">
+                © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`.trim();
+
+  // Generate plain text version
+  const text = `Password Reset Request - Bourgon Industries
+
+We received a request to reset your password.
+
+Reset your password by clicking this link:
+${resetUrl}
+
+This link will expire in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
+
+  await transporter.sendMail({
+    from: getEmailFromField("security"),
+    to: email,
+    replyTo: getReplyToEmail("security"),
+    subject,
+    html,
+    text,
+    headers: getEmailHeaders(),
+    priority: "normal",
+    date: new Date(),
   });
 }
 

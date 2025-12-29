@@ -12,6 +12,7 @@ import type * as distributor from "../distributor.js";
 import type * as distributorApplications from "../distributorApplications.js";
 import type * as order from "../order.js";
 import type * as otp from "../otp.js";
+import type * as passwordReset from "../passwordReset.js";
 import type * as product from "../product.js";
 import type * as promo from "../promo.js";
 import type * as refund from "../refund.js";
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   distributorApplications: typeof distributorApplications;
   order: typeof order;
   otp: typeof otp;
+  passwordReset: typeof passwordReset;
   product: typeof product;
   promo: typeof promo;
   refund: typeof refund;

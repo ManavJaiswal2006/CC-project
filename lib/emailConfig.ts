@@ -110,6 +110,25 @@ export function getEmailTransporterConfig(type: EmailType) {
       user: email,
       pass: pass,
     },
+    // Improve deliverability
+    pool: true, // Use connection pooling
+    maxConnections: 1,
+    maxMessages: 3,
+    rateDelta: 1000, // 1 second
+    rateLimit: 5, // 5 messages per rateDelta
+    // Additional security settings
+    secure: true,
+    tls: {
+      rejectUnauthorized: false, // For Gmail SMTP
+    },
   };
+}
+
+/**
+ * Get reply-to email address for a specific type
+ */
+export function getReplyToEmail(type: EmailType): string {
+  // Use contact email for replies, or fallback to the sending email
+  return getEmailFrom("contact") || getEmailFrom(type) || "";
 }
 
