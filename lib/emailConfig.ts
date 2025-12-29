@@ -104,6 +104,10 @@ export function getEmailTransporterConfig(type: EmailType) {
   const email = getEmailFrom(type);
   const pass = getEmailPass(type);
   
+  if (!email || !pass) {
+    throw new Error(`Email credentials not configured for type: ${type}`);
+  }
+  
   return {
     service: "gmail" as const,
     auth: {

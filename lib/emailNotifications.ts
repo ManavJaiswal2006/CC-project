@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { escapeHtml } from "./validation";
 import { generateBillHTML } from "./billTemplate";
-import { getEmailFromField, getEmailTransporterConfig, isEmailConfigured, getReplyToEmail } from "./emailConfig";
+import { getEmailFromField, getEmailTransporterConfig, isEmailConfigured, getReplyToEmail, getEmailFrom } from "./emailConfig";
 
 /**
  * Get standard email headers to improve deliverability and prevent spam
@@ -225,7 +225,9 @@ export async function sendOTPEmail(
     return;
   }
 
-  const transporter = nodemailer.createTransport(getEmailTransporterConfig("security"));
+  const emailConfig = getEmailTransporterConfig("security");
+  const fromEmail = getEmailFrom("security");
+  const transporter = nodemailer.createTransport(emailConfig);
 
   const subject = `Security Verification Code | Bourgon Industries`;
 
@@ -304,17 +306,43 @@ For your security, do not share this token with anyone.
 
 © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
 
-  await transporter.sendMail({
-    from: getEmailFromField("security"),
-    to: email,
-    replyTo: getReplyToEmail("security"),
-    subject,
-    html,
-    text,
-    headers: getEmailHeaders(),
-    priority: "normal",
-    date: new Date(),
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: getEmailFromField("security"),
+      to: email,
+      replyTo: getReplyToEmail("security"),
+      subject,
+      html,
+      text,
+      headers: getEmailHeaders(),
+      priority: "normal",
+      date: new Date(),
+    });
+
+    console.log("✅ Password reset email sent successfully!");
+    console.log("📧 Message ID:", info.messageId);
+    console.log("📧 To:", email);
+    console.log("📧 From:", fromEmail);
+    
+    return info;
+  } catch (sendError: any) {
+    console.error("❌ Error sending password reset email:", sendError.message);
+    console.error("❌ Error code:", sendError.code);
+    if (sendError.response) {
+      console.error("❌ Error response:", sendError.response);
+    }
+    
+    // Provide more helpful error messages
+    if (sendError.code === "EAUTH") {
+      throw new Error("Email authentication failed. Please check your EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS. Make sure you're using a Gmail App Password, not your regular password.");
+    } else if (sendError.code === "ECONNECTION") {
+      throw new Error("Failed to connect to email server. Please check your internet connection and email configuration.");
+    } else if (sendError.code === "EENVELOPE") {
+      throw new Error(`Invalid email address: ${email}. Please check the email format.`);
+    } else {
+      throw new Error(`Failed to send email: ${sendError.message || "Unknown error"}`);
+    }
+  }
 }
 
 export async function sendPasswordResetEmail(
@@ -327,11 +355,33 @@ export async function sendPasswordResetEmail(
 
   if (!isEmailConfigured("security")) {
     const errorMsg = "Email service is not configured. Please set EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS environment variables.";
-    console.error(errorMsg);
+    console.error("❌ Email configuration error:", errorMsg);
     throw new Error(errorMsg);
   }
 
-  const transporter = nodemailer.createTransport(getEmailTransporterConfig("security"));
+  const emailConfig = getEmailTransporterConfig("security");
+  const fromEmail = getEmailFrom("security");
+  
+  // Verify configuration before creating transporter
+  if (!emailConfig.auth.user || !emailConfig.auth.pass) {
+    const errorMsg = "Email credentials are missing. Please check EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS.";
+    console.error("❌ Email credentials error:", errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  console.log("📧 Attempting to send password reset email to:", email);
+  console.log("📧 From email:", fromEmail);
+
+  const transporter = nodemailer.createTransport(emailConfig);
+  
+  // Verify connection
+  try {
+    await transporter.verify();
+    console.log("✅ SMTP connection verified");
+  } catch (verifyError: any) {
+    console.error("❌ SMTP verification failed:", verifyError.message);
+    throw new Error(`Email service connection failed: ${verifyError.message}`);
+  }
 
   // Use NEXT_PUBLIC_SITE_URL if set, otherwise default to production
   // For local development, you should set NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local
@@ -422,16 +472,42 @@ If you didn't request this, please ignore this email.
 
 © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
 
-  await transporter.sendMail({
-    from: getEmailFromField("security"),
-    to: email,
-    replyTo: getReplyToEmail("security"),
-    subject,
-    html,
-    text,
-    headers: getEmailHeaders(),
-    priority: "normal",
-    date: new Date(),
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: getEmailFromField("security"),
+      to: email,
+      replyTo: getReplyToEmail("security"),
+      subject,
+      html,
+      text,
+      headers: getEmailHeaders(),
+      priority: "normal",
+      date: new Date(),
+    });
+
+    console.log("✅ Password reset email sent successfully!");
+    console.log("📧 Message ID:", info.messageId);
+    console.log("📧 To:", email);
+    console.log("📧 From:", fromEmail);
+    
+    return info;
+  } catch (sendError: any) {
+    console.error("❌ Error sending password reset email:", sendError.message);
+    console.error("❌ Error code:", sendError.code);
+    if (sendError.response) {
+      console.error("❌ Error response:", sendError.response);
+    }
+    
+    // Provide more helpful error messages
+    if (sendError.code === "EAUTH") {
+      throw new Error("Email authentication failed. Please check your EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS. Make sure you're using a Gmail App Password, not your regular password.");
+    } else if (sendError.code === "ECONNECTION") {
+      throw new Error("Failed to connect to email server. Please check your internet connection and email configuration.");
+    } else if (sendError.code === "EENVELOPE") {
+      throw new Error(`Invalid email address: ${email}. Please check the email format.`);
+    } else {
+      throw new Error(`Failed to send email: ${sendError.message || "Unknown error"}`);
+    }
+  }
 }
 

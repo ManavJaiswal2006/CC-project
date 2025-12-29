@@ -72,24 +72,40 @@ export async function POST(req: Request) {
 
       // Send password reset email with the token
       try {
-        await sendPasswordResetEmail(email, result.token);
-        logger.info("Password reset email sent successfully", {
-          email: email.toLowerCase(),
-        });
+        // Verify email is configured before attempting to send
+        if (!isEmailConfigured("security")) {
+          const errorMsg = "Email service is not configured. Please set EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS environment variables.";
+          console.error("❌ CRITICAL ERROR:", errorMsg);
+          logger.error("Email not configured for password reset", new Error(errorMsg), {
+            email: email.toLowerCase(),
+            hasEmailUser: !!process.env.EMAIL_SECURITY_USER || !!process.env.EMAIL_USER,
+            hasEmailPass: !!process.env.EMAIL_SECURITY_PASS || !!process.env.EMAIL_PASS,
+          });
+          // Still return success to prevent enumeration, but log the error
+        } else {
+          await sendPasswordResetEmail(email, result.token);
+          console.log("✅ Password reset email sent successfully to:", email.toLowerCase());
+          logger.info("Password reset email sent successfully", {
+            email: email.toLowerCase(),
+            tokenCreated: true,
+          });
+        }
       } catch (emailError: any) {
         // Log detailed error information
+        console.error("❌ Failed to send password reset email:", emailError.message);
         logger.error("Failed to send password reset email", emailError as Error, {
           email: email.toLowerCase(),
           errorCode: emailError.code,
           errorMessage: emailError.message,
           errorStack: emailError.stack,
           emailConfigured: isEmailConfigured("security"),
+          hasEmailUser: !!process.env.EMAIL_SECURITY_USER || !!process.env.EMAIL_USER,
+          hasEmailPass: !!process.env.EMAIL_SECURITY_PASS || !!process.env.EMAIL_PASS,
         });
         
         // If email is not configured, this is a critical error
-        // But we still return success to prevent email enumeration
         if (emailError.message?.includes("not configured")) {
-          console.error("CRITICAL: Email service not configured. Set EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS in environment variables.");
+          console.error("❌ CRITICAL: Email service not configured. Set EMAIL_SECURITY_USER and EMAIL_SECURITY_PASS in environment variables.");
         }
         // Don't throw - we still want to return success to prevent enumeration
       }
