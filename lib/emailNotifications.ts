@@ -374,14 +374,7 @@ export async function sendPasswordResetEmail(
 
   const transporter = nodemailer.createTransport(emailConfig);
   
-  // Verify connection
-  try {
-    await transporter.verify();
-    console.log("✅ SMTP connection verified");
-  } catch (verifyError: any) {
-    console.error("❌ SMTP verification failed:", verifyError.message);
-    throw new Error(`Email service connection failed: ${verifyError.message}`);
-  }
+  // Skip verification to reduce delay - errors will be caught during sendMail
 
   // Use NEXT_PUBLIC_SITE_URL if set, otherwise default to production
   // For local development, you should set NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local

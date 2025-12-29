@@ -114,17 +114,20 @@ export function getEmailTransporterConfig(type: EmailType) {
       user: email,
       pass: pass,
     },
-    // Improve deliverability
-    pool: true, // Use connection pooling
-    maxConnections: 1,
-    maxMessages: 3,
-    rateDelta: 1000, // 1 second
-    rateLimit: 5, // 5 messages per rateDelta
+    // Optimized for faster delivery
+    pool: true, // Use connection pooling for reuse
+    maxConnections: 5, // Allow more concurrent connections
+    maxMessages: 100, // Send more messages per connection
+    // Remove rate limiting to send immediately
     // Additional security settings
     secure: true,
     tls: {
       rejectUnauthorized: false, // For Gmail SMTP
     },
+    // Connection timeout settings
+    connectionTimeout: 5000, // 5 seconds
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
   };
 }
 
