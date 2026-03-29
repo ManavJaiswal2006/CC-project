@@ -107,7 +107,7 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
 1. **Create `.env.local` file** in your project root:
    ```
-   C:\Users\Rajeev Ranjan\Desktop\manav\coding\projects\bourgon\.env.local
+   C:\Users\Rajeev Ranjan\Desktop\manav\coding\projects\cc-project\.env.local
    ```
 
 2. **Copy your existing Firebase and Convex values** from your current `.env` file (if you have one)

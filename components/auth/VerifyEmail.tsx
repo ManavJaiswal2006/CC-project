@@ -144,7 +144,7 @@ function VerifyEmailContent() {
                 Email Verified!
               </h3>
               <p className="text-slate-600 text-sm font-light leading-relaxed max-w-sm">
-                Your email address has been successfully verified. You now have full access to all features of your Bourgon account.
+                Your email address has been successfully verified. You now have full access to all features of your cc-project account.
               </p>
             </div>
           </div>

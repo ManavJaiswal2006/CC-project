@@ -15,15 +15,15 @@ export default function ContactUs() {
               Corporate Headquarters
             </h2>
             <div className="bg-gray-50 p-6 border border-gray-200 mb-6">
-              <p className="font-semibold text-lg mb-4">Bourgon Industries Pvt. Ltd.</p>
+              <p className="font-semibold text-lg mb-4">cc-project Industries Pvt. Ltd.</p>
               <p className="mb-2">
                 <strong>Address:</strong> 22  R VANI VIHAR UTTAM NAGAR<br />
                 NEW DELHI  110059, India
               </p>
               <p className="mb-2">
                 <strong>Email:</strong>{" "}
-                <a href="mailto:bourgonindustries@gmail.com" className="text-red-600 hover:underline">
-                  bourgonindustries@gmail.com
+                <a href="mailto:cc-projectindustries@gmail.com" className="text-red-600 hover:underline">
+                  cc-projectindustries@gmail.com
                 </a>
               </p>
               <p className="mb-2">
@@ -56,8 +56,8 @@ export default function ContactUs() {
               <p className="mb-1">Sunday: Closed</p>
               <p className="mt-4 mb-2">
                 <strong>Email:</strong>{" "}
-                <a href="mailto:bourgonindustries@gmail.com" className="text-red-600 hover:underline">
-                  bourgonindustries@gmail.com
+                <a href="mailto:cc-projectindustries@gmail.com" className="text-red-600 hover:underline">
+                  cc-projectindustries@gmail.com
                 </a>
               </p>
               <p>
@@ -101,8 +101,8 @@ export default function ContactUs() {
             <div className="bg-gray-50 p-6 border border-gray-200">
               <p className="mb-2">
                 <strong>Email:</strong>{" "}
-                <a href="mailto:bourgonindustries@gmail.com" className="text-red-600 hover:underline">
-                  bourgonindustries@gmail.com
+                <a href="mailto:cc-projectindustries@gmail.com" className="text-red-600 hover:underline">
+                  cc-projectindustries@gmail.com
                 </a>
               </p>
               <p className="mb-2">
@@ -144,8 +144,8 @@ export default function ContactUs() {
             <div className="bg-gray-50 p-6 border border-gray-200">
               <p>
                 <strong>Website:</strong>{" "}
-                <a href="https://bourgon.vercel.app" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">
-                  https://bourgon.vercel.app
+                <a href="https://cc-project.vercel.app" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">
+                  https://cc-project.vercel.app
                 </a>
               </p>
             </div>

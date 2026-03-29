@@ -1,4 +1,4 @@
-# 🏗️ Architecture Diagrams - Bourgon Industries
+# 🏗️ Architecture Diagrams - cc-project Industries
 
 ## Visual Guide to System Architecture
 

@@ -43,7 +43,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   
   // Load cart from browser storage when app starts
   useEffect(() => {
-    const saved = localStorage.getItem("bourgon_cart");
+    const saved = localStorage.getItem("cc-project_cart");
     if (saved) {
       setCart(JSON.parse(saved));
     }
@@ -51,7 +51,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   
   // Save cart to browser storage whenever it changes
   useEffect(() => {
-    localStorage.setItem("bourgon_cart", JSON.stringify(cart));
+    localStorage.setItem("cc-project_cart", JSON.stringify(cart));
   }, [cart]);
 ```
 

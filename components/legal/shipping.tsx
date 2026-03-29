@@ -15,7 +15,7 @@ export default function Shipping() {
               1. Shipping Information
             </h2>
             <p className="leading-relaxed mb-4">
-              Bourgon Industries Pvt. Ltd. ships products across India. We strive to process and ship all orders 
+              cc-project Industries Pvt. Ltd. ships products across India. We strive to process and ship all orders 
               as quickly as possible while ensuring the safety and security of your products during transit.
             </p>
           </section>
@@ -127,7 +127,7 @@ export default function Shipping() {
 
             <h3 className="text-xl font-semibold mt-6 mb-3">6.2 Address Changes</h3>
             <p className="leading-relaxed mb-4">
-              If you need to change your delivery address, please contact us immediately at bourgonindustries@gmail.com 
+              If you need to change your delivery address, please contact us immediately at cc-projectindustries@gmail.com 
               or +91 88008 30465 & +91 88008 30467. Address changes can only be accommodated if your order has not yet been shipped.
             </p>
 
@@ -164,7 +164,7 @@ export default function Shipping() {
               If your package is lost or damaged during transit:
             </p>
             <ol className="list-decimal pl-6 space-y-2 mb-4">
-              <li>Contact us immediately at bourgonindustries@gmail.com or +91 88008 30465 & +91 88008 30467</li>
+              <li>Contact us immediately at cc-projectindustries@gmail.com or +91 88008 30465 & +91 88008 30467</li>
               <li>Provide your order number and details</li>
               <li>For damaged packages, please take photos of the damaged packaging and product</li>
             </ol>
@@ -202,10 +202,10 @@ export default function Shipping() {
               For any questions about shipping, delivery, or to report issues, please contact us:
             </p>
             <div className="bg-gray-50 p-6 border border-gray-200">
-              <p className="font-semibold mb-2">Bourgon Industries Pvt. Ltd.</p>
+              <p className="font-semibold mb-2">cc-project Industries Pvt. Ltd.</p>
               <p className="mb-1">22  R VANI VIHAR UTTAM NAGAR</p>
               <p className="mb-1">NEW DELHI  110059, India</p>
-              <p className="mb-1">Email: bourgonindustries@gmail.com</p>
+              <p className="mb-1">Email: cc-projectindustries@gmail.com</p>
               <p className="mb-1">Phone: +91 88008 30465 & +91 88008 30467</p>
               <p className="mt-4 text-sm text-gray-600">
                 Customer Care Hours: Monday - Saturday, 9:00 AM - 7:00 PM IST

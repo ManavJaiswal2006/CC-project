@@ -554,7 +554,7 @@ export default function ProductPage() {
                 <div className="p-1.5 bg-green-100 rounded-full">
                   <Check size={16} className="text-green-600" />
                 </div>
-                <span>Premium stainless steel construction</span>
+                <span>Authentic team jersey quality</span>
               </div>
               <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
                 <div className="p-1.5 bg-blue-100 rounded-full">

@@ -1,4 +1,4 @@
-# 🎓 Complete Full Stack Development Guide - Bourgon Industries E-Commerce Platform
+# 🎓 Complete Full Stack Development Guide - cc-project Industries E-Commerce Platform
 
 ## 📚 Table of Contents
 1. [What is This Project?](#what-is-this-project)
@@ -18,7 +18,7 @@
 
 ## 🛍️ What is This Project?
 
-**Bourgon Industries** is a complete **e-commerce website** (like Amazon or Flipkart) that sells stainless steel products. Think of it as a digital store where:
+**cc-project Industries** is a complete **e-commerce website** (like Amazon or Flipkart) that sells stainless steel products. Think of it as a digital store where:
 
 - Customers can browse products
 - Add items to a shopping cart
@@ -107,7 +107,7 @@ In web development:
 ## 📁 Project Structure
 
 ```
-bourgon/
+cc-project/
 ├── app/                    # Next.js app directory (pages & API routes)
 │   ├── api/               # Backend API endpoints
 │   ├── context/           # React Context (global state)

@@ -15,7 +15,7 @@ export default function TermsOfService() {
               1. Agreement to Terms
             </h2>
             <p className="leading-relaxed">
-              By accessing or using the website of Bourgon Industries Pvt. Ltd. ("we," "our," or "us"), 
+              By accessing or using the website of cc-project Industries Pvt. Ltd. ("we," "our," or "us"), 
               you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, 
               please do not use our website or services.
             </p>
@@ -133,7 +133,7 @@ export default function TermsOfService() {
             </h2>
             <p className="leading-relaxed">
               All content on our website, including text, graphics, logos, images, and software, is the property 
-              of Bourgon Industries or its content suppliers and is protected by copyright and other intellectual 
+              of cc-project Industries or its content suppliers and is protected by copyright and other intellectual 
               property laws. You may not reproduce, distribute, modify, or create derivative works from any 
               content without our express written permission.
             </p>
@@ -173,7 +173,7 @@ export default function TermsOfService() {
               10. Limitation of Liability
             </h2>
             <p className="leading-relaxed">
-              To the fullest extent permitted by law, Bourgon Industries shall not be liable for any indirect, 
+              To the fullest extent permitted by law, cc-project Industries shall not be liable for any indirect, 
               incidental, special, consequential, or punitive damages, or any loss of profits or revenues, 
               whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible 
               losses resulting from your use of our website or products.
@@ -185,7 +185,7 @@ export default function TermsOfService() {
               11. Indemnification
             </h2>
             <p className="leading-relaxed">
-              You agree to indemnify and hold harmless Bourgon Industries and its officers, directors, employees, 
+              You agree to indemnify and hold harmless cc-project Industries and its officers, directors, employees, 
               and agents from and against any claims, liabilities, damages, losses, and expenses, including 
               reasonable legal fees, arising out of or in any way connected with your use of our website, 
               violation of these Terms, or violation of any rights of another.
@@ -233,10 +233,10 @@ export default function TermsOfService() {
               If you have any questions about these Terms of Service, please contact us:
             </p>
             <div className="bg-gray-50 p-6 border border-gray-200">
-              <p className="font-semibold mb-2">Bourgon Industries Pvt. Ltd.</p>
+              <p className="font-semibold mb-2">cc-project Industries Pvt. Ltd.</p>
               <p className="mb-1">22  R VANI VIHAR UTTAM NAGAR</p>
               <p className="mb-1">NEW DELHI  110059, India</p>
-              <p className="mb-1">Email: bourgonindustries@gmail.com</p>
+              <p className="mb-1">Email: cc-projectindustries@gmail.com</p>
               <p>Phone: +91 88008 30465 & +91 88008 30467</p>
             </div>
           </section>

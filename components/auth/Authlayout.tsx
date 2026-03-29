@@ -13,7 +13,7 @@ export default function AuthLayout({ children, title, subtitle }: { children: Re
         </Link>
         
         <div className="text-center mb-10">
-          <h2 className="text-4xl font-serif italic text-slate-900 mb-2">Bourgon</h2>
+          <h2 className="text-4xl font-serif italic text-slate-900 mb-2">cc-project</h2>
           <p className="text-[10px] uppercase tracking-[0.4em] text-red-600 font-bold">{subtitle}</p>
         </div>
 

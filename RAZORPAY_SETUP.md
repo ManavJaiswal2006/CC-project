@@ -189,7 +189,7 @@ Your Razorpay integration is complete and ready for:
 
 - **Razorpay Docs**: https://razorpay.com/docs/
 - **Razorpay Support**: support@razorpay.com
-- **Your Email**: bourgonindustries@gmail.com
+- **Your Email**: cc-projectindustries@gmail.com
 
 ---
 

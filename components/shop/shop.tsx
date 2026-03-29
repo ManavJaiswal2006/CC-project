@@ -162,7 +162,7 @@ export default function ShopPage() {
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-red-700 whitespace-nowrap">
-                BOURGON
+                cc-project
                 <span className="text-black text-base sm:text-lg ml-2 font-normal">
                   PRIME
                 </span>

@@ -19,7 +19,7 @@ Choose **ONE** of these options:
 
 **Option A: Service Account JSON (Recommended)**
 ```env
-FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"bourgon-8ce17",...}'
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"cc-project-8ce17",...}'
 ```
 - Get this from Firebase Console → Project Settings → Service Accounts → Generate New Private Key
 - Copy the entire JSON and paste as a single line (remove all newlines)
@@ -27,8 +27,8 @@ FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"bourgon-8ce17"
 
 **Option B: Individual Fields**
 ```env
-FIREBASE_PROJECT_ID=bourgon-8ce17
-FIREBASE_CLIENT_EMAIL=your-service-account@bourgon-8ce17.iam.gserviceaccount.com
+FIREBASE_PROJECT_ID=cc-project-8ce17
+FIREBASE_CLIENT_EMAIL=your-service-account@cc-project-8ce17.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 

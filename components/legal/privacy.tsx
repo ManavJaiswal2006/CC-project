@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
               1. Introduction
             </h2>
             <p className="leading-relaxed">
-              Bourgon Industries Pvt. Ltd. ("we," "our," or "us") is committed to protecting your privacy. 
+              cc-project Industries Pvt. Ltd. ("we," "our," or "us") is committed to protecting your privacy. 
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information when 
               you visit our website and make purchases from us.
             </p>
@@ -153,10 +153,10 @@ export default function PrivacyPolicy() {
               If you have any questions about this Privacy Policy or our data practices, please contact us:
             </p>
             <div className="bg-gray-50 p-6 border border-gray-200">
-              <p className="font-semibold mb-2">Bourgon Industries Pvt. Ltd.</p>
+              <p className="font-semibold mb-2">cc-project Industries Pvt. Ltd.</p>
               <p className="mb-1">22  R VANI VIHAR UTTAM NAGAR</p>
               <p className="mb-1">NEW DELHI  110059, India</p>
-              <p className="mb-1">Email: bourgonindustries@gmail.com</p>
+              <p className="mb-1">Email: cc-projectindustries@gmail.com</p>
               <p>Phone: +91 88008 30465 & +91 88008 30467</p>
             </div>
           </section>

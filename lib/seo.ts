@@ -13,7 +13,7 @@ interface SEOProps {
 export function generateSEO({
   title,
   description,
-  image = "/bourgonLogo.png",
+  image = "/cc-projectLogo.png",
   url,
   type = "website",
   price,
@@ -31,7 +31,7 @@ export function generateSEO({
       title,
       description,
       url: fullUrl,
-      siteName: "Bourgon Industries",
+      siteName: "cc-project Industries",
       images: [
         {
           url: fullImage,
@@ -88,14 +88,14 @@ export function generateStructuredData({
     return {
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: "Bourgon Industries Pvt. Ltd.",
+      name: "cc-project Industries Pvt. Ltd.",
       url: siteUrl,
-      logo: `${siteUrl}/bourgonLogo.png`,
+      logo: `${siteUrl}/cc-projectLogo.png`,
       contactPoint: {
         "@type": "ContactPoint",
         telephone: "+91-88008-30465",
         contactType: "Customer Service",
-        email: "bourgonindustries@gmail.com",
+        email: "cc-projectindustries@gmail.com",
       },
       address: {
         "@type": "PostalAddress",
@@ -133,7 +133,7 @@ export function generateStructuredData({
       }),
       brand: {
         "@type": "Brand",
-        name: "Bourgon Industries",
+        name: "cc-project Industries",
       },
     };
   }

@@ -78,12 +78,12 @@ export default function RedesignedAboutPage() {
         <div className="relative z-10 text-center space-y-8">
           <Image src={logoImg} alt="logo" className="mx-auto" width={160} height={60} priority />
           <h1 className="reveal-text text-xl md:text-3xl text-black font-bold tracking-[0.4em] uppercase">
-            Beyond Quality <span className="opacity-50 ">|</span> Beyond Design
+            Authentic Jerseys <span className="opacity-50 ">|</span> Ultimate Performance
           </h1>
           <p className="reveal-text w-full text-black/80 text-sm md:text-base tracking-wide leading-relaxed">
-            In the world of technology and innovation, we provide products that
-            match your expectations and earn your trust through world-class
-            quality.
+            In the world of football passion and competition, we provide authentic
+            jerseys that match your expectations and earn your trust through
+            world-class quality sports apparel.
           </p>
           <div className="reveal-text pt-10">
             <div className="animate-bounce flex flex-col items-center gap-2 opacity-60">
@@ -111,13 +111,13 @@ export default function RedesignedAboutPage() {
               </span>
             </div>
             <h3 className="text-4xl md:text-6xl font-medium leading-[1.1] mb-8 text-slate-800">
-              The Harmony of <br />
-              <span className="italic text-red-600">Man & Machine.</span>
+              The Passion of <br />
+              <span className="italic text-red-600">Football & Quality.</span>
             </h3>
             <p className="text-slate-500 text-lg leading-relaxed font-sans w-full">
-              We believe in an innovative approach using Man-Machine
-              combination. Each item from BOURGON goes through expert inspection
-              to ensure undemanding perfection.
+              We believe in an innovative approach combining passion and precision.
+              Each Manmal jersey goes through expert inspection to ensure
+              authentic performance and style.
             </p>
           </div>
 
@@ -138,8 +138,8 @@ export default function RedesignedAboutPage() {
                 World Class Quality
               </h4>
               <p className="text-slate-400 text-sm leading-loose font-sans">
-                Climbing to global heights as a company that provides food for
-                the soul.
+                Building a global community of football fans through authentic
+                jerseys and championship quality.
               </p>
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function RedesignedAboutPage() {
               <p className="uppercase tracking-[0.3em] text-[10px] mb-2 font-sans">
                 Expertly Crafted
               </p>
-              <h4 className="text-4xl font-light italic">Cooking with Love</h4>
+              <h4 className="text-4xl font-light italic">Football Passion in Every Stitch</h4>
             </div>
           </div>
 
@@ -212,7 +212,7 @@ export default function RedesignedAboutPage() {
           >
             <div>
               <h4 className="text-2xl font-medium text-slate-800 italic">
-                Get in touch with Bourgon
+                Get in touch with Manmal
               </h4>
               <p className="text-slate-400 font-sans text-sm">
                 22  R VANI VIHAR UTTAM NAGAR NEW DELHI  110059

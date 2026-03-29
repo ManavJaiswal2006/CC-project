@@ -11,14 +11,14 @@ function getEmailHeaders(): Record<string, string> {
   const messageId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}@cc-project-phi.vercel.app`;
   return {
     "Message-ID": `<${messageId}>`,
-    "X-Mailer": "Bourgon Industries Email System",
+    "X-Mailer": "cc-project Industries Email System",
     "X-Priority": "3",
     "Importance": "normal",
     "List-Unsubscribe": `<${siteUrl}/unsubscribe>`,
     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     "X-Auto-Response-Suppress": "All",
-    "X-Entity-Ref-ID": `bourgon-${Date.now()}`,
-    "X-Company": "Bourgon Industries Pvt. Ltd.",
+    "X-Entity-Ref-ID": `cc-project-${Date.now()}`,
+    "X-Company": "cc-project Industries Pvt. Ltd.",
     "X-Contact": "+91 88008 30465",
   };
 }
@@ -30,7 +30,7 @@ function getLogoHTML(): string {
   return `
     <div style="text-align: center; margin-bottom: 20px;">
       <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 42px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0; line-height: 1;">
-        BOURGON
+        cc-project
       </h1>
       <p style="color: #a1a1a1; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-top: 10px;">
         Industries
@@ -89,7 +89,7 @@ export async function sendOrderStatusEmail(
 
   const statusMessage = statusMessages[orderData.status] || "Your order status has been updated.";
 
-  const subject = `Order ${orderData.orderId} - ${orderData.status} | Bourgon Industries`;
+  const subject = `Order ${orderData.orderId} - ${orderData.status} | cc-project Industries`;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
 
@@ -175,7 +175,7 @@ export async function sendOrderStatusEmail(
           </p>
           <div style="height: 1px; background-color: #eeeeee; width: 50px; margin: 0 auto 20px;"></div>
           <p style="font-size: 10px; color: #bbbbbb; text-transform: uppercase; letter-spacing: 2px;">
-            © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+            © ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.
           </p>
         </td>
       </tr>
@@ -186,7 +186,7 @@ export async function sendOrderStatusEmail(
   `.trim();
 
   // Generate plain text version
-  const text = `Order ${orderData.orderId} - ${orderData.status} | Bourgon Industries
+  const text = `Order ${orderData.orderId} - ${orderData.status} | cc-project Industries
 
 Dear ${escapeHtml(orderData.customerName)},
 
@@ -201,7 +201,7 @@ ${orderData.trackingNumber && orderData.trackingNumber !== "Awaiting payment" &&
 
 Questions? Contact us at +91 88008 30465 & +91 88008 30467
 
-© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
+© ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.`;
 
   await transporter.sendMail({
     from: getEmailFromField("orders"),
@@ -229,7 +229,7 @@ export async function sendOTPEmail(
   const fromEmail = getEmailFrom("security");
   const transporter = nodemailer.createTransport(emailConfig);
 
-  const subject = `Security Verification Code | Bourgon Industries`;
+  const subject = `Security Verification Code | cc-project Industries`;
 
   const html = `
 <!DOCTYPE html>
@@ -248,7 +248,7 @@ export async function sendOTPEmail(
           <tr>
             <td style="background-color: #000000; padding: 40px; text-align: center;">
               <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 36px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0 0 10px 0; line-height: 1;">
-                BOURGON
+                cc-project
               </h1>
               <p style="color: #a1a1a1; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;">
                 Secure Access Portal
@@ -281,7 +281,7 @@ export async function sendOTPEmail(
           <tr>
             <td style="padding: 30px; background-color: #ffffff; border-top: 1px solid #f9f9f9; text-align: center;">
               <p style="font-size: 10px; color: #cccccc; letter-spacing: 1px; text-transform: uppercase;">
-                © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+                © ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.
               </p>
             </td>
           </tr>
@@ -295,7 +295,7 @@ export async function sendOTPEmail(
 `.trim();
 
   // Generate plain text version
-  const text = `Security Verification Code | Bourgon Industries
+  const text = `Security Verification Code | cc-project Industries
 
 Your unique verification code for ${purpose === "signup" ? "creating an account" : purpose === "login" ? "accessing your profile" : "resetting your password"} is:
 
@@ -304,7 +304,7 @@ ${otp}
 This identification code is valid for 10 minutes.
 For your security, do not share this token with anyone.
 
-© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
+© ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.`;
 
   try {
     const info = await transporter.sendMail({
@@ -381,7 +381,7 @@ export async function sendPasswordResetEmail(
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
   const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
 
-  const subject = `Password Reset Request | Bourgon Industries`;
+  const subject = `Password Reset Request | cc-project Industries`;
 
   const html = `
 <!DOCTYPE html>
@@ -400,7 +400,7 @@ export async function sendPasswordResetEmail(
           <tr>
             <td style="background-color: #000000; padding: 40px; text-align: center;">
               <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 36px; color: #ffffff; letter-spacing: 8px; text-transform: uppercase; margin: 0 0 10px 0; line-height: 1;">
-                BOURGON
+                cc-project
               </h1>
               <p style="color: #a1a1a1; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;">
                 Password Recovery
@@ -438,7 +438,7 @@ export async function sendPasswordResetEmail(
           <tr>
             <td style="padding: 30px; background-color: #ffffff; border-top: 1px solid #f9f9f9; text-align: center;">
               <p style="font-size: 10px; color: #cccccc; letter-spacing: 1px; text-transform: uppercase;">
-                © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+                © ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.
               </p>
             </td>
           </tr>
@@ -452,7 +452,7 @@ export async function sendPasswordResetEmail(
 `.trim();
 
   // Generate plain text version
-  const text = `Password Reset Request - Bourgon Industries
+  const text = `Password Reset Request - cc-project Industries
 
 We received a request to reset your password.
 
@@ -463,7 +463,7 @@ This link will expire in 1 hour.
 
 If you didn't request this, please ignore this email.
 
-© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.`;
+© ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.`;
 
   try {
     const info = await transporter.sendMail({

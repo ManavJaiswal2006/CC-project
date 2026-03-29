@@ -41,7 +41,7 @@ This happens because the email templates use default Firebase branding.
 4. **Save your changes**
 
 **Benefits you now have:**
-- ✅ Custom sender address (e.g., `noreply@cc-project-phi.vercel.app` instead of `noreply@bourgon-8ce17.firebaseapp.com`)
+- ✅ Custom sender address (e.g., `noreply@cc-project-phi.vercel.app` instead of `noreply@cc-project-8ce17.firebaseapp.com`)
 - ✅ Can customize email content freely
 - ✅ Better branding - no project name/ID in footer
 - ✅ Professional email appearance
@@ -83,7 +83,7 @@ This means:
 
 ### Step 1: Access Firebase Console
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project (`bourgon-8ce17`)
+2. Select your project (`cc-project-8ce17`)
 3. Navigate to **Authentication** → **Templates**
 
 ### Step 2: Check if Email Verification Template is Editable
@@ -102,7 +102,7 @@ Replace the default template with this beautiful, branded version:
 
 #### Subject Line:
 ```
-Verify your Bourgon Industries email address
+Verify your cc-project Industries email address
 ```
 
 #### Email Body Template:
@@ -118,15 +118,15 @@ Verify your Bourgon Industries email address
     
     <!-- Logo/Branding -->
     <div style="text-align: center; margin-bottom: 30px;">
-      <h1 style="font-family: serif; font-style: italic; font-size: 32px; color: #000; margin: 0;">Bourgon</h1>
+      <h1 style="font-family: serif; font-style: italic; font-size: 32px; color: #000; margin: 0;">cc-project</h1>
       <div style="width: 60px; height: 2px; background-color: #dc2626; margin: 10px auto;"></div>
     </div>
 
     <!-- Main Content -->
-    <h2 style="color: #1a1a1a; font-size: 24px; margin-bottom: 20px;">Welcome to Bourgon Industries</h2>
+    <h2 style="color: #1a1a1a; font-size: 24px; margin-bottom: 20px;">Welcome to cc-project Industries</h2>
     
     <p style="color: #666; font-size: 16px; margin-bottom: 20px;">
-      Thank you for registering with Bourgon Industries. To complete your registration and verify your email address, please click the button below.
+      Thank you for registering with cc-project Industries. To complete your registration and verify your email address, please click the button below.
     </p>
 
     <!-- Verification Button -->
@@ -154,7 +154,7 @@ Verify your Bourgon Industries email address
     <!-- Footer -->
     <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
       <p style="color: #9ca3af; font-size: 12px; margin: 5px 0;">
-        Bourgon Industries
+        cc-project Industries
       </p>
       <p style="color: #9ca3af; font-size: 12px; margin: 5px 0;">
         Beyond Quality. Beyond Design.
@@ -181,9 +181,9 @@ Firebase provides these variables you can use:
 Firebase also allows you to set a plain text version. Use:
 
 ```
-Welcome to Bourgon Industries
+Welcome to cc-project Industries
 
-Thank you for registering with Bourgon Industries. To complete your registration and verify your email address, please click the link below:
+Thank you for registering with cc-project Industries. To complete your registration and verify your email address, please click the link below:
 
 %LINK%
 
@@ -192,7 +192,7 @@ If the link doesn't work, copy and paste it into your browser.
 Security Notice: If you didn't request this email, you can safely ignore it. Your account will not be activated until you verify your email address.
 
 ---
-Bourgon Industries
+cc-project Industries
 Beyond Quality. Beyond Design.
 
 This is an automated email. Please do not reply to this message.
@@ -206,7 +206,7 @@ The "Your project-[number] team" text comes from Firebase's default template. Wh
 
 ✅ **With custom domain verification, your sender address should now be from your custom domain!**
 
-- **Before:** `noreply@bourgon-8ce17.firebaseapp.com` (project ID visible)
+- **Before:** `noreply@cc-project-8ce17.firebaseapp.com` (project ID visible)
 - **After:** `noreply@cc-project-phi.vercel.app` or your custom domain (professional branding)
 
 This happens automatically once custom domain verification is complete. Check your Firebase Console → Authentication → Settings to confirm your custom domain is being used.
@@ -239,11 +239,11 @@ After customizing:
 
 1. ✅ **Go to Firebase Console** → Authentication → Templates
 2. ✅ **Click "Email address verification"** template
-3. ✅ **Edit the Subject Line**: "Verify your Bourgon Industries email address"
+3. ✅ **Edit the Subject Line**: "Verify your cc-project Industries email address"
 4. ✅ **Copy the HTML template** from Step 3 above and paste it in the email body
 5. ✅ **Copy the plain text version** from Step 5 and paste it in the plain text field
 6. ✅ **Save your changes**
 7. ✅ **Test** by signing up a new user and checking the email
 
-Your emails will now be fully branded with Bourgon Industries styling and your custom domain!
+Your emails will now be fully branded with cc-project Industries styling and your custom domain!
 

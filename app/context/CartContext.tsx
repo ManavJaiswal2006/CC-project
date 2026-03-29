@@ -12,7 +12,7 @@ import { showToast } from "@/components/UI/Toast";
 
 /* ================= CONSTANTS ================= */
 
-const STORAGE_KEY = "bourgon_cart";
+const STORAGE_KEY = "manmal_cart";
 const MAX_QTY_PER_ITEM = 50;
 
 /* ================= TYPES ================= */

@@ -56,10 +56,10 @@ function PaymentFailureContent() {
             Need help? Contact us:
           </p>
           <a
-            href="mailto:bourgonindustries@gmail.com"
+            href="mailto:cc-projectindustries@gmail.com"
             className="text-sm text-blue-600 hover:underline"
           >
-            bourgonindustries@gmail.com
+            cc-projectindustries@gmail.com
           </a>
         </div>
       </div>

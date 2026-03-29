@@ -175,7 +175,7 @@ export async function POST(req: Request) {
       const mailOptions = {
         from: getEmailFromField("orders"),
         to: customerEmail,
-        subject: `Your Order Invoice - ${orderId} | Bourgon Industries`,
+        subject: `Your Order Invoice - ${orderId} | cc-project Industries`,
         html: billHTML,
       };
 
@@ -271,7 +271,7 @@ export async function POST(req: Request) {
       await transporter.sendMail({
         from: getEmailFromField("orders"),
         to: getAdminEmail(),
-        subject: `New Order - ${orderId} | Bourgon Industries`,
+        subject: `New Order - ${orderId} | cc-project Industries`,
         html: billHTML,
       });
     }

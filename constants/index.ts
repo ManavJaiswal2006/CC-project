@@ -1,32 +1,32 @@
 import { Building2, Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 export const BRAND = {
-  name: "BOURGON",
-  tagline: "beyond quality beyond design", // 
+  name: "Manmal",
+  tagline: "Authentic Football Gear", //
   logo: "/logo.png",
 };
 
 export const NAV_LINKS = [
   { name: "Home", href: "/" },
-  { name: "Prime Series", href: "/series/prime" }, // 
-  { name: "PVD Luxury", href: "/series/pvd" }, // 
+  { name: "Club Jerseys", href: "/series/club" }, //
+  { name: "National Teams", href: "/series/national" }, //
 ];
 
-export const logoImg = "/bourgonLogo.png";
+export const logoImg = "/manmalLogo.png";
 
 export const footerData = {
   brand: {
-    name: "Bourgon",
+    name: "Manmal",
     dotColor: "text-red-600",
-    tagline: "Beyond Quality. Beyond Design.",
-    description: "Setting new benchmarks in industrial excellence through innovative design and uncompromising manufacturing standards.",
+    tagline: "Authentic Jerseys. Ultimate Performance.",
+    description: "Bringing the thrill of football to every fan through premium authentic jerseys and championship-quality sports apparel.",
   },
   sections: [
     {
       title: "Corporate Headquarters",
       items: [
         { icon: MapPin, text: "22  R VANI VIHAR UTTAM NAGAR NEW DELHI  110059", href: "https://maps.google.com" },
-        { icon: Mail, text: "bourgonindustries@gmail.com", href: "mailto:bourgonindustries@gmail.com" },
+        { icon: Mail, text: "info@manmal.com", href: "mailto:info@manmal.com" },
         { icon: Phone, text: "+91 88008 30465 & +91 88008 30467", href: "tel:+918800830465" },
       ],
     },
@@ -58,7 +58,7 @@ export const footerData = {
       { label: "Shipping", href: "/shipping" },
       { label: "Cancellation & Refunds", href: "/cancellation-refunds" },
     ],
-    copyright: `© ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd. All Rights Reserved.`,
+    copyright: `© ${new Date().getFullYear()} Manmal. All Rights Reserved.`,
   },
 };
 

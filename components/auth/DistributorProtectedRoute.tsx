@@ -47,7 +47,7 @@ export default function DistributorProtectedRoute({
     return (
       <div className="h-screen bg-[#fcfcfc] flex flex-col items-center justify-center">
         <div className="text-4xl font-serif italic text-slate-300 animate-pulse mb-4">
-          BOURGON
+          cc-project
         </div>
         <div className="w-12 h-px bg-red-600 animate-scale-x"></div>
         <p className="text-xs text-gray-400 mt-4 tracking-wider uppercase">

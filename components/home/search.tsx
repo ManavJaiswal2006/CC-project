@@ -17,7 +17,7 @@ interface HistoryItem {
 
 /* ---------------- Constants ---------------- */
 
-const HISTORY_KEY = "bourgon_search_history";
+const HISTORY_KEY = "cc-project_search_history";
 const MAX_QUERY = 40;
 
 /* ---------------- Component ---------------- */
