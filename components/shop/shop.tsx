@@ -178,7 +178,7 @@ export default function ShopPage() {
               />
               <input
                 className="w-full bg-gray-100 rounded-full py-3 pl-12 pr-4 focus:ring-2 focus:ring-black focus:bg-white outline-none text-sm border-2 border-transparent focus:border-gray-300 transition-all shadow-sm hover:shadow-md"
-                placeholder="Search cookware…"
+                placeholder="Search Jerseys"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
