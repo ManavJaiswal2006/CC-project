@@ -233,7 +233,7 @@ const Navbar = () => {
             <Link href="/" className="flex pt-5 flex-col items-center">
               <Image
                 src={logoImg}
-                alt="Bourgon Logo"
+                alt="cc-project Logo"
                 width={180}
                 height={60}
                 priority

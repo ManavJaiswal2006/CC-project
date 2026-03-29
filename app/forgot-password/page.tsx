@@ -1,8 +1,8 @@
 import ForgotPasswordPage from '@/components/auth/ForgotPassword'
 
 export const metadata = {
-  title: 'Forgot Password - Bourgon',
-  description: 'Reset your Bourgon account password'
+  title: 'Forgot Password - cc-project',
+  description: 'Reset your cc-project account password'
 }
 
 function page() {

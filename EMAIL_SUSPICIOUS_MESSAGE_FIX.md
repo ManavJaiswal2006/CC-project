@@ -5,8 +5,8 @@
 I've fixed the Gmail "suspicious message" warning by:
 
 1. **Removed External Images** - Replaced all external image URLs with text-based logos
-   - No more `<img src="...bourgonLogo.png">` tags
-   - Now uses styled text: "BOURGON" in elegant typography
+   - No more `<img src="...cc-projectLogo.png">` tags
+   - Now uses styled text: "cc-project" in elegant typography
    - This prevents Gmail from blocking external image loading
 
 2. **Improved Email Headers** - Added trust signals:
@@ -35,13 +35,13 @@ Gmail shows "suspicious message" when:
 
 ### Before:
 ```html
-<img src="https://bourgon.in/bourgonLogo.png" />
+<img src="https://cc-project-phi.vercel.app/cc-projectLogo.png" />
 ```
 Gmail blocks this and shows warning.
 
 ### After:
 ```html
-<h1 style="...">BOURGON</h1>
+<h1 style="...">cc-project</h1>
 ```
 No external loading, no warning!
 

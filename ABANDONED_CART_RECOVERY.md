@@ -84,7 +84,7 @@ Or use code SAVE10 for 10% off your order!
 This offer expires in 48 hours.
 
 Happy Shopping!
-Bourgon Industries
+cc-project Industries
 ```
 
 ## 🛠️ Implementation Options
@@ -114,7 +114,7 @@ Bourgon Industries
 - Send via your email service
 - More control, more work
 
-## 📊 For Your Bourgon Website
+## 📊 For Your cc-project Website
 
 ### Current Status:
 - ❌ **Not implemented** (it's optional)

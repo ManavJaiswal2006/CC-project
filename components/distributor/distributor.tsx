@@ -96,7 +96,7 @@ export default function DistributorPage() {
           Become a <span className="text-red-600">Distributor</span>
         </h1>
         <p className="reveal w-full text-slate-500 font-light text-lg">
-          Join Bourgon Industries as a distributor and become part of our network delivering premium stainless steel products across India.
+          Join Manmal as a distributor and become part of our network delivering authentic football jerseys across India.
         </p>
       </section>
 
@@ -115,7 +115,7 @@ export default function DistributorPage() {
         <div className="reveal bg-white p-10 border border-slate-100 flex flex-col items-center text-center shadow-sm">
           <CheckCircle className="text-red-600 mb-4" size={32} />
           <h3 className="italic text-xl mb-3 font-semibold">Quality Products</h3>
-          <p className="text-slate-600 font-light">Premium stainless steel products trusted by customers nationwide</p>
+          <p className="text-slate-600 font-light">Authentic football jerseys trusted by fans nationwide</p>
         </div>
       </section>
 
@@ -144,8 +144,8 @@ export default function DistributorPage() {
             <div className="bg-white p-8 border border-slate-100 shadow-sm">
               <Mail className="text-red-600 mb-3" size={24} />
               <h3 className="italic text-lg mb-2 font-semibold">Email Us</h3>
-              <a href="mailto:bourgonindustries@gmail.com" className="font-bold text-lg text-slate-900 hover:text-red-600 transition-colors">
-                bourgonindustries@gmail.com
+              <a href="mailto:info@manmal.com" className="font-bold text-lg text-slate-900 hover:text-red-600 transition-colors">
+                info@manmal.com
               </a>
             </div>
 
@@ -234,13 +234,13 @@ export default function DistributorPage() {
       {/* WHY BECOME A DISTRIBUTOR */}
       <section className="w-full px-6 mt-20">
         <div className="reveal bg-[#1e2433] text-white p-12 md:p-16">
-          <h2 className="text-3xl md:text-5xl italic mb-8">Why Partner With Bourgon?</h2>
+          <h2 className="text-3xl md:text-5xl italic mb-8">Why Partner With Manmal?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-xl italic mb-4 font-semibold">Premium Product Portfolio</h3>
               <p className="text-slate-300 font-light leading-relaxed">
-                Access to our complete range of premium stainless steel products, 
-                from kitchenware to industrial solutions.
+                Access to our complete range of authentic football jerseys,
+                from club teams to national squads.
               </p>
             </div>
             <div>

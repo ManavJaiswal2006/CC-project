@@ -1,7 +1,7 @@
 export const contactFAQ = [
-  { 
-    question: "How does Bourgon ensure quality?", 
-    answer: "At Bourgon, every product goes through strict quality checks at multiple stages—material selection, manufacturing, and final inspection—to ensure durability, performance, and premium finishing." 
+  {
+    question: "How does Manmal ensure authentic jerseys?",
+    answer: "At Manmal, every jersey goes through strict quality checks at multiple stages—material selection, manufacturing, and final inspection—to ensure authentic designs, comfort, and premium performance."
   },
   { 
     question: "Do you ship across India?", 

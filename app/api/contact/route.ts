@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       from: `"${escapeHtml(sanitizedName)}" <${getEmailFrom("contact")}>`,
       to: getAdminEmail(),
       replyTo: sanitizedEmail!,
-      subject: `New Bourgon Inquiry: ${escapeHtml(sanitizedName)}`,
+      subject: `New cc-project Inquiry: ${escapeHtml(sanitizedName)}`,
       html: `
 <!DOCTYPE html>
 <html>
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
           
           <tr>
             <td style="background-color: #1a1a1a; padding: 50px 40px; text-align: left;">
-              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin-bottom: 20px; display: block;" />
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/cc-projectLogo.png" alt="cc-project Industries" style="max-width: 180px; height: auto; margin-bottom: 20px; display: block;" />
               <div style="color: #b91c1c; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px;">
                 Priority Handling Required
               </div>
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
           <tr>
             <td style="padding: 30px; background-color: #ffffff; border-top: 1px solid #f9f9f9; text-align: center;">
               <p style="font-size: 9px; color: #bbbbbb; letter-spacing: 2px; text-transform: uppercase; margin: 0;">
-                © Bourgon Industries — Private & Confidential
+                © cc-project Industries — Private & Confidential
               </p>
             </td>
           </tr>

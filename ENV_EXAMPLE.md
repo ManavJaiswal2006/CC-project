@@ -96,7 +96,7 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 - Razorpay variables (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`) - Required for Card/UPI payments
 
 ### OPTIONAL:
-- `NEXT_PUBLIC_SITE_URL` - Defaults to "https://bourgon.in" if not set
+- `NEXT_PUBLIC_SITE_URL` - Defaults to "https://cc-project-phi.vercel.app" if not set
 - `NEXT_PUBLIC_GA_ID` - Only needed if using Google Analytics
 
 ### REQUIRED FOR ADMIN PANEL:
@@ -107,7 +107,7 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
 1. **Create `.env.local` file** in your project root:
    ```
-   C:\Users\Rajeev Ranjan\Desktop\manav\coding\projects\bourgon\.env.local
+   C:\Users\Rajeev Ranjan\Desktop\manav\coding\projects\cc-project\.env.local
    ```
 
 2. **Copy your existing Firebase and Convex values** from your current `.env` file (if you have one)

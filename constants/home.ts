@@ -1,17 +1,17 @@
 export const navlinks = [
   { name: "HOME", href: "/" },
   { name: "ABOUT", href: "/about" },
-  { name: "PRODUCTS", href: "/shop" },
+  { name: "JERSEYS", href: "/shop" },
   { name: "CONTACT", href: "/customer-care" },
   { name: "BECOME A DISTRIBUTOR", href: "/distributor" },
 ];
 
 export const heroData = {
-  subtitle: "Good For a Lifetime",
-  title: ["BEYOND", "QUALITY.", "BEYOND", "DESIGN."],
+  subtitle: "Authentic Football Gear",
+  title: ["MANMAL", "JERSEYS.", "PREMIUM", "QUALITY."],
   description:
-    "Experience the epitome of culinary elegance. Our premium cutlery and kitchen tools are crafted for those who demand excellence in every detail.",
-  buttonText: "Explore Collection",
+    "Experience the thrill of the game with our authentic football jerseys. Crafted for champions who demand the best in performance and style.",
+  buttonText: "Shop Jerseys",
   buttonLink: "/shop",
   mainImage: "/home/img-1.png", 
   watermarkImage: "/home/img-1.png",
@@ -20,43 +20,43 @@ export const heroData = {
 export const heroBento = [
   {
     id: 1,
-    title: "Precision Essentials",
-    subtitle: "Masterful Baking",
-    imageSrc: "/home/img-2.png", // Whisk
+    title: "Premium Club Jerseys",
+    subtitle: "Official Team Wear",
+    imageSrc: "/home/img-2.png", // Club jersey
     href: "/shop",
     className: "md:col-span-2 md:row-span-2 aspect-square md:aspect-auto", // Large square item
     darkText: true,
   },
   {
     id: 2,
-    title: "Vibrant Living",
-    subtitle: "Fantacy Collection",
-    imageSrc: "/home/img-3.png", // Red set
+    title: "National Team Pride",
+    subtitle: "Country Collection",
+    imageSrc: "/home/img-3.png", // National team jersey
     href: "/shop",
     className: "md:col-span-1 md:row-span-1 aspect-square",
     darkText: true,
   },
   {
     id: 3,
-    title: "Timeless Silver",
-    subtitle: "Prime Series",
-    imageSrc: "/home/img-4.png", // Silver set on black plate
+    title: "Retro Classics",
+    subtitle: "Vintage Series",
+    imageSrc: "/home/img-4.png", // Retro jersey
     href: "/shop",
     className: "md:col-span-1 md:row-span-1 aspect-square",
   },
   {
     id: 4,
-    title: "Culinary Utility",
-    subtitle: "Professional Tools",
-    imageSrc: "/home/img-5.png", // Tool stand
+    title: "Training Gear",
+    subtitle: "Performance Wear",
+    imageSrc: "/home/img-5.png", // Training jersey
     href: "/shop",
     className: "md:col-span-1 md:row-span-2 aspect-square md:aspect-auto object-top", // Tall item
   },
   {
     id: 5,
-    title: "Modern Patterns",
-    subtitle: "Elite Aroma",
-    imageSrc: "/home/img-6.png", // Checkered pattern
+    title: "Limited Edition",
+    subtitle: "Collector Items",
+    imageSrc: "/home/img-6.png", // Special edition jersey
     href: "/shop",
     className: "md:col-span-2 md:row-span-1 aspect-square md:aspect-[2/1]", // Wide item
     darkText: true,
@@ -64,19 +64,19 @@ export const heroBento = [
 ];
 
 export const brandSectionData = {
-  title: "Beyond Quality, Beyond Design",
+  title: "Authentic Jerseys, Ultimate Performance",
   paragraphs: [
-    "In the world of technology and innovation, everyone is looking for the best, out of everything. And we are very happy to introduce BOURGON products that will not only match your expectation, but also make you trust on us.",
-    "We believe in world class quality with innovative approach using Man-Machine combination. Each item from BOURGON, that reaches to you, goes through expert inspection, so as to provide you the best.",
-    "We have climbed to the global company as Cooking with love provides food for the soul and our products are that comfort which makes undemanding dishes unique and rigid things easy.",
+    "In the world of football passion and competition, every fan and player seeks the best gear. At Manmal, we're proud to offer authentic football jerseys that not only meet your expectations but build your trust in quality sports apparel.",
+    "We believe in world-class quality with innovative manufacturing using advanced techniques. Each Manmal jersey undergoes expert quality control to ensure you get the best performance on and off the field.",
+    "We've become a global brand because football unites people worldwide, and our jerseys provide that connection - making every game memorable and every supporter proud.",
   ],
   imageSrc: "/home/img-7.png",
- // Using the whole image, focusing on the bottom dining scene
+ // Using the whole image, focusing on the football scene
 };
 
 export const featureBanner = {
-  title: "The Gold Standard",
-  description: "Elevate your dining experience with our exclusive PVD coated vector collection. Good for a lifetime.",
-  buttonText: "Shop Vector Gold",
-  imageSrc: "/home/img-8.png", // Gold Set
+  title: "The Champion's Choice",
+  description: "Elevate your game with our premium authentic jerseys. Built for champions who demand excellence in every match.",
+  buttonText: "Shop Premium Jerseys",
+  imageSrc: "/home/img-8.png", // Premium jersey
 };

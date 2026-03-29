@@ -115,7 +115,7 @@ function LoginContent() {
             required
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
-            placeholder="member@bourgon.in"
+            placeholder="member@cc-project-phi.vercel.app"
           />
         </div>
         <div className="space-y-2">

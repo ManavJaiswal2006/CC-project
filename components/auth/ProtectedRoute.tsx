@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   if (loading) {
     return (
       <div className="h-screen bg-[#fcfcfc] flex flex-col items-center justify-center">
-        <div className="text-4xl font-serif italic text-slate-300 animate-pulse mb-4">Bourgon</div>
+        <div className="text-4xl font-serif italic text-slate-300 animate-pulse mb-4">cc-project</div>
         <div className="w-12 h-[1px] bg-red-600 animate-scale-x"></div>
       </div>
     );

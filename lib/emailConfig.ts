@@ -62,12 +62,12 @@ export function getAdminEmail(): string {
  */
 export function getEmailDisplayName(type: EmailType): string {
   const nameMap: Record<EmailType, string> = {
-    orders: "Bourgon Orders",
-    refunds: "Bourgon Refunds",
-    contact: "Bourgon Concierge",
-    distributor: "Bourgon Industries",
-    security: "Bourgon Security",
-    admin: "Bourgon Admin",
+    orders: "cc-project Orders",
+    refunds: "cc-project Refunds",
+    contact: "cc-project Concierge",
+    distributor: "cc-project Industries",
+    security: "cc-project Security",
+    admin: "cc-project Admin",
   };
 
   return nameMap[type];

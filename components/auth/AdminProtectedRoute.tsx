@@ -51,7 +51,7 @@ export default function AdminProtectedRoute({ children }: { children: React.Reac
   if (authLoading || isAdmin === null) {
     return (
       <div className="h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold text-gray-700 mb-4">Bourgon</div>
+        <div className="text-2xl font-bold text-gray-700 mb-4">cc-project</div>
         <div className="w-12 h-px bg-red-600 animate-pulse"></div>
         <p className="mt-4 text-sm text-gray-500">Checking admin access...</p>
       </div>

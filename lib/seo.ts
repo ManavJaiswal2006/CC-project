@@ -13,13 +13,13 @@ interface SEOProps {
 export function generateSEO({
   title,
   description,
-  image = "/bourgonLogo.png",
+  image = "/cc-projectLogo.png",
   url,
   type = "website",
   price,
   availability,
 }: SEOProps): Metadata {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
   const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
   const fullImage = image.startsWith("http") ? image : `${siteUrl}${image}`;
 
@@ -31,7 +31,7 @@ export function generateSEO({
       title,
       description,
       url: fullUrl,
-      siteName: "Bourgon Industries",
+      siteName: "cc-project Industries",
       images: [
         {
           url: fullImage,
@@ -82,20 +82,20 @@ export function generateStructuredData({
   rating?: number;
   reviewCount?: number;
 }) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
 
   if (type === "Organization") {
     return {
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: "Bourgon Industries Pvt. Ltd.",
+      name: "cc-project Industries Pvt. Ltd.",
       url: siteUrl,
-      logo: `${siteUrl}/bourgonLogo.png`,
+      logo: `${siteUrl}/cc-projectLogo.png`,
       contactPoint: {
         "@type": "ContactPoint",
         telephone: "+91-88008-30465",
         contactType: "Customer Service",
-        email: "bourgonindustries@gmail.com",
+        email: "cc-projectindustries@gmail.com",
       },
       address: {
         "@type": "PostalAddress",
@@ -133,7 +133,7 @@ export function generateStructuredData({
       }),
       brand: {
         "@type": "Brand",
-        name: "Bourgon Industries",
+        name: "cc-project Industries",
       },
     };
   }

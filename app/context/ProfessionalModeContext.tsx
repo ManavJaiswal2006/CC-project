@@ -14,7 +14,7 @@ const ProfessionalModeContext = createContext<ProfessionalModeContextType>({
   setProfessionalMode: () => {},
 });
 
-const STORAGE_KEY = "bourgon_professional_mode";
+const STORAGE_KEY = "cc-project_professional_mode";
 
 export const ProfessionalModeProvider = ({
   children,

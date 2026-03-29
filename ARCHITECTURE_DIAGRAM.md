@@ -1,10 +1,10 @@
-# 🏗️ Architecture Diagrams - Bourgon Industries
+# 🏗️ Architecture Diagrams - cc-project Industries
 
 ## Visual Guide to System Architecture
 
 ---
 
-## 📊 High-Level Architecture
+## 📊 High-Level Architecture :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

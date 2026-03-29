@@ -86,7 +86,7 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/cc-projectLogo.png" alt="cc-project Industries" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
           <div style="margin-top: 30px; display: inline-block; padding: 8px 15px; border: 1px solid #444; color: #fff; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;">
             Official Invoice
           </div>
@@ -192,9 +192,9 @@ export function generateBillHTML(data: BillData, isAdmin: boolean = false): stri
             ${isAdmin ? 'Notification of Sales' : 'Thank you for your patronage.'}
           </div>
           <div style="font-size: 11px; color: #999; line-height: 1.8; letter-spacing: 0.5px;">
-            BOURGON INDUSTRIES PVT. LTD.<br>
+            cc-project INDUSTRIES PVT. LTD.<br>
             22  R VANI VIHAR UTTAM NAGAR NEW DELHI  110059<br>
-            Phone: +91 88008 30465 & +91 88008 30467 | Email: bourgonindustries@gmail.com
+            Phone: +91 88008 30465 & +91 88008 30467 | Email: cc-projectindustries@gmail.com
           </div>
           <div style="margin-top: 30px; font-size: 10px; color: #ddd; text-transform: uppercase; letter-spacing: 2px;">
             © ${new Date().getFullYear()} All Rights Reserved.

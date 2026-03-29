@@ -10,7 +10,7 @@ You **MUST** set these environment variables in your production hosting (Vercel,
 
 ### 1. Site URL (Required)
 ```env
-NEXT_PUBLIC_SITE_URL=https://bourgon.in
+NEXT_PUBLIC_SITE_URL=https://cc-project-phi.vercel.app
 ```
 **Why:** This ensures password reset emails contain the correct production URL.
 
@@ -19,7 +19,7 @@ Choose **ONE** of these options:
 
 **Option A: Service Account JSON (Recommended)**
 ```env
-FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"bourgon-8ce17",...}'
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"cc-project-8ce17",...}'
 ```
 - Get this from Firebase Console → Project Settings → Service Accounts → Generate New Private Key
 - Copy the entire JSON and paste as a single line (remove all newlines)
@@ -27,8 +27,8 @@ FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"bourgon-8ce17"
 
 **Option B: Individual Fields**
 ```env
-FIREBASE_PROJECT_ID=bourgon-8ce17
-FIREBASE_CLIENT_EMAIL=your-service-account@bourgon-8ce17.iam.gserviceaccount.com
+FIREBASE_PROJECT_ID=cc-project-8ce17
+FIREBASE_CLIENT_EMAIL=your-service-account@cc-project-8ce17.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
@@ -83,15 +83,15 @@ This should already be set.
 ## ✅ Post-Deployment Verification
 
 1. **Test the route exists:**
-   - Visit: `https://bourgon.in/reset-password`
+   - Visit: `https://cc-project-phi.vercel.app/reset-password`
    - Should show the reset password form (will show error about missing token, but page should load)
 
 2. **Test full flow:**
-   - Go to: `https://bourgon.in/forgot-password`
+   - Go to: `https://cc-project-phi.vercel.app/forgot-password`
    - Enter a registered email
    - Check email for reset link
    - Click the link
-   - Should open: `https://bourgon.in/reset-password?token=...`
+   - Should open: `https://cc-project-phi.vercel.app/reset-password?token=...`
    - Enter new password
    - Should successfully reset
 
@@ -99,7 +99,7 @@ This should already be set.
 
 ### Issue: "Page Not Found" on reset link
 **Cause:** `NEXT_PUBLIC_SITE_URL` not set or wrong
-**Fix:** Set `NEXT_PUBLIC_SITE_URL=https://bourgon.in` in production env vars
+**Fix:** Set `NEXT_PUBLIC_SITE_URL=https://cc-project-phi.vercel.app` in production env vars
 
 ### Issue: "Server configuration error" when resetting
 **Cause:** Firebase Admin SDK not configured
@@ -116,7 +116,7 @@ This should already be set.
 ## 📝 Summary
 
 **Yes, it will work in production IF:**
-- ✅ You set `NEXT_PUBLIC_SITE_URL=https://bourgon.in`
+- ✅ You set `NEXT_PUBLIC_SITE_URL=https://cc-project-phi.vercel.app`
 - ✅ You configure Firebase Admin SDK credentials
 - ✅ You configure email credentials
 - ✅ You deploy the Convex schema (`npx convex deploy`)

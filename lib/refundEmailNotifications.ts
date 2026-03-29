@@ -20,7 +20,7 @@ export async function sendRefundRequestEmail(data: RefundRequestData) {
 
   const transporter = nodemailer.createTransport(getEmailTransporterConfig("refunds"));
 
-  const subject = `Refund Request Received | Order ${data.orderId} | Bourgon Industries`;
+  const subject = `Refund Request Received | Order ${data.orderId} | cc-project Industries`;
 
   const html = `
 <!DOCTYPE html>
@@ -47,7 +47,7 @@ export async function sendRefundRequestEmail(data: RefundRequestData) {
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/cc-projectLogo.png" alt="cc-project Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
         </td>
       </tr>
 
@@ -93,7 +93,7 @@ export async function sendRefundRequestEmail(data: RefundRequestData) {
           </p>
           <div style="height: 1px; background-color: #eeeeee; width: 50px; margin: 0 auto 20px;"></div>
           <p style="font-size: 10px; color: #bbbbbb; text-transform: uppercase; letter-spacing: 2px;">
-            © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+            © ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.
           </p>
         </td>
       </tr>
@@ -120,19 +120,19 @@ export async function sendRefundStatusUpdateEmail(data: RefundRequestData) {
 
   const statusMessages: Record<string, { subject: string; message: string; badge: string }> = {
     approved: {
-      subject: `Refund Request Approved | Order ${data.orderId} | Bourgon Industries`,
+      subject: `Refund Request Approved | Order ${data.orderId} | cc-project Industries`,
       message: "Your refund request has been approved! The refund will be processed shortly and credited to your original payment method within 5-7 business days.",
       badge: "APPROVED",
     },
     rejected: {
-      subject: `Refund Request Update | Order ${data.orderId} | Bourgon Industries`,
+      subject: `Refund Request Update | Order ${data.orderId} | cc-project Industries`,
       message: data.adminNotes 
         ? `We regret to inform you that your refund request could not be approved. ${escapeHtml(data.adminNotes)}`
         : "We regret to inform you that your refund request could not be approved. If you have any questions, please contact our customer care team.",
       badge: "NOT APPROVED",
     },
     refunded: {
-      subject: `Refund Processed | Order ${data.orderId} | Bourgon Industries`,
+      subject: `Refund Processed | Order ${data.orderId} | cc-project Industries`,
       message: data.refundId
         ? `Your refund has been successfully processed! The amount of ₹${data.refundAmount.toFixed(2)} has been credited to your original payment method. Refund ID: ${escapeHtml(data.refundId)}`
         : `Your refund has been successfully processed! The amount of ₹${data.refundAmount.toFixed(2)} has been credited to your original payment method.`,
@@ -168,7 +168,7 @@ export async function sendRefundStatusUpdateEmail(data: RefundRequestData) {
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/cc-projectLogo.png" alt="cc-project Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
         </td>
       </tr>
 
@@ -218,7 +218,7 @@ export async function sendRefundStatusUpdateEmail(data: RefundRequestData) {
           </p>
           <div style="height: 1px; background-color: #eeeeee; width: 50px; margin: 0 auto 20px;"></div>
           <p style="font-size: 10px; color: #bbbbbb; text-transform: uppercase; letter-spacing: 2px;">
-            © ${new Date().getFullYear()} Bourgon Industries Pvt. Ltd.
+            © ${new Date().getFullYear()} cc-project Industries Pvt. Ltd.
           </p>
         </td>
       </tr>

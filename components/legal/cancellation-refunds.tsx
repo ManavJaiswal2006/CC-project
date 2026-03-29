@@ -17,7 +17,7 @@ export default function CancellationRefunds() {
             <h3 className="text-xl font-semibold mt-6 mb-3">1.1 Order Cancellation by Customer</h3>
             <p className="leading-relaxed mb-4">
               You may cancel your order before it has been shipped. To cancel an order, please contact our customer 
-              care team at bourgonindustries@gmail.com or call us at +91 88008 30465 & +91 88008 30467. Please provide your order number 
+              care team at cc-projectindustries@gmail.com or call us at +91 88008 30465 & +91 88008 30467. Please provide your order number 
               for faster processing.
             </p>
             <p className="leading-relaxed mb-4">
@@ -25,7 +25,7 @@ export default function CancellationRefunds() {
               as per our return policy outlined below.
             </p>
 
-            <h3 className="text-xl font-semibold mt-6 mb-3">1.2 Order Cancellation by Bourgon Industries</h3>
+            <h3 className="text-xl font-semibold mt-6 mb-3">1.2 Order Cancellation by cc-project Industries</h3>
             <p className="leading-relaxed mb-4">
               We reserve the right to cancel any order at any time for reasons including, but not limited to:
             </p>
@@ -74,7 +74,7 @@ export default function CancellationRefunds() {
               To initiate a return:
             </p>
             <ol className="list-decimal pl-6 space-y-2 mb-4">
-              <li>Contact our customer care team at bourgonindustries@gmail.com or +91 88008 30465 & +91 88008 30467 with your order number</li>
+              <li>Contact our customer care team at cc-projectindustries@gmail.com or +91 88008 30465 & +91 88008 30467 with your order number</li>
               <li>Provide a reason for the return</li>
               <li>Our team will review your request and provide return authorization and instructions</li>
               <li>Pack the product securely in its original packaging</li>
@@ -127,7 +127,7 @@ export default function CancellationRefunds() {
               4. Defective or Damaged Products
             </h2>
             <p className="leading-relaxed mb-4">
-              If you receive a defective or damaged product, please contact us immediately at bourgonindustries@gmail.com 
+              If you receive a defective or damaged product, please contact us immediately at cc-projectindustries@gmail.com 
               or +91 88008 30465 & +91 88008 30467. Please provide:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-4">
@@ -165,10 +165,10 @@ export default function CancellationRefunds() {
               For any questions, concerns, or to initiate a return or cancellation, please contact us:
             </p>
             <div className="bg-gray-50 p-6 border border-gray-200">
-              <p className="font-semibold mb-2">Bourgon Industries Pvt. Ltd.</p>
+              <p className="font-semibold mb-2">cc-project Industries Pvt. Ltd.</p>
               <p className="mb-1">22  R VANI VIHAR UTTAM NAGAR</p>
               <p className="mb-1">NEW DELHI  110059, India</p>
-              <p className="mb-1">Email: bourgonindustries@gmail.com</p>
+              <p className="mb-1">Email: cc-projectindustries@gmail.com</p>
               <p className="mb-1">Phone: +91 88008 30465 & +91 88008 30467</p>
               <p className="mt-4 text-sm text-gray-600">
                 Customer Care Hours: Monday - Saturday, 9:00 AM - 7:00 PM IST

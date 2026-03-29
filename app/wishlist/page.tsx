@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export const metadata: Metadata = {
-  title: "My Wishlist | Bourgon Industries",
+  title: "My Wishlist | cc-project Industries",
   description: "View and manage your saved products. Add items to cart from your wishlist.",
 };
 

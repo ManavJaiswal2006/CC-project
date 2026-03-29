@@ -41,7 +41,7 @@ function VerifyEmailContent() {
     setVerifying(true);
 
     try {
-      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
+      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app");
       await sendEmailVerification(user, {
         url: `${siteUrl}/verify-email`,
         handleCodeInApp: false,
@@ -144,7 +144,7 @@ function VerifyEmailContent() {
                 Email Verified!
               </h3>
               <p className="text-slate-600 text-sm font-light leading-relaxed max-w-sm">
-                Your email address has been successfully verified. You now have full access to all features of your Bourgon account.
+                Your email address has been successfully verified. You now have full access to all features of your cc-project account.
               </p>
             </div>
           </div>

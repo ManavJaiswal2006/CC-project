@@ -39,13 +39,13 @@ Add this TXT record to your DNS:
 ```
 Type: TXT
 Name: _dmarc
-Value: v=DMARC1; p=quarantine; rua=mailto:your-email@bourgon.in
+Value: v=DMARC1; p=quarantine; rua=mailto:your-email@cc-project-phi.vercel.app
 ```
 
 ### 4. Use a Dedicated Email Address
 
 **Best Practice:** Use a dedicated email address for sending (not your personal Gmail):
-- `noreply@bourgon.in` or `notifications@bourgon.in`
+- `noreply@cc-project-phi.vercel.app` or `notifications@cc-project-phi.vercel.app`
 - Set up Google Workspace for your domain
 - This improves deliverability significantly
 
@@ -105,7 +105,7 @@ EMAIL_SECURITY_USER=your-email@gmail.com
 EMAIL_SECURITY_PASS=your-16-char-app-password
 
 # Site URL (important for email links)
-NEXT_PUBLIC_SITE_URL=https://bourgon.in
+NEXT_PUBLIC_SITE_URL=https://cc-project-phi.vercel.app
 ```
 
 ## ✅ Quick Checklist

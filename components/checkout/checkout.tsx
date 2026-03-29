@@ -240,7 +240,7 @@ export default function CheckoutPage() {
         key: orderData.key,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "Bourgon Industries",
+        name: "cc-project Industries",
         description: `Order for ${name.trim()}`,
         order_id: orderData.orderId,
         prefill: {
