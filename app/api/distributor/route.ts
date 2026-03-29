@@ -120,7 +120,7 @@ export async function POST(req: Request) {
         <table width="600" style="background-color:#ffffff; border:1px solid #e5e5e5;">
           <tr>
             <td style="background-color:#000000; padding:40px; text-align:center;">
-              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 20px auto; display: block;" />
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 180px; height: auto; margin: 0 auto 20px auto; display: block;" />
               <h1 style="font-family:'Cormorant Garamond', serif; font-size:20px; color:#ffffff; letter-spacing:3px; text-transform:uppercase; margin:0;">
                 Partnership Division
               </h1>
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
         <table width="600" style="background-color:#ffffff; border:1px solid #eeeeee;">
           <tr>
             <td style="padding:60px 40px; text-align:center;">
-              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto 30px auto; display: block;" />
+              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto 30px auto; display: block;" />
               <div style="height:1px; width:40px; background:#b91c1c; margin:0 auto 30px auto;"></div>
               
               <h2 style="font-family:'Cormorant Garamond', serif; font-size:22px; font-style:italic; margin-bottom:20px;">
@@ -211,7 +211,7 @@ export async function POST(req: Request) {
           <tr>
             <td style="padding:40px; background:#000000; color:#ffffff; text-align:center;">
               <p style="font-size:11px; letter-spacing:1px; margin:0;">
-                For urgent inquiries: <a href="mailto:bourgonindustries@gmail.com" style="color:#ffffff; text-decoration:underline;">concierge@bourgon.in</a>
+                For urgent inquiries: <a href="mailto:bourgonindustries@gmail.com" style="color:#ffffff; text-decoration:underline;">concierge@cc-project-phi.vercel.app</a>
               </p>
             </td>
           </tr>

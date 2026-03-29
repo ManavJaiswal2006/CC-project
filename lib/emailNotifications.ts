@@ -7,8 +7,8 @@ import { getEmailFromField, getEmailTransporterConfig, isEmailConfigured, getRep
  * Get standard email headers to improve deliverability and prevent spam
  */
 function getEmailHeaders(): Record<string, string> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
-  const messageId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}@bourgon.in`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
+  const messageId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}@cc-project-phi.vercel.app`;
   return {
     "Message-ID": `<${messageId}>`,
     "X-Mailer": "Bourgon Industries Email System",
@@ -91,7 +91,7 @@ export async function sendOrderStatusEmail(
 
   const subject = `Order ${orderData.orderId} - ${orderData.status} | Bourgon Industries`;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
 
   // Use provided tracking URL or generate default one
   const trackingUrl = orderData.trackingUrl || 
@@ -163,7 +163,7 @@ export async function sendOrderStatusEmail(
           ` : ''}
 
           <div style="text-align: center; margin-top: 40px;">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/orders/${escapeHtml(orderData.orderId)}" class="btn">View Collection Details</a>
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/orders/${escapeHtml(orderData.orderId)}" class="btn">View Collection Details</a>
           </div>
         </td>
       </tr>
@@ -378,7 +378,7 @@ export async function sendPasswordResetEmail(
 
   // Use NEXT_PUBLIC_SITE_URL if set, otherwise default to production
   // For local development, you should set NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app";
   const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
 
   const subject = `Password Reset Request | Bourgon Industries`;

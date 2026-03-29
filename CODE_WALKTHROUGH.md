@@ -260,7 +260,7 @@ export async function POST(req: Request) {
     const transporter = nodemailer.createTransport(getEmailTransporterConfig("orders"));
     
     await transporter.sendMail({
-      from: "orders@bourgon.in",
+      from: "orders@cc-project-phi.vercel.app",
       to: customerEmail,
       subject: `Your Order Invoice - ${orderId}`,
       html: billHTML,

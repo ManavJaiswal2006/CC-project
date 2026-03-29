@@ -41,7 +41,7 @@ function VerifyEmailContent() {
     setVerifying(true);
 
     try {
-      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in");
+      const siteUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app");
       await sendEmailVerification(user, {
         url: `${siteUrl}/verify-email`,
         handleCodeInApp: false,

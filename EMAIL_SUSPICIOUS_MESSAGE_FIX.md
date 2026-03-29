@@ -35,7 +35,7 @@ Gmail shows "suspicious message" when:
 
 ### Before:
 ```html
-<img src="https://bourgon.in/bourgonLogo.png" />
+<img src="https://cc-project-phi.vercel.app/bourgonLogo.png" />
 ```
 Gmail blocks this and shows warning.
 

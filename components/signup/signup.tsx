@@ -190,7 +190,7 @@ function SignUpContent() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border-0 border-b border-slate-200 py-3 focus:border-red-600 outline-none transition-all font-light bg-transparent text-gray-900"
-            placeholder="newmember@bourgon.in"
+            placeholder="newmember@cc-project-phi.vercel.app"
           />
         </div>
         <div className="space-y-2">

@@ -143,7 +143,7 @@ EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 
 # Site URL (for email links)
-NEXT_PUBLIC_SITE_URL=https://bourgon.in
+NEXT_PUBLIC_SITE_URL=https://cc-project-phi.vercel.app
 ```
 
 ## Notes

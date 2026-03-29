@@ -41,7 +41,7 @@ This happens because the email templates use default Firebase branding.
 4. **Save your changes**
 
 **Benefits you now have:**
-- ✅ Custom sender address (e.g., `noreply@bourgon.in` instead of `noreply@bourgon-8ce17.firebaseapp.com`)
+- ✅ Custom sender address (e.g., `noreply@cc-project-phi.vercel.app` instead of `noreply@bourgon-8ce17.firebaseapp.com`)
 - ✅ Can customize email content freely
 - ✅ Better branding - no project name/ID in footer
 - ✅ Professional email appearance
@@ -207,7 +207,7 @@ The "Your project-[number] team" text comes from Firebase's default template. Wh
 ✅ **With custom domain verification, your sender address should now be from your custom domain!**
 
 - **Before:** `noreply@bourgon-8ce17.firebaseapp.com` (project ID visible)
-- **After:** `noreply@bourgon.in` or your custom domain (professional branding)
+- **After:** `noreply@cc-project-phi.vercel.app` or your custom domain (professional branding)
 
 This happens automatically once custom domain verification is complete. Check your Firebase Console → Authentication → Settings to confirm your custom domain is being used.
 

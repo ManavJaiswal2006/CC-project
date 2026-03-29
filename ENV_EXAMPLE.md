@@ -96,7 +96,7 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 - Razorpay variables (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`) - Required for Card/UPI payments
 
 ### OPTIONAL:
-- `NEXT_PUBLIC_SITE_URL` - Defaults to "https://bourgon.in" if not set
+- `NEXT_PUBLIC_SITE_URL` - Defaults to "https://cc-project-phi.vercel.app" if not set
 - `NEXT_PUBLIC_GA_ID` - Only needed if using Google Analytics
 
 ### REQUIRED FOR ADMIN PANEL:

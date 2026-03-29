@@ -47,7 +47,7 @@ export async function sendRefundRequestEmail(data: RefundRequestData) {
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
         </td>
       </tr>
 
@@ -168,7 +168,7 @@ export async function sendRefundStatusUpdateEmail(data: RefundRequestData) {
     <table class="main" align="center">
       <tr>
         <td class="header">
-          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://bourgon.in"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
+          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://cc-project-phi.vercel.app"}/bourgonLogo.png" alt="Bourgon Industries" style="max-width: 200px; height: auto; margin: 0 auto; display: block;" />
         </td>
       </tr>
 
